@@ -1,6 +1,8 @@
 import timing
 from server import get_servers
 
+# TODO add argument parsing
+
 WIDTH = 80
 
 servers = get_servers()

@@ -72,6 +72,8 @@ def get_job_times(jobs: Dict[int, Job]):
                 jid = int(msg[3])
                 time = int(msg[1])
 
+                # TODO try replacing with a dictionary
+                #  https://docs.quantifiedcode.com/python-anti-patterns/readability/not_using_if_to_switch.html
                 if "SCHEDULED" in msg:
                     jobs[jid].schd = time
                 elif "RUNNING" in msg:

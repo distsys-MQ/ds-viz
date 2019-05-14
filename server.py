@@ -63,7 +63,7 @@ def get_servers_from_system() -> List[Server]:
 def server_list_to_dict(servers: List[Server]) -> Dict[str, Dict[int, Server]]:
     s_dict: Dict[str, Dict[int, Server]] = {}
 
-    for s in servers:
+    for s in servers:  # TODO replace with dictionary comprehension
         if s.kind not in s_dict:
             s_dict[s.kind] = {}
 
