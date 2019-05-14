@@ -1,5 +1,7 @@
-from typing import List, Dict
+from typing import List, Dict, BinaryIO
 from xml.etree.ElementTree import parse
+
+file = "ds-config2-ff.txt"
 
 
 class Server:
@@ -11,6 +13,39 @@ class Server:
 
 
 def get_servers() -> List[Server]:
+    with open(file, "rb") as f:
+        while True:
+            line = f.readline()
+
+            if b"RESC All" in line:
+                return make_servers(f)
+
+            if not line:
+                break
+
+
+def make_servers(f: BinaryIO) -> List[Server]:
+    servers = []
+
+    while True:
+        line = f.readline()
+
+        if not line:
+            break
+
+        msg = line.decode("utf-8").strip().split(" ")
+
+        if "." in msg:
+            break
+
+        if not any([i in msg for i in ["OK", "DATA"]]):
+            server = Server(msg[1], int(msg[2]), int(msg[5]))
+            servers.append(server)
+
+    return servers
+
+
+def get_servers_from_system() -> List[Server]:
     servers = []
 
     for s in parse("system.xml").iter("server"):
