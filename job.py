@@ -1,4 +1,9 @@
-from typing import List, BinaryIO
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Dict, List, BinaryIO
+
+if TYPE_CHECKING:
+    from server import Server
 
 file = "ds-config2-ff.txt"
 
@@ -12,7 +17,7 @@ class Job:
         self.end = None
 
 
-def get_jobs(servers) -> List[Job]:
+def get_jobs(servers: Dict[str, Dict[int, Server]]) -> List[Job]:
     jobs = []
 
     with open(file, "rb") as f:
@@ -30,7 +35,7 @@ def get_jobs(servers) -> List[Job]:
     return jobs
 
 
-def make_job(f: BinaryIO, servers) -> Job:
+def make_job(f: BinaryIO, servers: Dict[str, Dict[int, Server]]) -> Job:
     msg = f.readline().decode("utf-8").split(" ")
     jid, cores = int(msg[3]), int(msg[5])
 
