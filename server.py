@@ -1,6 +1,8 @@
 from typing import List, Dict, BinaryIO
 from xml.etree.ElementTree import parse
 
+from job import get_jobs
+
 file = "ds-config2-ff.txt"
 
 
@@ -9,7 +11,7 @@ class Server:
         self.kind = kind
         self.sid = sid
         self.cores = cores
-        self.jobs = []  # TODO add jobs
+        self.jobs = []
 
 
 def get_servers() -> List[Server]:
@@ -18,7 +20,10 @@ def get_servers() -> List[Server]:
             line = f.readline()
 
             if b"RESC All" in line:
-                return make_servers(f)
+                servers = make_servers(f)
+                get_jobs(server_list_to_dict(servers))
+
+                return servers
 
             if not line:
                 break
