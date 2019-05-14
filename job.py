@@ -36,14 +36,14 @@ def get_jobs(servers: Dict[str, Dict[int, Server]]) -> List[Job]:
 
 
 def make_job(f: BinaryIO, servers: Dict[str, Dict[int, Server]]) -> Job:
-    msg = f.readline().decode("utf-8").split(" ")
+    msg = f.readline().decode("utf-8").split()
     jid, cores = int(msg[3]), int(msg[5])
 
     while True:
         line = f.readline()
 
         if b"SCHD" in line:
-            msg = line.decode("utf-8").strip().split(" ")
+            msg = line.decode("utf-8").split()
             server = servers[msg[3]][int(msg[4])]
             job = Job(int(msg[2]), cores)
             server.jobs.append(job)

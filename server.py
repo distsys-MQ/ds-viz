@@ -38,7 +38,7 @@ def make_servers(f: BinaryIO) -> List[Server]:
         if not line:
             break
 
-        msg = line.decode("utf-8").strip().split(" ")
+        msg = line.decode("utf-8").split()
 
         if "." in msg:
             break
