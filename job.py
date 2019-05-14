@@ -32,6 +32,7 @@ def get_jobs(servers: Dict[str, Dict[int, Server]]) -> List[Job]:
             if not line:
                 break
 
+    get_job_times(job_list_to_dict(jobs))
     return jobs
 
 
@@ -61,3 +62,19 @@ def job_list_to_dict(jobs: List[Job]) -> Dict[int, Job]:
         j_dict[j.jid] = j
 
     return j_dict
+
+
+def get_job_times(jobs: Dict[int, Job]):
+    with open(file, "r") as f:
+        for line in f:
+            if line.startswith("t:", 0, 2):
+                msg = line.split()
+                jid = int(msg[3])
+                time = int(msg[1])
+
+                if "SCHEDULED" in msg:
+                    jobs[jid].schd = time
+                elif "RUNNING" in msg:
+                    jobs[jid].start = time
+                elif "COMPLETED" in msg:
+                    jobs[jid].end = time

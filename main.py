@@ -8,7 +8,7 @@ for s in servers:
     print(f"{s.kind} {s.sid}")
     print()
     for j in s.jobs:
-        print(f"j{j.jid}", end=" ")
+        print(f"j{j.jid} s{j.start} e{j.end}", end=" ")
     print()
     print("|\n" * s.cores)
     print("=" * WIDTH)
