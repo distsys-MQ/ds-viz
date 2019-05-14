@@ -25,10 +25,8 @@ def get_jobs() -> List[Job]:
 
             if b"JOBN" in line:
                 f.seek(-len(line), 1)
-                (job, off) = make_job(f)
-
+                job = make_job(f)
                 jobs.append(job)
-                f.seek(off, 0)
 
             if not line:
                 break
@@ -36,7 +34,7 @@ def get_jobs() -> List[Job]:
     return jobs
 
 
-def make_job(f: BinaryIO) -> (Job, int):
+def make_job(f: BinaryIO) -> Job:
     msg = f.readline().decode("utf-8").split(" ")
     jid, cores = int(msg[3]), int(msg[5])
 
@@ -48,4 +46,7 @@ def make_job(f: BinaryIO) -> (Job, int):
             server = servers[msg[3]][int(msg[4])]
             job = Job(int(msg[2]), cores, server)
 
-            return job, f.tell()
+            return job
+
+        if not line:
+            break
