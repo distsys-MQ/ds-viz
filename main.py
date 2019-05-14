@@ -1,3 +1,4 @@
+import timing
 from server import get_servers
 
 WIDTH = 80
