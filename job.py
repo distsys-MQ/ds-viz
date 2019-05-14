@@ -52,3 +52,12 @@ def make_job(f: BinaryIO, servers: Dict[str, Dict[int, Server]]) -> Job:
 
         if not line:
             break
+
+
+def job_list_to_dict(jobs: List[Job]) -> Dict[int, Job]:
+    j_dict: Dict[int, Job] = {}
+
+    for j in jobs:
+        j_dict[j.jid] = j
+
+    return j_dict
