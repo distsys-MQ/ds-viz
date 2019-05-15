@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING, Dict, List, BinaryIO
 if TYPE_CHECKING:
     from server import Server
 
-file = "ds-config2-ff.txt"
-
 
 class Job:
     def __init__(self, jid: int, cores: int):
@@ -17,7 +15,7 @@ class Job:
         self.end = None
 
 
-def get_jobs(servers: Dict[str, Dict[int, Server]]) -> List[Job]:
+def get_jobs(file: str, servers: Dict[str, Dict[int, Server]]) -> List[Job]:
     jobs = []
 
     with open(file, "rb") as f:
@@ -31,7 +29,7 @@ def get_jobs(servers: Dict[str, Dict[int, Server]]) -> List[Job]:
             if not line:
                 break
 
-    get_job_times(job_list_to_dict(jobs))
+    get_job_times(file, job_list_to_dict(jobs))
     return jobs
 
 
@@ -58,7 +56,7 @@ def job_list_to_dict(jobs: List[Job]) -> Dict[int, Job]:
     return {j.jid: j for j in jobs}
 
 
-def get_job_times(jobs: Dict[int, Job]):
+def get_job_times(file: str, jobs: Dict[int, Job]):
     with open(file, "r") as f:
         for line in f:
             if line.startswith("t:", 0, 2):

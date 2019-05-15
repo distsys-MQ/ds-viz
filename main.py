@@ -1,11 +1,25 @@
-import timing
-from server import get_servers
+import argparse
+import os
 
-# TODO add argument parsing
+import timing  # TODO remove before submission
+from server import get_servers
 
 WIDTH = 80
 
-servers = get_servers()
+
+# https://stackoverflow.com/a/11541450/8031185
+def is_valid_file(psr, arg):
+    if not os.path.isfile(arg):
+        psr.error(f"The file '{arg}' does not exist!")
+    else:
+        return arg
+
+
+parser = argparse.ArgumentParser(description="Visualises job scheduler logs")
+parser.add_argument("filename", help="name of log file to visualise", metavar="FILE",
+                    type=lambda f: is_valid_file(parser, f))
+
+servers = get_servers(parser.parse_args().filename)
 
 for s in servers:
     print(f"{s.kind} {s.sid}")

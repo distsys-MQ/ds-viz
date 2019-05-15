@@ -3,8 +3,6 @@ from xml.etree.ElementTree import parse
 
 from job import get_jobs
 
-file = "ds-config2-ff.txt"
-
 
 class Server:
     def __init__(self, kind: str, sid: int, cores: int):
@@ -14,14 +12,14 @@ class Server:
         self.jobs = []
 
 
-def get_servers() -> List[Server]:
+def get_servers(file: str) -> List[Server]:
     with open(file, "rb") as f:
         while True:
             line = f.readline()
 
             if b"RESC All" in line:
                 servers = make_servers(f)
-                get_jobs(server_list_to_dict(servers))
+                get_jobs(file, server_list_to_dict(servers))
 
                 return servers
 
