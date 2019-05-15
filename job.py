@@ -26,8 +26,7 @@ def get_jobs(servers: Dict[str, Dict[int, Server]]) -> List[Job]:
 
             if b"JOBN" in line:
                 f.seek(-len(line), 1)
-                job = make_job(f, servers)
-                jobs.append(job)
+                jobs.append(make_job(f, servers))
 
             if not line:
                 break

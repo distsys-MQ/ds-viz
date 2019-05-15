@@ -44,8 +44,7 @@ def make_servers(f: BinaryIO) -> List[Server]:
             break
 
         if not any([i in msg for i in ["OK", "DATA"]]):
-            server = Server(msg[1], int(msg[2]), int(msg[5]))
-            servers.append(server)
+            servers.append(Server(msg[1], int(msg[2]), int(msg[5])))
 
     return servers
 
