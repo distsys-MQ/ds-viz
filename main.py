@@ -22,7 +22,7 @@ parser.add_argument("filename", help="name of log file to visualise", metavar="F
                     type=lambda f: is_valid_file(parser, f))
 
 
-def print_job_as_list(j: Job):
+def print_job_vert(j: Job):
     ind = " " * 2
     print(f"{ind}job {j.jid} ({j.cores} core(s))")
     ind *= 2
@@ -30,15 +30,15 @@ def print_job_as_list(j: Job):
         print(f"{ind}{name:>10} {val}")
 
 
-def print_list(servers: List[Server]):
+def print_vert(servers: List[Server]):
     for s in servers:
         print(f"{s.kind} {s.sid}")
         for j in s.jobs:
-            print_job_as_list(j)
+            print_job_vert(j)
         print("=" * WIDTH)
 
 
-print_list(get_servers(parser.parse_args().filename))
+print_vert(get_servers(parser.parse_args().filename))
 
 
 # https://stackoverflow.com/q/20756516/8031185
