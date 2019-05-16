@@ -38,7 +38,24 @@ def print_vert(servers: List[Server]):
         print("=" * WIDTH)
 
 
-print_vert(get_servers(parser.parse_args().filename))
+def print_job_graph(j: Job):
+    pass
+
+
+def print_graph(servers: List[Server]):
+    for s in servers:
+        print(f"{s.kind} {s.sid}")
+        if s.cores == 1:
+            print("[{}]".format(" " * (WIDTH - 2)))
+        else:
+            print("┌{}┐".format(" " * (WIDTH - 2)))
+            for i in range(s.cores - 2):
+                print("│{}│".format(" " * (WIDTH - 2)))
+            print("└{}┘".format(" " * (WIDTH - 2)))
+        print("=" * WIDTH)
+
+
+print_graph(get_servers(parser.parse_args().filename))
 
 
 # https://stackoverflow.com/q/20756516/8031185
