@@ -1,6 +1,5 @@
 import argparse
 import os
-import textwrap
 from typing import List
 
 import timing  # TODO remove before submission
@@ -24,13 +23,11 @@ parser.add_argument("filename", help="name of log file to visualise", metavar="F
 
 
 def print_job_as_list(j: Job):
-    job = f"  job {j.jid} ({j.cores} cores)"
-    prefix = job + ":\n  "
-    expanded_indent = textwrap.fill(prefix + '$', replace_whitespace=False)
-    subsequent_indent = ' ' * len(expanded_indent)
-    wrapper = textwrap.TextWrapper(initial_indent=prefix,
-                                   subsequent_indent=subsequent_indent)
-    print(wrapper.fill(f"scheduled: {j.schd}\nstarted: {j.start}\nended: {j.end}"))
+    ind = " " * 2
+    print(f"{ind}job {j.jid} ({j.cores} core(s))")
+    ind *= 2
+    for name, val in zip(["scheduled:", "started:", "ended:"], [j.schd, j.start, j.end]):
+        print(f"{ind}{name:>10} {val}")
 
 
 def print_list(servers: List[Server]):
@@ -38,20 +35,10 @@ def print_list(servers: List[Server]):
         print(f"{s.kind} {s.sid}")
         for j in s.jobs:
             print_job_as_list(j)
-        print()
         print("=" * WIDTH)
 
 
 print_list(get_servers(parser.parse_args().filename))
-
-# for s in servers:
-#     print(f"{s.kind} {s.sid}")
-#     print()
-#     for j in s.jobs:
-#         print(f"j{j.jid} s{j.start} e{j.end}", end=" ")
-#     print()
-#     print("|\n" * s.cores)
-#     print("=" * WIDTH)
 
 
 # https://stackoverflow.com/q/20756516/8031185
