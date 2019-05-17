@@ -7,8 +7,6 @@ import numpy as np
 from job import Job
 from server import get_servers, Server, get_servers_from_system
 
-WIDTH = 80
-
 
 # https://stackoverflow.com/a/11541450/8031185
 def is_valid_file(psr, arg):
@@ -27,6 +25,10 @@ parser.add_argument("-d", "--display", choices=display_choices, default="both",
                     help="choose displayed format, choices are: " + ", ".join(display_choices), metavar='')
 parser.add_argument("-s", "--system", type=lambda f: is_valid_file(parser, f), metavar="FILE",
                     help="name of system file")
+parser.add_argument("-w", "--width", type=int, default=80,
+                    help="width of graphical display")
+
+WIDTH = parser.parse_args().width
 
 
 def text_job(j: Job):
