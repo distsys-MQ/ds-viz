@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 
 from job import Job
-from server import get_servers, Server
+from server import get_servers, Server, get_servers_from_system
 
 WIDTH = 80
 
@@ -21,10 +21,12 @@ def is_valid_file(psr, arg):
 display_choices = ["graph", "text", "both"]
 
 parser = argparse.ArgumentParser(description="Visualises job scheduler logs")
-parser.add_argument("filename", type=lambda f: is_valid_file(parser, f),  metavar="FILE",
+parser.add_argument("filename", type=lambda f: is_valid_file(parser, f), metavar="FILE",
                     help="name of log file to visualise")
 parser.add_argument("-d", "--display", choices=display_choices, default="both",
                     help="choose displayed format, choices are: " + ", ".join(display_choices), metavar='')
+parser.add_argument("-s", "--system", type=lambda f: is_valid_file(parser, f), metavar="FILE",
+                    help="name of system file")
 
 
 def text_job(j: Job):
@@ -124,7 +126,10 @@ def print_both(servers: List[Server]):
         print('=' * WIDTH)
 
 
-svrs = get_servers(parser.parse_args().filename)
+if parser.parse_args().system is None:
+    svrs = get_servers(parser.parse_args().filename)
+else:
+    svrs = get_servers_from_system(parser.parse_args().filename, parser.parse_args().system)
 
 if parser.parse_args().display == "both":
     print_both(svrs)

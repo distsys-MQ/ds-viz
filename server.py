@@ -47,13 +47,14 @@ def make_servers(f: BinaryIO) -> List[Server]:
     return servers
 
 
-def get_servers_from_system() -> List[Server]:
+def get_servers_from_system(log: str, system: str) -> List[Server]:
     servers = []
 
-    for s in parse("system.xml").iter("server"):
+    for s in parse(system).iter("server"):
         for i in range(int(s.attrib["limit"])):
             servers.append(Server(s.attrib["type"], i, int(s.attrib["coreCount"])))
 
+    get_jobs(log, server_list_to_dict(servers))
     return servers
 
 
