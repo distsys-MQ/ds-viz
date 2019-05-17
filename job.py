@@ -72,3 +72,7 @@ def get_job_times(file: str, jobs: Dict[int, Job]):
                     jobs[jid].start = time
                 elif "COMPLETED" in msg:
                     jobs[jid].end = time
+
+
+def get_last_time(jobs: List) -> int:
+    return max(j.end for j in jobs)

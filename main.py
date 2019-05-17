@@ -3,7 +3,7 @@ import os
 from typing import List
 
 import timing  # TODO remove before submission
-from job import Job
+from job import Job, get_last_time
 from server import get_servers, Server
 
 WIDTH = 80
@@ -38,22 +38,41 @@ def print_vert(servers: List[Server]):
         print("=" * WIDTH)
 
 
-def print_job_graph(j: Job):
-    pass
+def norm(num: int, end: int) -> int:
+    return int(num / (end / WIDTH))
+
+
+def print_server_graph(s: Server) -> str:
+    res = "["
+    s_end = get_last_time(s.jobs)
+    next_starts = [j.start for j in s.jobs[1:]]
+    next_starts.append(WIDTH)
+    res += ' ' * norm(s.jobs[0].start - 2, s_end)
+
+    for j, ns in zip(s.jobs, next_starts):
+        pref = f"j{j.jid}"
+        res += pref
+        res += '/' * (norm(j.end - j.start, s_end) - (len(pref)))
+        res += ' ' * norm(ns - j.end, s_end)
+    res += "]"
+
+    return res
 
 
 def print_graph(servers: List[Server]):
     for s in servers:
         print(f"{s.kind} {s.sid}")
-        if s.cores == 1:
-            print("[{}]".format(" " * (WIDTH - 2)))
-        else:
-            print("┌{}┐".format(" " * (WIDTH - 2)))
-            for i in range(s.cores - 2):
-                print("│{}│".format(" " * (WIDTH - 2)))
-            print("└{}┘".format(" " * (WIDTH - 2)))
+        print(print_server_graph(s))
         print("=" * WIDTH)
 
+
+# if s.cores == 1:
+#     print("[{}]".format(" " * (WIDTH - 2)))
+# else:
+#     print("┌{}┐".format(" " * (WIDTH - 2)))
+#     for i in range(s.cores - 2):
+#         print("│{}│".format(" " * (WIDTH - 2)))
+#     print("└{}┘".format(" " * (WIDTH - 2)))
 
 print_graph(get_servers(parser.parse_args().filename))
 

@@ -1,15 +1,15 @@
 from typing import List, Dict, BinaryIO
 from xml.etree.ElementTree import parse
 
-from job import get_jobs
+from job import get_jobs, Job
 
 
 class Server:
     def __init__(self, kind: str, sid: int, cores: int):
-        self.kind = kind
-        self.sid = sid
-        self.cores = cores
-        self.jobs = []
+        self.kind: str = kind
+        self.sid: int = sid
+        self.cores: int = cores
+        self.jobs: List[Job] = []
 
 
 def get_servers(file: str) -> List[Server]:
