@@ -24,7 +24,7 @@ parser.add_argument("filename", help="name of log file to visualise", metavar="F
 
 
 def print_job_vert(j: Job):
-    ind = " " * 2
+    ind = ' ' * 2
     print(f"{ind}job {j.jid} ({j.cores} core(s))")
     ind *= 2
     for name, val in zip(["scheduled:", "started:", "ended:"], [j.schd, j.start, j.end]):
@@ -36,7 +36,12 @@ def print_vert(servers: List[Server]):
         print(f"{s.kind} {s.sid}")
         for j in s.jobs:
             print_job_vert(j)
-        print("=" * WIDTH)
+        print('=' * WIDTH)
+
+
+def multi_cat(*args):
+    return '\n'.join(''.join(i) for i in zip(*[s.split('\n') for s in args]))
+    # return '\n'.join(''.join(i) for i in zip(*map(str.split, args)))
 
 
 def norm(jobs: List[Job]) -> List[Job]:
@@ -44,56 +49,68 @@ def norm(jobs: List[Job]) -> List[Job]:
     arr = np.interp(arr, (arr.min(), arr.max()), (0, WIDTH - 2))
 
     return [Job(j.jid, j.cores, j.schd, start, end)
-            for (start, end), j in zip([(int(i), int(k))for (i, k) in arr], jobs)]
+            for (start, end), j in zip([(int(i), int(k)) for (i, k) in arr], jobs)]
 
 
-def make_graph_jobs(s: Server) -> str:
+def graph_jobs(s: Server) -> str:
     jobs = norm(s.jobs)
     next_starts = [j.start for j in jobs[1:]]
     next_starts.append(WIDTH - 2)
     res = ' ' * (jobs[0].start - 2)
     adjust = 0
 
-    for j, ns in zip(jobs, next_starts):
-        pref = f"j{j.jid}"
-        res += pref
-        time = j.end - j.start - len(pref)
+    for c in range(s.cores):
+        for j, ns in zip(jobs, next_starts):
+            pref = f"j{j.jid}"
 
-        if time <= 0:
-            adjust += 1
-        dif = time - adjust
+            if j.cores >= c + 1:
+                res += pref
+                time = j.end - j.start - len(pref)
 
-        if dif >= 0:
-            adjust = 0
-        else:
-            adjust = abs(adjust + dif)
+                if time <= 0:
+                    adjust += 1
+                dif = time - adjust
 
-        res += '/' * dif
-        res += ' ' * (ns - j.end)
+                if dif >= 0:
+                    adjust = 0
+                else:
+                    adjust = abs(adjust + dif)
+
+                res += '/' * dif
+                res += ' ' * (ns - j.end)
+            else:
+                res += ' ' * (ns - len(pref))
+        if c + 1 < s.cores:
+            res += '\n'
     return res
 
 
-def make_graph_server(s: Server) -> str:
-    return f"[{make_graph_jobs(s)}]"
+def graph_server(s: Server) -> str:
+    if s.cores == 1:
+        return f"[{graph_jobs(s)}]"
+    else:
+        start = '┌\n'
+        for i in range(s.cores - 2):
+            start += '|\n'
+        start += '└\n'
+        mid = graph_jobs(s)
+        end = '┐\n'
+        for i in range(s.cores - 2):
+            end += '|\n'
+        end += '┘\n'
+
+        return multi_cat(start, mid, end)
 
 
 def print_graph(servers: List[Server]):
     for s in servers:
         print(f"{s.kind} {s.sid}")
-        print(make_graph_server(s))
-        print("=" * WIDTH)
+        print(graph_server(s))
+        print('=' * WIDTH)
 
-
-# if s.cores == 1:
-#     print("[{}]".format(" " * (WIDTH - 2)))
-# else:
-#     print("┌{}┐".format(" " * (WIDTH - 2)))
-#     for i in range(s.cores - 2):
-#         print("│{}│".format(" " * (WIDTH - 2)))
-#     print("└{}┘".format(" " * (WIDTH - 2)))
 
 print_graph(get_servers(parser.parse_args().filename))
-
+# print_vert(get_servers(parser.parse_args().filename))
 
 # https://stackoverflow.com/q/20756516/8031185
 # https://stackoverflow.com/a/47614884/8031185
