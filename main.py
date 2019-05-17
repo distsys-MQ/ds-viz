@@ -39,30 +39,32 @@ def print_vert(servers: List[Server]):
 
 
 def norm(num: int, end: int) -> int:
-    return int(num / (end / WIDTH))
+    return int(num / int(end / WIDTH))
 
 
-def print_server_graph(s: Server) -> str:
-    res = "["
+def make_graph_jobs(s: Server) -> str:
     s_end = get_last_time(s.jobs)
     next_starts = [j.start for j in s.jobs[1:]]
     next_starts.append(WIDTH)
-    res += ' ' * norm(s.jobs[0].start - 2, s_end)
+    res = ' ' * norm(s.jobs[0].start - 2, s_end)
 
     for j, ns in zip(s.jobs, next_starts):
         pref = f"j{j.jid}"
         res += pref
         res += '/' * (norm(j.end - j.start, s_end) - (len(pref)))
         res += ' ' * norm(ns - j.end, s_end)
-    res += "]"
 
     return res
+
+
+def make_graph_server(s: Server) -> str:
+    return f"[{make_graph_jobs(s)}]"
 
 
 def print_graph(servers: List[Server]):
     for s in servers:
         print(f"{s.kind} {s.sid}")
-        print(print_server_graph(s))
+        print(make_graph_server(s))
         print("=" * WIDTH)
 
 
