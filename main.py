@@ -1,9 +1,9 @@
 import argparse
 import os
 from typing import List
+
 import numpy as np
 
-import timing  # TODO remove before submission
 from job import Job
 from server import get_servers, Server
 
@@ -18,30 +18,36 @@ def is_valid_file(psr, arg):
         return arg
 
 
+display_choices = ["graph", "text", "both"]
+
 parser = argparse.ArgumentParser(description="Visualises job scheduler logs")
-parser.add_argument("filename", help="name of log file to visualise", metavar="FILE",
-                    type=lambda f: is_valid_file(parser, f))
+parser.add_argument("filename", type=lambda f: is_valid_file(parser, f),  metavar="FILE",
+                    help="name of log file to visualise")
+parser.add_argument("-d", "--display", choices=display_choices, default="both",
+                    help="choose displayed format, choices are: " + ", ".join(display_choices), metavar='')
 
 
-def print_job_vert(j: Job):
+def text_job(j: Job):
     ind = ' ' * 2
-    print(f"{ind}job {j.jid} ({j.cores} core(s))")
+    res = f"{ind}job {j.jid} ({j.cores} core(s))\n"
     ind *= 2
+
     for name, val in zip(["scheduled:", "started:", "ended:"], [j.schd, j.start, j.end]):
-        print(f"{ind}{name:>10} {val}")
+        res += f"{ind}{name:>10} {val}\n"
+
+    return res
 
 
-def print_vert(servers: List[Server]):
+def print_text(servers: List[Server]):
     for s in servers:
         print(f"{s.kind} {s.sid}")
         for j in s.jobs:
-            print_job_vert(j)
+            print(text_job(j))
         print('=' * WIDTH)
 
 
-def multi_cat(*args):
+def multi_cat(*args: str) -> str:
     return '\n'.join(''.join(i) for i in zip(*[s.split('\n') for s in args]))
-    # return '\n'.join(''.join(i) for i in zip(*map(str.split, args)))
 
 
 def norm(jobs: List[Job]) -> List[Job]:
@@ -109,9 +115,20 @@ def print_graph(servers: List[Server]):
         print('=' * WIDTH)
 
 
-print_graph(get_servers(parser.parse_args().filename))
-# print_vert(get_servers(parser.parse_args().filename))
+def print_both(servers: List[Server]):
+    for s in servers:
+        print(f"{s.kind} {s.sid}")
+        print(graph_server(s) + '\n')
+        for j in s.jobs:
+            print(text_job(j))
+        print('=' * WIDTH)
 
-# https://stackoverflow.com/q/20756516/8031185
-# https://stackoverflow.com/a/47614884/8031185
-# https://stackoverflow.com/q/35381065/8031185
+
+svrs = get_servers(parser.parse_args().filename)
+
+if parser.parse_args().display == "both":
+    print_both(svrs)
+elif parser.parse_args().display == "text":
+    print_text(svrs)
+elif parser.parse_args().display == "graph":
+    print_graph(svrs)
