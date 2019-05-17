@@ -1,9 +1,10 @@
 import argparse
 import os
 from typing import List
+import numpy as np
 
 import timing  # TODO remove before submission
-from job import Job, get_last_time
+from job import Job
 from server import get_servers, Server
 
 WIDTH = 80
@@ -38,22 +39,37 @@ def print_vert(servers: List[Server]):
         print("=" * WIDTH)
 
 
-def norm(num: int, end: int) -> int:
-    return int(num / int(end / WIDTH))
+def norm(jobs: List[Job]) -> List[Job]:
+    arr = np.array([(j.start, j.end) for j in jobs])
+    arr = np.interp(arr, (arr.min(), arr.max()), (0, WIDTH - 2))
+
+    return [Job(j.jid, j.cores, j.schd, start, end)
+            for (start, end), j in zip([(int(i), int(k))for (i, k) in arr], jobs)]
 
 
 def make_graph_jobs(s: Server) -> str:
-    s_end = get_last_time(s.jobs)
-    next_starts = [j.start for j in s.jobs[1:]]
-    next_starts.append(WIDTH)
-    res = ' ' * norm(s.jobs[0].start - 2, s_end)
+    jobs = norm(s.jobs)
+    next_starts = [j.start for j in jobs[1:]]
+    next_starts.append(WIDTH - 2)
+    res = ' ' * (jobs[0].start - 2)
+    adjust = 0
 
-    for j, ns in zip(s.jobs, next_starts):
+    for j, ns in zip(jobs, next_starts):
         pref = f"j{j.jid}"
         res += pref
-        res += '/' * (norm(j.end - j.start, s_end) - (len(pref)))
-        res += ' ' * norm(ns - j.end, s_end)
+        time = j.end - j.start - len(pref)
 
+        if time <= 0:
+            adjust += 1
+        dif = time - adjust
+
+        if dif >= 0:
+            adjust = 0
+        else:
+            adjust = abs(adjust + dif)
+
+        res += '/' * dif
+        res += ' ' * (ns - j.end)
     return res
 
 

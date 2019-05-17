@@ -7,12 +7,12 @@ if TYPE_CHECKING:
 
 
 class Job:
-    def __init__(self, jid: int, cores: int):
+    def __init__(self, jid: int, cores: int, schd: int = None, start: int = None, end: int = None):
         self.jid = jid
         self.cores = cores
-        self.schd = None
-        self.start = None
-        self.end = None
+        self.schd = schd
+        self.start = start
+        self.end = end
 
 
 def get_jobs(file: str, servers: Dict[str, Dict[int, Server]]) -> List[Job]:
@@ -72,7 +72,3 @@ def get_job_times(file: str, jobs: Dict[int, Job]):
                     jobs[jid].start = time
                 elif "COMPLETED" in msg:
                     jobs[jid].end = time
-
-
-def get_last_time(jobs: List) -> int:
-    return max(j.end for j in jobs)
