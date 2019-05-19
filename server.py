@@ -1,15 +1,15 @@
 from typing import List, Dict, BinaryIO
 from xml.etree.ElementTree import parse
 
-from job import get_jobs, Job
+from job import get_jobs
 
 
 class Server:
     def __init__(self, kind: str, sid: int, cores: int):
-        self.kind: str = kind
-        self.sid: int = sid
-        self.cores: int = cores
-        self.jobs: List[Job] = []
+        self.kind = kind
+        self.sid = sid
+        self.cores = cores
+        self.jobs = []
 
 
 def get_servers(file: str) -> List[Server]:
@@ -59,7 +59,7 @@ def get_servers_from_system(log: str, system: str) -> List[Server]:
 
 
 def server_list_to_dict(servers: List[Server]) -> Dict[str, Dict[int, Server]]:
-    s_dict: Dict[str, Dict[int, Server]] = {}
+    s_dict = {}
 
     for s in servers:
         if s.kind not in s_dict:
