@@ -11,6 +11,11 @@
     algorithms such as 'AllToLargest' where it is unnecessary for the client to request server information.
     This option is also required for when server logs are produced without using the `-v all` option.
     
+- The following example will produce a visualisation of the server log saved in `serverOut.log`, using the
+system information from `system.xml`. It will only create a graphical view with a width set to 100 columns.
+
+    `python3 ./main.py ./serverOut.log -s ./system.xml -d graph -w 100`
+
 - The graphical output shows each server core as a line. A job starts its execution at the point specified
 by its ID, prefixed with 'j'. The execution time of a job is represented by forward slashes ('/'), a job
 completes at the last forward slash.
