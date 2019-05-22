@@ -1,9 +1,12 @@
 - Python 3.5 (or above) is required to run this program.
 - Ensure that pip3 is installed with `sudo apt install python3-pip`
 - Install required packages with `pip3 install -r ./requirements.txt`
+- Create a server log file by redirecting the server output to a file. For example, start the server with
+`./ds-server -c config_simple1.xml -v all > serverOut.log` and run your client. The output from the server
+will be saved in `serverOut.log` which can then be visualised by using this program.
 - Usage instructions (also provided with `python3 ./main.py -h`):
 
-    - `python3 ./main.py filename` to visualise the contents of `filename`.
+    - `python3 ./main.py filename` to visualise the contents of a server log file named `filename`.
     - `-d [graph|text|both]` to specify graphical output, textual output, or both. Default is 'both'.
     - `-w [num]` to specify the width of the graphical display in as 'num' columns. Default is 80.
     - `-s filename` to specify a `system.xml` to use for server information in cases where it would be
