@@ -55,6 +55,9 @@ def multi_cat(*args: str) -> str:
 
 
 def norm(jobs: List[Job]) -> List[Job]:
+    if not jobs:
+        return []
+
     arr = np.array([(j.start, j.end) for j in jobs])
     arr = np.interp(arr, (arr.min(), arr.max()), (0, WIDTH - 2))
 
@@ -66,14 +69,19 @@ def graph_jobs(s: Server) -> str:
     jobs = norm(s.jobs)
     next_starts = [j.start for j in jobs[1:]]
     next_starts.append(WIDTH - 2)
-    res = ' ' * (jobs[0].start - 2)
+
+    if jobs:
+        res = ' ' * (jobs[0].start - 2)
+    else:
+        return (' ' * (WIDTH - 2) + '\n') * s.cores
+
     adjust = 0
 
-    for c in range(s.cores):
+    for c in range(1, s.cores + 1):
         for j, ns in zip(jobs, next_starts):
             pref = "j{}".format(j.jid)
 
-            if j.cores >= c + 1:
+            if j.cores >= c:
                 res += pref
                 time = j.end - j.start - len(pref)
 
@@ -90,7 +98,7 @@ def graph_jobs(s: Server) -> str:
                 res += ' ' * (ns - j.end)
             else:
                 res += ' ' * (ns - len(pref))
-        if c + 1 < s.cores:
+        if c < s.cores:
             res += '\n'
     return res
 
