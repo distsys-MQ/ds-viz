@@ -73,5 +73,7 @@ def server_list_to_dict(servers: List[Server]) -> Dict[str, Dict[int, Server]]:
 def get_results(file: str) -> str:
     with open(file, 'r') as f:
         for line in f:  # Could be more efficient if read from the end of file
-            if "SENT QUIT" in line:
-                return ''.join(f.readlines())
+            if "RCVD QUIT" in line:
+                for l in f:
+                    if l[0] == '#':
+                        return ''.join(f.readlines())
