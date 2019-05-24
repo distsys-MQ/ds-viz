@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 
 from job import Job
-from server import get_servers, Server, get_servers_from_system
+from server import get_servers, Server, get_servers_from_system, get_results
 
 
 # https://stackoverflow.com/a/11541450/8031185
@@ -147,3 +147,5 @@ elif parser.parse_args().display == "text":
     print_text(svrs)
 elif parser.parse_args().display == "graph":
     print_graph(svrs)
+
+print(get_results(parser.parse_args().filename))

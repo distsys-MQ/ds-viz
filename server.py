@@ -68,3 +68,10 @@ def server_list_to_dict(servers: List[Server]) -> Dict[str, Dict[int, Server]]:
         s_dict[s.kind][s.sid] = s
 
     return s_dict
+
+
+def get_results(file: str) -> str:
+    with open(file, 'r') as f:
+        for line in f:  # Could be more efficient if read from the end of file
+            if "SENT QUIT" in line:
+                return ''.join(f.readlines())
