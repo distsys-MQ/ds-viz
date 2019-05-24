@@ -65,6 +65,13 @@ def norm(jobs: List[Job]) -> List[Job]:
             for (start, end), j in zip([(int(i), int(k)) for (i, k) in arr], jobs)]
 
 
+def graph_empty_server(cores: int) -> str:
+    if cores == 1:
+        return ' ' * (WIDTH - 2)
+    else:
+        return (' ' * (WIDTH - 2) + '\n') * cores
+
+
 def graph_jobs(s: Server) -> str:
     jobs = norm(s.jobs)
     next_starts = [j.start for j in jobs[1:]]
@@ -73,7 +80,7 @@ def graph_jobs(s: Server) -> str:
     if jobs:
         res = ' ' * (jobs[0].start - 2)
     else:
-        return (' ' * (WIDTH - 2) + '\n') * s.cores
+        return graph_empty_server(s.cores)
 
     adjust = 0
 
