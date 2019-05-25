@@ -1,6 +1,6 @@
-import argparse
 import os
 from typing import List
+from argparse import ArgumentParser
 
 import numpy as np
 
@@ -9,7 +9,7 @@ from server import get_servers, Server, get_servers_from_system, get_results
 
 
 # https://stackoverflow.com/a/11541450/8031185
-def is_valid_file(psr, arg):
+def is_valid_file(psr: ArgumentParser, arg: str) -> str:
     if not os.path.isfile(arg):
         psr.error("The file '{}' does not exist!".format(arg))
     else:
@@ -18,7 +18,7 @@ def is_valid_file(psr, arg):
 
 display_choices = ["graph", "text", "both"]
 
-parser = argparse.ArgumentParser(description="Visualises job scheduler logs")
+parser = ArgumentParser(description="Visualises job scheduler logs")
 parser.add_argument("filename", type=lambda f: is_valid_file(parser, f), metavar="FILE",
                     help="name of log file to visualise")
 parser.add_argument("-d", "--display", choices=display_choices, default="both",
