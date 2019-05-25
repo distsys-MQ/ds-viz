@@ -1,8 +1,6 @@
 import argparse
 import os
 
-import numpy as np
-
 from server import get_servers, get_servers_from_system
 
 
@@ -26,11 +24,13 @@ if parser.parse_args().system is None:
 else:
     servers = get_servers_from_system(parser.parse_args().filename, parser.parse_args().system)
 
-job_lists = []
-for s in servers:
-    job_lists.append(np.array([(j.jid, j.schd, j.start, j.end) for j in s.jobs]))
+jobs = [j for s in servers for j in s.jobs]
 
-for jobs in job_lists:
-    for j in jobs:
-        if None in j:
-            print("Job {}:\n  schd: {}\n  start: {}\n  end: {}".format(j[0], j[1], j[2], j[3]))
+
+def has_empty(job):
+    return job.schd is None or job.start is None or job.end is None
+
+
+for j in jobs:
+    if has_empty(j):
+        print("Job {}:\n  schd: {}\n  start: {}\n  end: {}".format(j.jid, j.schd, j.start, j.end))
