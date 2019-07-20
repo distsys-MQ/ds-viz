@@ -6,11 +6,11 @@ import PySimpleGUI as pSG
 from job import Job
 from server import get_servers_from_system
 
-svrs = get_servers_from_system("config100.xml.your.log", "config100.xml")
+servers = get_servers_from_system("config100.xml.your.log", "config100.xml")
 
 l_width = 5
 width = 1200
-height = len(svrs) * l_width * 2.5
+height = sum([s.cores for s in servers]) * l_width
 w_width = 1300
 w_height = 760
 margin = 30
@@ -22,7 +22,7 @@ column = [
 ]
 
 layout = [
-    [pSG.Column(column, size=(w_width, w_height - 22), scrollable=True, vertical_scroll_only=True,
+    [pSG.Column(column, size=(w_width, height), scrollable=True, vertical_scroll_only=True,
                 background_color="whitesmoke")]
 ]
 
@@ -43,12 +43,22 @@ def norm(jobs: List[Job]) -> List[Job]:
 
 
 def draw():
-    for i, s in enumerate(svrs):
-        y = height - margin - l_width * 2 * i
+    top = height - margin
+    last = top
+
+    for i, s in enumerate(servers):
+        offset = s.cores * l_width + l_width
+        y = last - offset
         graph.DrawText("{} {}".format(s.kind, s.sid), (margin, y))
 
+        if len(s.jobs) == 0:
+            last -= s.cores * l_width + l_width
+
         for j in norm(s.jobs):
-            graph.DrawLine((j.start + margin, y), (j.end, y), width=l_width)
+            for k in range(j.cores):
+                j_y = y + k * l_width
+                last = min(last, j_y)
+                graph.DrawLine((j.start + margin, j_y), (j.end, j_y), width=l_width)
 
 
 draw()
