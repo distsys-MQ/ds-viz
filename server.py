@@ -2,6 +2,7 @@ from typing import List, Dict, BinaryIO
 from xml.etree.ElementTree import parse
 
 from job import get_jobs
+from server_failure import ServerFailure, get_failures
 
 
 class Server:
@@ -10,6 +11,7 @@ class Server:
         self.sid = sid
         self.cores = cores
         self.jobs = []
+        self.failures: List[ServerFailure] = []
 
 
 def get_servers(file: str) -> List[Server]:
@@ -19,7 +21,9 @@ def get_servers(file: str) -> List[Server]:
 
             if b"RESC All" in line:
                 servers = make_servers(f)
-                get_jobs(file, server_list_to_dict(servers))
+                s_dict = server_list_to_dict(servers)
+                get_jobs(file, s_dict)
+                get_failures(file, s_dict)
 
                 return servers
 
@@ -47,14 +51,17 @@ def make_servers(f: BinaryIO) -> List[Server]:
     return servers
 
 
-def get_servers_from_system(log: str, system: str) -> List[Server]:
+def get_servers_from_system(file: str, system: str) -> List[Server]:
     servers = []
 
     for s in parse(system).iter("server"):
         for i in range(int(s.attrib["limit"])):
             servers.append(Server(s.attrib["type"], i, int(s.attrib["coreCount"])))
 
-    get_jobs(log, server_list_to_dict(servers))
+    s_dict = server_list_to_dict(servers)
+    get_jobs(file, s_dict)
+    get_failures(file, s_dict)
+
     return servers
 
 

@@ -5,8 +5,9 @@ import PySimpleGUI as pSG
 
 from job import Job
 from server import get_servers_from_system
+from server_failure import ServerFailure
 
-servers = get_servers_from_system("config100.xml.your.log", "config100.xml")
+servers = get_servers_from_system("bf-100.txt", "fail-free-config100.xml")
 
 l_width = 5
 width = 1200
@@ -31,7 +32,7 @@ window.Finalize()
 graph = window.Element("graph")
 
 
-def norm(jobs: List[Job]) -> List[Job]:
+def norm_jobs(jobs: List[Job]) -> List[Job]:
     if not jobs:
         return []
 
@@ -40,6 +41,16 @@ def norm(jobs: List[Job]) -> List[Job]:
 
     return [Job(j.jid, j.cores, j.schd, start, end)
             for (start, end), j in zip([(int(i), int(k)) for (i, k) in arr], jobs)]
+
+
+def norm_failures(failures: List[ServerFailure]) -> List[ServerFailure]:
+    if not failures:
+        return []
+
+    arr = np.array([(f.fail, f.recover) for f in failures])
+    arr = np.interp(arr, (0, end_time), (margin * 2, width - margin))
+
+    return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
 
 def draw():
@@ -54,11 +65,15 @@ def draw():
         if len(s.jobs) == 0:
             last -= s.cores * l_width + l_width
 
-        for j in norm(s.jobs):
+        for j in norm_jobs(s.jobs):
             for k in range(j.cores):
                 j_y = y + k * l_width
                 last = min(last, j_y)
                 graph.DrawLine((j.start + margin, j_y), (j.end, j_y), width=l_width)
+
+        for f in norm_failures(s.failures):
+            f_y = y - 2
+            graph.DrawRectangle((f.fail, f_y), (f.recover, f_y + s.cores * l_width), fill_color="red", line_color="red")
 
 
 draw()
