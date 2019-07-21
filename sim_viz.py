@@ -34,7 +34,7 @@ def norm_jobs(jobs: List[Job]) -> List[Job]:
     arr = np.array([(j.start, j.end) for j in jobs])
     arr = np.interp(arr, (0, last_time), (x_offset, width - margin))
 
-    return [Job(j.jid, j.cores, j.schd, start, end)
+    return [Job(j.jid, j.cores, j.schd, start, end, j.failed)
             for (start, end), j in zip([(int(i), int(k)) for (i, k) in arr], jobs)]
 
 
@@ -60,11 +60,14 @@ def draw():
         if len(s.jobs) == 0:
             last -= s.cores * l_width + l_width
 
+        # TODO Draw job-used cores at specific server core heights, eg. 1-core job and 2-core job should make a 3
+        #  core high line
         for job in norm_jobs(s.jobs):
             for k in range(job.cores):
                 job_y = y + k * l_width
                 last = min(last, job_y)
-                graph.DrawLine((job.start + margin, job_y), (job.end, job_y), width=l_width)
+                colour = "blue" if job.failed else "black"
+                graph.DrawLine((job.start + margin, job_y), (job.end, job_y), width=l_width, color=colour)
 
         for fail in norm_server_failures(s.failures):
             fail_y = y - 2

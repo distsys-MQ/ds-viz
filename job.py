@@ -2,12 +2,13 @@ from typing import Dict, List, BinaryIO
 
 
 class Job:
-    def __init__(self, jid: int, cores: int, schd: int = None, start: int = None, end: int = None):
+    def __init__(self, jid: int, cores: int, schd: int = None, start: int = None, end: int = None, fail: bool = False):
         self.jid = jid
         self.cores = cores
         self.schd = schd
         self.start = start
         self.end = end
+        self.failed = fail
 
 
 def get_jobs(log: str, servers) -> List[Job]:
@@ -17,7 +18,7 @@ def get_jobs(log: str, servers) -> List[Job]:
         while True:
             line = f.readline()
 
-            if b"JOBN" in line:
+            if b"JOB" in line:
                 f.seek(-len(line), 1)
                 jobs.append(make_job(f, servers))
 
@@ -31,6 +32,7 @@ def make_job(f: BinaryIO, servers) -> Job:
     msg = f.readline().decode("utf-8").split()
     schd = int(msg[2])
     cores = int(msg[5])
+    failed = True if msg[1] == "JOBF" else False
 
     while True:
         line = f.readline()
@@ -38,6 +40,7 @@ def make_job(f: BinaryIO, servers) -> Job:
         if b"SCHD" in line:
             msg = line.decode("utf-8").split()
             job = Job(int(msg[2]), cores, schd)
+            job.failed = failed
             get_job_times(f.name, f.tell(), job)
 
             server = servers[msg[3]][int(msg[4])]
@@ -60,8 +63,21 @@ def get_job_times(log: str, pos: int, job: Job):
         while True:
             line = f.readline().decode("utf-8")
 
+            if not line:
+                break
+
+            msg = line.split()
+
+            if msg[1] == "JOBF" and int(msg[3]) == job.jid:
+                job.failed = True
+                job.end = time
+
+                if job.start is None:
+                    job.start = time
+
+                break
+
             if line.startswith("t:", 0, 2):
-                msg = line.split()
                 jid = int(msg[3])
                 time = int(msg[1])
 
@@ -71,6 +87,3 @@ def get_job_times(log: str, pos: int, job: Job):
                     elif "COMPLETED" in msg:
                         job.end = time
                         break
-
-            if not line:
-                break
