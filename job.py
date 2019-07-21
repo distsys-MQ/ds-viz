@@ -1,3 +1,4 @@
+from os.path import basename
 from typing import Dict, List, BinaryIO
 
 
@@ -24,7 +25,6 @@ def get_jobs(file: str, servers) -> List[Job]:
             if not line:
                 break
 
-    get_job_times(file, job_list_to_dict(jobs))
     return jobs
 
 
@@ -38,6 +38,8 @@ def make_job(f: BinaryIO, servers) -> Job:
         if b"SCHD" in line:
             msg = line.decode("utf-8").split()
             job = Job(int(msg[2]), cores)
+            get_job_times(basename(f.name), f.tell(), job)
+
             server = servers[msg[3]][int(msg[4])]
             server.jobs.append(job)
 
@@ -51,19 +53,26 @@ def job_list_to_dict(jobs: List[Job]) -> Dict[int, Job]:
     return {j.jid: j for j in jobs}
 
 
-def get_job_times(file: str, jobs: Dict[int, Job]):
-    with open(file, "r") as f:
-        for line in f:
+def get_job_times(file: str, pos: int, job: Job):
+    with open(file, "rb") as f:
+        f.seek(pos, 0)
+
+        while True:
+            line = f.readline().decode("utf-8")
+
             if line.startswith("t:", 0, 2):
                 msg = line.split()
                 jid = int(msg[3])
                 time = int(msg[1])
 
-                # TODO try replacing with a dictionary
-                #  https://docs.quantifiedcode.com/python-anti-patterns/readability/not_using_if_to_switch.html
-                if "SCHEDULED" in msg:
-                    jobs[jid].schd = time
-                elif "RUNNING" in msg:
-                    jobs[jid].start = time
-                elif "COMPLETED" in msg:
-                    jobs[jid].end = time
+                if job.jid == jid:
+                    if "SCHEDULED" in msg:
+                        job.schd = time
+                    elif "RUNNING" in msg:
+                        job.start = time
+                    elif "COMPLETED" in msg:
+                        job.end = time
+                        break
+
+            if not line:
+                break
