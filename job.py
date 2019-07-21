@@ -29,6 +29,7 @@ def get_jobs(log: str, servers) -> List[Job]:
 
 def make_job(f: BinaryIO, servers) -> Job:
     msg = f.readline().decode("utf-8").split()
+    schd = int(msg[2])
     cores = int(msg[5])
 
     while True:
@@ -36,7 +37,7 @@ def make_job(f: BinaryIO, servers) -> Job:
 
         if b"SCHD" in line:
             msg = line.decode("utf-8").split()
-            job = Job(int(msg[2]), cores)
+            job = Job(int(msg[2]), cores, schd)
             get_job_times(f.name, f.tell(), job)
 
             server = servers[msg[3]][int(msg[4])]
@@ -65,9 +66,7 @@ def get_job_times(log: str, pos: int, job: Job):
                 time = int(msg[1])
 
                 if job.jid == jid:
-                    if "SCHEDULED" in msg:
-                        job.schd = time
-                    elif "RUNNING" in msg:
+                    if "RUNNING" in msg:
                         job.start = time
                     elif "COMPLETED" in msg:
                         job.end = time
