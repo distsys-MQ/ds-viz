@@ -1,9 +1,7 @@
-import os
 import sys
 from typing import Dict
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class Job:
@@ -12,10 +10,10 @@ class Job:
         self.failures = 0
 
 
-def get_jobs(file: str) -> Dict[int, Job]:
+def get_jobs(log: str) -> Dict[int, Job]:
     jobs = {}
 
-    with open(file, "rb") as f:
+    with open(log, "rb") as f:
         while True:
             line = f.readline()
 
@@ -58,6 +56,7 @@ for i in range(1, max(recurrence_counts.keys())):
     if i not in recurrence_counts.keys():
         recurrence_counts[i] = 0
 
+
 # recurrence_counts = [i for _, i in sorted(recurrence_counts.items())]
 
 
@@ -67,4 +66,3 @@ def print_dict(d):
 
 
 print_dict(recurrence_counts)
-

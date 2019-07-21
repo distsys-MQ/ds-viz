@@ -1,11 +1,15 @@
 from typing import List, Dict, BinaryIO
 from xml.etree.ElementTree import parse
 
+from file_read_backwards import FileReadBackwards
+
 from job import get_jobs
 from server_failure import ServerFailure, get_failures
 
 
 class Server:
+    last_time = None
+
     def __init__(self, kind: str, sid: int, cores: int):
         self.kind = kind
         self.sid = sid
@@ -14,16 +18,16 @@ class Server:
         self.failures: List[ServerFailure] = []
 
 
-def get_servers(file: str) -> List[Server]:
-    with open(file, "rb") as f:
+def get_servers(log: str) -> List[Server]:
+    with open(log, "rb") as f:
         while True:
             line = f.readline()
 
             if b"RESC All" in line:
                 servers = make_servers(f)
                 s_dict = server_list_to_dict(servers)
-                get_jobs(file, s_dict)
-                get_failures(file, s_dict)
+                get_jobs(log, s_dict)
+                get_failures(log, s_dict, Server.last_time)
 
                 return servers
 
@@ -51,7 +55,8 @@ def make_servers(f: BinaryIO) -> List[Server]:
     return servers
 
 
-def get_servers_from_system(file: str, system: str) -> List[Server]:
+def get_servers_from_system(log: str, system: str) -> List[Server]:
+    last_time = get_last_time(log, system)
     servers = []
 
     for s in parse(system).iter("server"):
@@ -59,8 +64,8 @@ def get_servers_from_system(file: str, system: str) -> List[Server]:
             servers.append(Server(s.attrib["type"], i, int(s.attrib["coreCount"])))
 
     s_dict = server_list_to_dict(servers)
-    get_jobs(file, s_dict)
-    get_failures(file, s_dict)
+    get_jobs(log, s_dict)
+    get_failures(log, s_dict, last_time)
 
     return servers
 
@@ -77,10 +82,34 @@ def server_list_to_dict(servers: List[Server]) -> Dict[str, Dict[int, Server]]:
     return s_dict
 
 
-def get_results(file: str) -> str:
-    with open(file, 'r') as f:
+def get_results(log: str) -> str:
+    with open(log, 'r') as f:
         for line in f:  # Could be more efficient if read from the end of file
             if "RCVD QUIT" in line:
                 for l in f:
                     if l[0] == '#':
                         return ''.join(f.readlines())
+
+
+def get_end_time(system: str) -> int:
+    root = parse(system).getroot()
+    term = next(filter(lambda node: "endtime" == node.get("type"), root.find("termination").findall("condition")))
+    return int(term.get("value"))
+
+
+def get_last_job_time(log: str) -> int:
+    with FileReadBackwards(log, encoding="utf-8") as f:
+        while True:
+            line = f.readline()
+
+            if line.startswith("t:", 0, 2):
+                return int(line.split()[1])
+
+
+def get_last_time(log: str, system: str) -> int:
+    end_time = get_end_time(system)
+    last_job_time = get_last_job_time(log)
+
+    last_time = max(end_time, last_job_time)
+    Server.last_time = last_time
+    return last_time

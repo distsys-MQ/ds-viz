@@ -1,4 +1,3 @@
-from os.path import basename
 from typing import Dict, List, BinaryIO
 
 
@@ -11,10 +10,10 @@ class Job:
         self.end = end
 
 
-def get_jobs(file: str, servers) -> List[Job]:
+def get_jobs(log: str, servers) -> List[Job]:
     jobs = []
 
-    with open(file, "rb") as f:
+    with open(log, "rb") as f:
         while True:
             line = f.readline()
 
@@ -53,8 +52,8 @@ def job_list_to_dict(jobs: List[Job]) -> Dict[int, Job]:
     return {j.jid: j for j in jobs}
 
 
-def get_job_times(file: str, pos: int, job: Job):
-    with open(file, "rb") as f:
+def get_job_times(log: str, pos: int, job: Job):
+    with open(log, "rb") as f:
         f.seek(pos, 0)
 
         while True:

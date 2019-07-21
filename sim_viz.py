@@ -4,16 +4,16 @@ import numpy as np
 import PySimpleGUI as pSG
 
 from job import Job
-from server import get_servers_from_system
+from server import Server, get_servers_from_system
 from server_failure import ServerFailure
 
-servers = get_servers_from_system("bf-100.txt", "fail-free-config100.xml")
+servers = get_servers_from_system("./logs/personal-config6-fail.xml.your.log", "./configs/personal-config6.xml")
 
 l_width = 5
 width = 1200
-height = sum([s.cores for s in servers]) * l_width
+height = int(sum([s.cores for s in servers]) * l_width * 3)
 margin = 30
-end_time = 86400
+last_time = Server.last_time
 x_offset = margin * 2
 
 column = [
@@ -22,7 +22,7 @@ column = [
 layout = [
     [pSG.Column(column, scrollable=True, vertical_scroll_only=True, background_color="whitesmoke")]
 ]
-window = pSG.Window("sim-viz", layout, background_color="whitesmoke", resizable=True)
+window = pSG.Window("sim-viz", layout, size=(width + 60, height), background_color="whitesmoke", resizable=True)
 window.Finalize()
 graph = window.Element("graph")
 
@@ -32,7 +32,7 @@ def norm_jobs(jobs: List[Job]) -> List[Job]:
         return []
 
     arr = np.array([(j.start, j.end) for j in jobs])
-    arr = np.interp(arr, (0, end_time), (x_offset, width - margin))
+    arr = np.interp(arr, (0, last_time), (x_offset, width - margin))
 
     return [Job(j.jid, j.cores, j.schd, start, end)
             for (start, end), j in zip([(int(i), int(k)) for (i, k) in arr], jobs)]
@@ -43,7 +43,7 @@ def norm_server_failures(failures: List[ServerFailure]) -> List[ServerFailure]:
         return []
 
     arr = np.array([(f.fail, f.recover) for f in failures])
-    arr = np.interp(arr, (0, end_time), (x_offset, width - margin))
+    arr = np.interp(arr, (0, last_time), (x_offset, width - margin))
 
     return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
