@@ -38,7 +38,7 @@ def make_job(f: BinaryIO, servers) -> Job:
         if b"SCHD" in line:
             msg = line.decode("utf-8").split()
             job = Job(int(msg[2]), cores)
-            get_job_times(basename(f.name), f.tell(), job)
+            get_job_times(f.name, f.tell(), job)
 
             server = servers[msg[3]][int(msg[4])]
             server.jobs.append(job)
