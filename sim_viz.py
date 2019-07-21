@@ -13,21 +13,17 @@ servers = get_servers_from_system("bf-100.txt", "fail-free-config100.xml")
 l_width = 5
 width = 1200
 height = sum([s.cores for s in servers]) * l_width
-w_width = 1300
-w_height = 760
 margin = 30
 end_time = 86400
+x_offset = margin * 2
 
 column = [
-    [pSG.Graph(canvas_size=(w_width, height), graph_bottom_left=(0, 0), graph_top_right=(w_width, height), key="graph")]
+    [pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height), key="graph")]
 ]
-
 layout = [
-    [pSG.Column(column, size=(w_width, height), scrollable=True, vertical_scroll_only=True,
-                background_color="whitesmoke")]
+    [pSG.Column(column, scrollable=True, vertical_scroll_only=True, background_color="whitesmoke")]
 ]
-
-window = pSG.Window("sim-viz", layout, size=(w_width, w_height), background_color="whitesmoke", resizable=True)
+window = pSG.Window("sim-viz", layout, background_color="whitesmoke", resizable=True)
 window.Finalize()
 graph = window.Element("graph")
 
@@ -37,7 +33,7 @@ def norm_jobs(jobs: List[Job]) -> List[Job]:
         return []
 
     arr = np.array([(j.start, j.end) for j in jobs])
-    arr = np.interp(arr, (0, end_time), (margin * 2, width - margin))
+    arr = np.interp(arr, (0, end_time), (x_offset, width - margin))
 
     return [Job(j.jid, j.cores, j.schd, start, end, j.failures)
             for (start, end), j in zip([(int(i), int(k)) for (i, k) in arr], jobs)]
@@ -52,7 +48,7 @@ def norm_job_failures(failures: List[JobFailure]) -> List[JobFailure]:
             print(f"{jf.s_kind} {jf.sid} {jf.reschd}")
 
     arr = np.array([jf.start for jf in failures])
-    arr = np.interp(arr, (0, end_time), (margin * 2, width - margin))
+    arr = np.interp(arr, (0, end_time), (x_offset, width - margin))
 
     return [JobFailure(jf.reschd, start, jf.s_kind, jf.sid) for start, jf in zip([int(r) for r in arr], failures)]
 
@@ -62,7 +58,7 @@ def norm_server_failures(failures: List[ServerFailure]) -> List[ServerFailure]:
         return []
 
     arr = np.array([(f.fail, f.recover) for f in failures])
-    arr = np.interp(arr, (0, end_time), (margin * 2, width - margin))
+    arr = np.interp(arr, (0, end_time), (x_offset, width - margin))
 
     return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
