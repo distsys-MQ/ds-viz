@@ -6,7 +6,7 @@ import numpy as np
 import PySimpleGUI as pSG
 
 from job import Job
-from server import Server, get_servers_from_system
+from server import Server, get_servers_from_system, get_results
 from server_failure import ServerFailure
 
 
@@ -39,7 +39,9 @@ layout = [
     [pSG.Column(column, scrollable=True, vertical_scroll_only=True, background_color="whitesmoke")]
 ]
 window = pSG.Window("sim-viz", layout, size=(width + 60, height), background_color="whitesmoke", resizable=True)
+window2 = pSG.Window("details", [[pSG.Text(get_results(args.log))]], background_color="whitesmoke", resizable=True)
 window.Finalize()
+window2.Finalize()
 graph = window.Element("graph")
 
 
