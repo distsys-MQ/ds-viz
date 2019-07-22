@@ -27,7 +27,7 @@ servers = get_servers_from_system(args.log, args.config)
 
 l_width = 5
 width = 1200
-height = int(sum([s.cores for s in servers]) * l_width * 3)
+height = sum([s.cores for s in servers]) * l_width * 2
 margin = 30
 last_time = Server.last_time
 x_offset = margin * 2
@@ -36,7 +36,7 @@ column = [
     [pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height), key="graph")]
 ]
 layout = [
-    [pSG.Column(column, scrollable=True, vertical_scroll_only=True, background_color="whitesmoke")]
+    [pSG.Column(column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
 window = pSG.Window("sim-viz", layout, size=(width + 60, height), background_color="whitesmoke", resizable=True)
 window2 = pSG.Window("details", [[pSG.Text(get_results(args.log))]], background_color="whitesmoke", resizable=True)
@@ -51,9 +51,13 @@ def norm_jobs(jobs: List[Job]) -> List[Job]:
 
     arr = np.array([(j.start, j.end) for j in jobs])
     arr = np.interp(arr, (margin, last_time), (x_offset, width - margin))
+    res = [j.copy() for j in jobs]
 
-    return [Job(j.jid, j.cores, j.schd, start, end, j.failed)
-            for (start, end), j in zip([(int(i), int(k)) for (i, k) in arr], jobs)]
+    for (start, end), j in zip(arr, res):
+        j.start = int(start)
+        j.end = int(end)
+
+    return res
 
 
 def norm_server_failures(failures: List[ServerFailure]) -> List[ServerFailure]:

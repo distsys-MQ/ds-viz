@@ -61,9 +61,13 @@ def norm(jobs: List[Job]) -> List[Job]:
 
     arr = np.array([(j.start, j.end) for j in jobs])
     arr = np.interp(arr, (arr.min(), arr.max()), (0, WIDTH - 2))
+    res = [j.copy() for j in jobs]
 
-    return [Job(j.jid, j.cores, j.schd, start, end)
-            for (start, end), j in zip([(int(i), int(k)) for (i, k) in arr], jobs)]
+    for (start, end), j in zip(arr, res):
+        j.start = int(start)
+        j.end = int(end)
+
+    return res
 
 
 def graph_empty_server(cores: int) -> str:

@@ -10,12 +10,23 @@ from server_failure import ServerFailure, get_failures
 class Server:
     last_time = None
 
-    def __init__(self, kind: str, sid: int, cores: int):
+    def __init__(self, kind: str, sid: int, cores: int, memory: int, disk: int, state: int = None):
         self.kind = kind
         self.sid = sid
         self.cores = cores
+        self.memory = memory
+        self.disk = disk
+        self.state = state  # TODO Replace with List[int, int], a list of state changes and the time they occur
         self.jobs = []
         self.failures: List[ServerFailure] = []
+
+    def get_state_at(self, t: int) -> str:
+        cores = self.cores - sum(list(filter(lambda j: j.is_running_at(t), self.jobs)))
+        res = f"""\
+        {self.kind} {self.sid}:
+            available cores: {cores} (total: {self.cores})
+        """
+        pass
 
 
 def get_servers(log: str) -> List[Server]:
@@ -50,7 +61,7 @@ def make_servers(f: BinaryIO) -> List[Server]:
             break
 
         if not any([i in msg for i in ["OK", "DATA"]]):
-            servers.append(Server(msg[1], int(msg[2]), int(msg[5])))
+            servers.append(Server(msg[1], int(msg[2]), int(msg[5]), int(msg[6]), int(msg[7])))
 
     return servers
 
@@ -61,7 +72,8 @@ def get_servers_from_system(log: str, system: str) -> List[Server]:
 
     for s in parse(system).iter("server"):
         for i in range(int(s.attrib["limit"])):
-            servers.append(Server(s.attrib["type"], i, int(s.attrib["coreCount"])))
+            servers.append(Server(
+                s.attrib["type"], i, int(s.attrib["coreCount"]), int(s.attrib["memory"]), int(s.attrib["disk"])))
 
     s_dict = server_list_to_dict(servers)
     get_jobs(log, s_dict)

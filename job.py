@@ -2,13 +2,16 @@ from typing import Dict, List, BinaryIO
 
 
 class Job:
-    def __init__(self, jid: int, cores: int, schd: int = None, start: int = None, end: int = None, fail: bool = False):
+    def __init__(self, jid: int, cores: int, memory, disk, schd: int = None,
+                 start: int = None, end: int = None, failed: bool = False):
         self.jid = jid
         self.cores = cores
+        self.memory = memory
+        self.disk = disk
         self.schd = schd
         self.start = start
         self.end = end
-        self.failed = fail
+        self.failed = failed
 
     def is_overlapping(self, job) -> bool:
         if self.start <= job.start and self.end >= job.end:  # self's runtime envelops job's runtime
@@ -19,6 +22,12 @@ class Job:
             return True
         else:
             return False
+
+    def is_running_at(self, t: int) -> bool:
+        return self.start <= t <= self.end
+
+    def copy(self):
+        return Job(self.jid, self.cores, self.memory, self.disk, self.schd, self.start, self.end, self.failed)
 
 
 def get_jobs(log: str, servers) -> List[Job]:
@@ -40,17 +49,20 @@ def get_jobs(log: str, servers) -> List[Job]:
 
 def make_job(f: BinaryIO, servers) -> Job:
     msg = f.readline().decode("utf-8").split()
-    schd = int(msg[2])
-    cores = int(msg[5])
+
     failed = True if msg[1] == "JOBF" else False
+    schd = int(msg[2])
+    jid = int(msg[3])
+    cores = int(msg[5])
+    memory = int(msg[6])
+    disk = int(msg[7])
 
     while True:
         line = f.readline()
 
         if b"SCHD" in line:
             msg = line.decode("utf-8").split()
-            job = Job(int(msg[2]), cores, schd)
-            job.failed = failed
+            job = Job(jid, cores, memory, disk, schd, failed=failed)
             get_job_times(f.name, f.tell(), job)
 
             server = servers[msg[3]][int(msg[4])]
