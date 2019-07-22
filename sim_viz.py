@@ -52,12 +52,12 @@ def draw():
     top = height - margin
     last = top
 
-    for i, s in enumerate(servers):
+    for s in servers:
         offset = s.cores * l_width + l_width
         y = last - offset
         graph.DrawText("{} {}".format(s.kind, s.sid), (margin, y))
 
-        if len(s.jobs) == 0:
+        if len(s.jobs) == 0:  # Add empty space for jobless servers
             last -= s.cores * l_width + l_width
 
         jobs = norm_jobs(s.jobs)
@@ -65,9 +65,14 @@ def draw():
             overlap = list(filter(lambda j: j.is_overlapping(job), jobs[:jobs.index(job)]))
 
             for k in range(job.cores):
-                job_offset = min(k + len(overlap), s.cores - 1)
+                # Offset by number of job's cores + number of concurrent jobs
+                # If offset would exceed server height, reset to the bottom
+                used_cores = k + len(overlap)
+                job_offset = used_cores if used_cores < s.cores else 0
+
                 job_y = y + job_offset * l_width
                 last = min(last, job_y)
+
                 colour = "blue" if job.failed else "black"
                 graph.DrawLine((job.start, job_y), (job.end, job_y), width=l_width, color=colour)
 
