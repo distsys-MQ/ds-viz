@@ -10,6 +10,16 @@ class Job:
         self.end = end
         self.failed = fail
 
+    def is_overlapping(self, job) -> bool:
+        if self.start <= job.start and self.end >= job.end:  # self's runtime envelops job's runtime
+            return True
+        elif job.start <= self.start <= job.end:  # self starts during job's runtime
+            return True
+        elif job.start <= self.end <= job.end:  # self ends during job's runtime
+            return True
+        else:
+            return False
+
 
 def get_jobs(log: str, servers) -> List[Job]:
     jobs = []

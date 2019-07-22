@@ -32,7 +32,7 @@ def norm_jobs(jobs: List[Job]) -> List[Job]:
         return []
 
     arr = np.array([(j.start, j.end) for j in jobs])
-    arr = np.interp(arr, (0, last_time), (x_offset, width - margin))
+    arr = np.interp(arr, (margin, last_time), (x_offset, width - margin))
 
     return [Job(j.jid, j.cores, j.schd, start, end, j.failed)
             for (start, end), j in zip([(int(i), int(k)) for (i, k) in arr], jobs)]
@@ -43,7 +43,7 @@ def norm_server_failures(failures: List[ServerFailure]) -> List[ServerFailure]:
         return []
 
     arr = np.array([(f.fail, f.recover) for f in failures])
-    arr = np.interp(arr, (0, last_time), (x_offset, width - margin))
+    arr = np.interp(arr, (margin, last_time), (x_offset, width - margin))
 
     return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
@@ -60,14 +60,16 @@ def draw():
         if len(s.jobs) == 0:
             last -= s.cores * l_width + l_width
 
-        # TODO Draw job-used cores at specific server core heights, eg. 1-core job and 2-core job should make a 3
-        #  core high line
-        for job in norm_jobs(s.jobs):
+        jobs = norm_jobs(s.jobs)
+        for job in jobs:
+            overlap = list(filter(lambda j: j.is_overlapping(job), jobs[:jobs.index(job)]))
+
             for k in range(job.cores):
-                job_y = y + k * l_width
+                job_offset = min(k + len(overlap), s.cores - 1)
+                job_y = y + job_offset * l_width
                 last = min(last, job_y)
                 colour = "blue" if job.failed else "black"
-                graph.DrawLine((job.start + margin, job_y), (job.end, job_y), width=l_width, color=colour)
+                graph.DrawLine((job.start, job_y), (job.end, job_y), width=l_width, color=colour)
 
         for fail in norm_server_failures(s.failures):
             fail_y = y - 2
