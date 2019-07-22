@@ -83,12 +83,15 @@ def server_list_to_dict(servers: List[Server]) -> Dict[str, Dict[int, Server]]:
 
 
 def get_results(log: str) -> str:
-    with open(log, 'r') as f:
-        for line in f:  # Could be more efficient if read from the end of file
-            if "RCVD QUIT" in line:
-                for l in f:
-                    if l[0] == '#':
-                        return ''.join(f.readlines())
+    with FileReadBackwards(log, encoding="utf-8") as f:
+        results = []
+
+        while True:
+            line = f.readline().replace("\r\n", "\n")
+            results.append(line)
+
+            if "SENT QUIT" in line:
+                return ''.join(reversed(results[:-2]))
 
 
 def get_end_time(system: str) -> int:
