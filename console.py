@@ -27,8 +27,9 @@ parser.add_argument("-s", "--system", type=lambda f: is_valid_file(parser, f), m
                     help="name of system file")
 parser.add_argument("-w", "--width", type=int, default=80,
                     help="width of graphical display")
+args = parser.parse_args()
 
-WIDTH = parser.parse_args().width
+WIDTH = args.width
 
 
 def text_job(j: Job):
@@ -143,16 +144,16 @@ def print_both(servers: List[Server]):
         print('=' * WIDTH)
 
 
-if parser.parse_args().system is None:
-    svrs = get_servers(parser.parse_args().filename)
+if args.system is None:
+    svrs = get_servers(args.filename)
 else:
-    svrs = get_servers_from_system(parser.parse_args().filename, parser.parse_args().system)
+    svrs = get_servers_from_system(args.filename, args.system)
 
-if parser.parse_args().display == "both":
+if args.display == "both":
     print_both(svrs)
-elif parser.parse_args().display == "text":
+elif args.display == "text":
     print_text(svrs)
-elif parser.parse_args().display == "graph":
+elif args.display == "graph":
     print_graph(svrs)
 
-print(get_results(parser.parse_args().filename))
+print(get_results(args.filename))

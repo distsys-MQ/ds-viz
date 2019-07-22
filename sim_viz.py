@@ -1,3 +1,5 @@
+import os
+from argparse import ArgumentParser
 from typing import List
 
 import numpy as np
@@ -7,7 +9,21 @@ from job import Job
 from server import Server, get_servers_from_system
 from server_failure import ServerFailure
 
-servers = get_servers_from_system("./logs/personal-config6-fail.xml.your.log", "./configs/personal-config6.xml")
+
+# https://stackoverflow.com/a/11541450/8031185
+def is_valid_file(psr: ArgumentParser, arg: str) -> str:
+    if not os.path.isfile(arg):
+        psr.error("The file '{}' does not exist!".format(arg))
+    else:
+        return arg
+
+
+parser = ArgumentParser(description="Visualises DS simulations")
+parser.add_argument("log", type=lambda f: is_valid_file(parser, f), help="simulation log file to visualise")
+parser.add_argument("config", type=lambda f: is_valid_file(parser, f), help="configuration file used in simulation")
+args = parser.parse_args()
+
+servers = get_servers_from_system(args.log, args.config)
 
 l_width = 5
 width = 1200
