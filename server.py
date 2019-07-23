@@ -59,16 +59,12 @@ class Server:
                         elif "COMPLETED" in msg and time != Server.last_time and len(
                                 list(filter(lambda j: j.is_running_at(time + 1), self.jobs))) == 0:
                             states[time + 1] = ServerState.idle
-                elif msg[1] == "RESF" or msg[1] == "RESR":
-                    kind = msg[2]
-                    sid = int(msg[3])
-                    time = int(msg[4])
 
-                    if kind == self.kind and sid == self.sid:
-                        if msg[1] == "RESF":
-                            states[time] = ServerState.unavailable
-                        else:
-                            states[time] = ServerState.inactive
+        for f in self.failures:
+            states[f.fail] = ServerState.unavailable
+
+            if f.recover != Server.last_time:
+                states[f.recover] = ServerState.inactive
 
         self.states = states
 
