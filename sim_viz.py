@@ -6,7 +6,7 @@ import numpy as np
 import PySimpleGUI as pSG
 
 from job import Job
-from server import Server, get_servers_from_system, get_results
+from server import Server, get_servers_from_system, server_list_to_dict
 from server_failure import ServerFailure
 
 
@@ -39,7 +39,14 @@ layout = [
     [pSG.Column(column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
 window = pSG.Window("sim-viz", layout, size=(width + 60, height), background_color="whitesmoke", resizable=True)
-window2 = pSG.Window("details", [[pSG.Text(get_results(args.log))]], background_color="whitesmoke", resizable=True)
+d_layout = [
+    [pSG.Text("Server Type", size=(15, 1)), pSG.InputText(key="kind")],
+    [pSG.Text("Server ID", size=(15, 1)), pSG.Spin(values=[i for i in range(1000)], initial_value=0, size=(8, 2), key="sid")],
+    [pSG.Text("Time", size=(15, 1)), pSG.Spin(values=[i for i in range(2592000)], initial_value=0, size=(8, 2), key="time")],
+    [pSG.Txt("", size=(50, 12), key="output")],
+    [pSG.Button("Submit", bind_return_key=True)]
+]
+window2 = pSG.Window("details", d_layout, background_color="whitesmoke", resizable=True)
 window.Finalize()
 window2.Finalize()
 graph = window.Element("graph")
@@ -105,6 +112,18 @@ def draw():
 
 
 draw()
+s_dict = server_list_to_dict(servers)
 
 while True:
-    event, values = window.Read()
+    event, values = window2.Read()
+
+    if event is not None:
+        kind = values["kind"]
+        sid = int(values["sid"])
+        time = int(values["time"])
+        server = s_dict[kind][sid]
+        res = server.get_server_at(time).print_server(server)
+
+        window2.Element("output").Update(res)
+    else:
+        break

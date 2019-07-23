@@ -1,3 +1,4 @@
+import sys
 from typing import List, Dict, BinaryIO
 from xml.etree.ElementTree import parse
 
@@ -11,7 +12,7 @@ from server_state import ServerState
 class Server:
     last_time = None
 
-    def __init__(self, kind: str, sid: int, cores: int, memory: int, disk: int, boot: int = None,
+    def __init__(self, kind: str, sid: int, cores: int, memory: int, disk: int,
                  states: Dict[int, ServerState] = None, jobs: List[Job] = None,
                  failures: List[ServerFailure] = None):
         self.kind = kind
@@ -19,19 +20,45 @@ class Server:
         self.cores = cores
         self.memory = memory
         self.disk = disk
-        self.boot = boot
         self.states = states if states else {0: ServerState.inactive}
         self.jobs = jobs if jobs else []
         self.failures = failures if failures else []
 
+    # def __repr__(self):
+    # def __str__(self):
+
     def get_server_at(self, t: int):
         jobs = list(filter(lambda j: j.is_running_at(t), self.jobs))
         cores = self.cores - sum(j.cores for j in jobs)
-        res = f"""\
+        memory = self.memory - sum(j.memory for j in jobs)
+        disk = self.disk - sum(j.disk for j in jobs)
+        states = {0: self.get_state_at(t)}
+
+        return Server(self.kind, self.sid, cores, memory, disk, states, jobs)
+
+    def get_state_at(self, time: int) -> ServerState:
+        best = None
+        diff = sys.maxsize
+
+        for t, s in self.states.items():
+            d = time - t
+
+            if d == 0:
+                return s
+            elif 0 < d < diff:
+                best = s
+                diff = d
+        return best
+
+    def print_server(self, orig) -> str:
+        return f"""\
         {self.kind} {self.sid}:
-            available cores: {cores} (total: {self.cores})
+            state: {self.states[0].name}
+            cores: {self.cores} (total: {orig.cores})
+            memory: {self.memory} (total: {orig.memory})
+            disk: {self.disk} (total: {orig.disk})
+            running jobs: {len(self.jobs)}
         """
-        pass
 
     def get_server_states(self, log: str):
         states = {0: ServerState.inactive}
@@ -113,8 +140,7 @@ def get_servers_from_system(log: str, system: str) -> List[Server]:
     for s in parse(system).iter("server"):
         for i in range(int(s.attrib["limit"])):
             servers.append(Server(
-                s.attrib["type"], i, int(s.attrib["coreCount"]), int(s.attrib["memory"]),
-                int(s.attrib["disk"]), int(s.attrib["bootupTime"])))
+                s.attrib["type"], i, int(s.attrib["coreCount"]), int(s.attrib["memory"]), int(s.attrib["disk"])))
 
     s_dict = server_list_to_dict(servers)
     get_jobs(log, s_dict)
