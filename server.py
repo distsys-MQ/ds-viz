@@ -3,30 +3,74 @@ from xml.etree.ElementTree import parse
 
 from file_read_backwards import FileReadBackwards
 
-from job import get_jobs
+from job import Job, get_jobs
 from server_failure import ServerFailure, get_failures
+from server_state import ServerState
 
 
 class Server:
     last_time = None
 
-    def __init__(self, kind: str, sid: int, cores: int, memory: int, disk: int, state: int = None):
+    def __init__(self, kind: str, sid: int, cores: int, memory: int, disk: int, boot: int = None,
+                 states: Dict[int, ServerState] = None, jobs: List[Job] = None,
+                 failures: List[ServerFailure] = None):
         self.kind = kind
         self.sid = sid
         self.cores = cores
         self.memory = memory
         self.disk = disk
-        self.state = state  # TODO Replace with List[int, int], a list of state changes and the time they occur
-        self.jobs = []
-        self.failures: List[ServerFailure] = []
+        self.boot = boot
+        self.states = states if states else {0: ServerState.inactive}
+        self.jobs = jobs if jobs else []
+        self.failures = failures if failures else []
 
-    def get_state_at(self, t: int) -> str:
-        cores = self.cores - sum(list(filter(lambda j: j.is_running_at(t), self.jobs)))
+    def get_server_at(self, t: int):
+        jobs = list(filter(lambda j: j.is_running_at(t), self.jobs))
+        cores = self.cores - sum(j.cores for j in jobs)
         res = f"""\
         {self.kind} {self.sid}:
             available cores: {cores} (total: {self.cores})
         """
         pass
+
+    def get_server_states(self, log: str):
+        states = {0: ServerState.inactive}
+
+        with open(log, "r") as f:
+            while True:
+                line = f.readline()
+
+                if not line:
+                    break
+
+                msg = line.split()
+
+                if msg[0] == "t:":
+                    lat = msg[msg.index('#') + 1:]
+                    time = int(msg[1])
+                    sid = int(lat[0])
+                    kind = lat[3]
+
+                    if kind == self.kind and sid == self.sid:
+                        if "(booting)" in msg:
+                            states[time] = ServerState.booting
+                        elif "RUNNING" in msg and states[max(states)] is not ServerState.active:
+                            states[time] = ServerState.active
+                        elif "COMPLETED" in msg and time != Server.last_time and len(
+                                list(filter(lambda j: j.is_running_at(time + 1), self.jobs))) == 0:
+                            states[time + 1] = ServerState.idle
+                elif msg[1] == "RESF" or msg[1] == "RESR":
+                    kind = msg[2]
+                    sid = int(msg[3])
+                    time = int(msg[4])
+
+                    if kind == self.kind and sid == self.sid:
+                        if msg[1] == "RESF":
+                            states[time] = ServerState.unavailable
+                        else:
+                            states[time] = ServerState.inactive
+
+        self.states = states
 
 
 def get_servers(log: str) -> List[Server]:
@@ -73,11 +117,15 @@ def get_servers_from_system(log: str, system: str) -> List[Server]:
     for s in parse(system).iter("server"):
         for i in range(int(s.attrib["limit"])):
             servers.append(Server(
-                s.attrib["type"], i, int(s.attrib["coreCount"]), int(s.attrib["memory"]), int(s.attrib["disk"])))
+                s.attrib["type"], i, int(s.attrib["coreCount"]), int(s.attrib["memory"]),
+                int(s.attrib["disk"]), int(s.attrib["bootupTime"])))
 
     s_dict = server_list_to_dict(servers)
     get_jobs(log, s_dict)
     get_failures(log, s_dict, last_time)
+
+    for s in servers:
+        s.get_server_states(log)
 
     return servers
 

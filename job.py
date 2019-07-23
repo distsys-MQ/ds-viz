@@ -29,6 +29,38 @@ class Job:
     def copy(self):
         return Job(self.jid, self.cores, self.memory, self.disk, self.schd, self.start, self.end, self.failed)
 
+    def get_job_times(self, log: str, pos: int):
+        with open(log, "rb") as f:
+            f.seek(pos, 0)
+
+            while True:
+                line = f.readline().decode("utf-8")
+
+                if not line:
+                    break
+
+                msg = line.split()
+
+                if msg[1] == "JOBF" and int(msg[3]) == self.jid:
+                    self.failed = True
+                    self.end = time
+
+                    if self.start is None:
+                        self.start = time
+
+                    break
+
+                if line.startswith("t:", 0, 2):
+                    jid = int(msg[3])
+                    time = int(msg[1])
+
+                    if self.jid == jid:
+                        if "RUNNING" in msg:
+                            self.start = time
+                        elif "COMPLETED" in msg:
+                            self.end = time
+                            break
+
 
 def get_jobs(log: str, servers) -> List[Job]:
     jobs = []
@@ -63,7 +95,7 @@ def make_job(f: BinaryIO, servers) -> Job:
         if b"SCHD" in line:
             msg = line.decode("utf-8").split()
             job = Job(jid, cores, memory, disk, schd, failed=failed)
-            get_job_times(f.name, f.tell(), job)
+            job.get_job_times(f.name, f.tell())
 
             server = servers[msg[3]][int(msg[4])]
             server.jobs.append(job)
@@ -76,36 +108,3 @@ def make_job(f: BinaryIO, servers) -> Job:
 
 def job_list_to_dict(jobs: List[Job]) -> Dict[int, Job]:
     return {j.jid: j for j in jobs}
-
-
-def get_job_times(log: str, pos: int, job: Job):
-    with open(log, "rb") as f:
-        f.seek(pos, 0)
-
-        while True:
-            line = f.readline().decode("utf-8")
-
-            if not line:
-                break
-
-            msg = line.split()
-
-            if msg[1] == "JOBF" and int(msg[3]) == job.jid:
-                job.failed = True
-                job.end = time
-
-                if job.start is None:
-                    job.start = time
-
-                break
-
-            if line.startswith("t:", 0, 2):
-                jid = int(msg[3])
-                time = int(msg[1])
-
-                if job.jid == jid:
-                    if "RUNNING" in msg:
-                        job.start = time
-                    elif "COMPLETED" in msg:
-                        job.end = time
-                        break
