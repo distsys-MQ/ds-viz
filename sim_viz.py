@@ -24,10 +24,12 @@ parser.add_argument("config", type=lambda f: is_valid_file(parser, f), help="con
 args = parser.parse_args()
 
 servers = get_servers_from_system(args.log, args.config)
+s_dict = server_list_to_dict(servers)
 
 l_width = 5
 width = 1200
 height = sum([s.cores for s in servers]) * l_width * 2
+menu_height = 150
 margin = 30
 last_time = Server.last_time
 x_offset = margin * 2
@@ -36,19 +38,20 @@ column = [
     [pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height), key="graph")]
 ]
 layout = [
+    [pSG.Frame(
+        "Selection",
+        [[pSG.Text("Server Type", size=(15, 1)),
+          pSG.Spin(values=list(s_dict.keys()), initial_value=servers[0].kind, size=(8, 2), key="kind")],
+         [pSG.Text("Server ID", size=(15, 1)),
+          pSG.Spin(values=[i for i in range(1000)], initial_value=0, size=(8, 2), key="sid")],  # set range to s limit
+         [pSG.Button("Submit", bind_return_key=True)]]), pSG.Txt("", size=(50, 6), key="output")],
+    [pSG.Slider(range=(0, Server.last_time), default_value=0, size=(92, 15), orientation="horizontal",
+                enable_events=True, key="slider")],  # Figure out proper width
     [pSG.Column(column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
-window = pSG.Window("sim-viz", layout, size=(width + 60, height), background_color="whitesmoke", resizable=True)
-d_layout = [
-    [pSG.Text("Server Type", size=(15, 1)), pSG.InputText(key="kind")],
-    [pSG.Text("Server ID", size=(15, 1)), pSG.Spin(values=[i for i in range(1000)], initial_value=0, size=(8, 2), key="sid")],
-    [pSG.Text("Time", size=(15, 1)), pSG.Spin(values=[i for i in range(2592000)], initial_value=0, size=(8, 2), key="time")],
-    [pSG.Txt("", size=(50, 12), key="output")],
-    [pSG.Button("Submit", bind_return_key=True)]
-]
-window2 = pSG.Window("details", d_layout, background_color="whitesmoke", resizable=True)
+window = pSG.Window("sim-viz", layout, size=(width + 60, height + menu_height), background_color="whitesmoke",
+                    resizable=True)
 window.Finalize()
-window2.Finalize()
 graph = window.Element("graph")
 
 
@@ -112,18 +115,17 @@ def draw():
 
 
 draw()
-s_dict = server_list_to_dict(servers)
 
 while True:
-    event, values = window2.Read()
+    event, values = window.Read()
 
     if event is not None:
         kind = values["kind"]
         sid = int(values["sid"])
-        time = int(values["time"])
+        time = int(values["slider"])
         server = s_dict[kind][sid]
         res = server.get_server_at(time).print_server(server)
 
-        window2.Element("output").Update(res)
+        window.Element("output").Update(res)
     else:
         break
