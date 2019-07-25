@@ -13,7 +13,7 @@ class Job:
         self.end = end
         self.failed = failed
 
-    def is_overlapping(self, job) -> bool:
+    def is_overlapping(self, job: "Job") -> bool:
         if self.start <= job.start and self.end >= job.end:  # self's runtime envelops job's runtime
             return True
         elif job.start <= self.start <= job.end:  # self starts during job's runtime
@@ -26,10 +26,10 @@ class Job:
     def is_running_at(self, t: int) -> bool:
         return self.start <= t <= self.end
 
-    def copy(self):
+    def copy(self) -> "Job":
         return Job(self.jid, self.cores, self.memory, self.disk, self.schd, self.start, self.end, self.failed)
 
-    def get_job_times(self, log: str, pos: int):
+    def set_job_times(self, log: str, pos: int) -> None:
         with open(log, "rb") as f:
             f.seek(pos, 0)
 
@@ -62,24 +62,22 @@ class Job:
                             break
 
 
-def get_jobs(log: str, servers) -> List[Job]:
-    jobs = []
-
+# noinspection PyUnresolvedReferences
+def get_jobs(log: str, servers: Dict[str, Dict[int, "Server"]]) -> None:
     with open(log, "rb") as f:
         while True:
             line = f.readline()
 
             if b"JOB" in line:
                 f.seek(-len(line), 1)
-                jobs.append(make_job(f, servers))
+                make_job(f, servers)
 
             if not line:
                 break
 
-    return jobs
 
-
-def make_job(f: BinaryIO, servers) -> Job:
+# noinspection PyUnresolvedReferences
+def make_job(f: BinaryIO, servers: Dict[str, Dict[int, "Server"]]) -> Job:
     msg = f.readline().decode("utf-8").split()
 
     failed = True if msg[1] == "JOBF" else False
@@ -95,7 +93,7 @@ def make_job(f: BinaryIO, servers) -> Job:
         if b"SCHD" in line:
             msg = line.decode("utf-8").split()
             job = Job(jid, cores, memory, disk, schd, failed=failed)
-            job.get_job_times(f.name, f.tell())
+            job.set_job_times(f.name, f.tell())
 
             server = servers[msg[3]][int(msg[4])]
             server.jobs.append(job)

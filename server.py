@@ -27,7 +27,7 @@ class Server:
     # def __repr__(self):
     # def __str__(self):
 
-    def get_server_at(self, t: int):
+    def get_server_at(self, t: int) -> "Server":
         jobs = list(filter(lambda j: j.is_running_at(t), self.jobs))
         cores = self.cores - sum(j.cores for j in jobs)
         memory = self.memory - sum(j.memory for j in jobs)
@@ -50,7 +50,7 @@ class Server:
                 diff = d
         return best
 
-    def print_server(self, orig) -> str:
+    def print_server(self, orig: "Server") -> str:
         return f"""\
         {self.kind} {self.sid}:
             state: {self.states[0].name}
@@ -60,7 +60,7 @@ class Server:
             running jobs: {len(self.jobs)}
         """
 
-    def get_server_states(self, log: str):
+    def get_server_states(self, log: str) -> None:
         states = {0: ServerState.inactive}
 
         with open(log, "r") as f:
@@ -134,7 +134,7 @@ def make_servers(f: BinaryIO) -> List[Server]:
 
 
 def get_servers_from_system(log: str, system: str) -> List[Server]:
-    last_time = get_last_time(log, system)
+    Server.last_time = get_last_time(log, system)
     servers = []
 
     for s in parse(system).iter("server"):
@@ -144,7 +144,7 @@ def get_servers_from_system(log: str, system: str) -> List[Server]:
 
     s_dict = server_list_to_dict(servers)
     get_jobs(log, s_dict)
-    get_failures(log, s_dict, last_time)
+    get_failures(log, s_dict, Server.last_time)
 
     for s in servers:
         s.get_server_states(log)
@@ -196,5 +196,4 @@ def get_last_time(log: str, system: str) -> int:
     last_job_time = get_last_job_time(log)
 
     last_time = max(end_time, last_job_time)
-    Server.last_time = last_time
     return last_time

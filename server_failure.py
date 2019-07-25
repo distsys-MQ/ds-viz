@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 
 class ServerFailure:
@@ -27,7 +27,8 @@ def get_failures(log: str, servers, last_time: int) -> List[ServerFailure]:
     return failures
 
 
-def make_failure(log: str, pos: int, servers) -> ServerFailure:
+# noinspection PyUnresolvedReferences
+def make_failure(log: str, pos: int, servers: Dict[str, Dict[int, "Server"]]) -> ServerFailure:
     with open(log, "rb") as f:
         f.seek(pos, 0)
 

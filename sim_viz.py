@@ -81,7 +81,7 @@ def norm_server_failures(failures: List[ServerFailure]) -> List[ServerFailure]:
     return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
 
-def draw():
+def draw() -> None:
     top = height - margin
     last = top
 
