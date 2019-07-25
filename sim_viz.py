@@ -43,10 +43,11 @@ layout = [
         [[pSG.Text("Server Type", size=(15, 1)),
           pSG.Spin(values=list(s_dict.keys()), initial_value=servers[0].kind, size=(8, 2), key="kind")],
          [pSG.Text("Server ID", size=(15, 1)),
-          pSG.Spin(values=[i for i in range(1000)], initial_value=0, size=(8, 2), key="sid")],  # set range to s limit
+          pSG.Spin(values=[i for i in range(len(max(s_dict.values(), key=len)))],  # Max sid of all server types
+                   initial_value=0, size=(8, 2), key="sid")],
          [pSG.Button("Submit", bind_return_key=True)]]), pSG.Txt("", size=(50, 6), key="output")],
-    [pSG.Slider(range=(0, Server.last_time), default_value=0, size=(92, 15), orientation="horizontal",
-                enable_events=True, key="slider")],  # Figure out proper width
+    [pSG.Slider(range=(0, Server.last_time), default_value=0, size=(88, 15), pad=((x_offset, 0), 0),
+                orientation="horizontal", enable_events=True, key="slider")],
     [pSG.Column(column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
 window = pSG.Window("sim-viz", layout, size=(width + 60, height + menu_height), background_color="whitesmoke",
@@ -115,6 +116,7 @@ def draw():
 
 
 draw()
+timeline = graph.DrawLine((x_offset, height), (x_offset, 0), width=2, color="grey")
 
 while True:
     event, values = window.Read()
@@ -124,8 +126,11 @@ while True:
         sid = int(values["sid"])
         time = int(values["slider"])
         server = s_dict[kind][sid]
-        res = server.get_server_at(time).print_server(server)
+        server_details = server.get_server_at(time).print_server(server)
 
-        window.Element("output").Update(res)
+        norm_time = int(np.interp(np.array([time]), (margin, last_time), (x_offset, width - margin))[0])
+        graph.RelocateFigure(timeline, norm_time, height)
+
+        window.Element("output").Update(server_details)
     else:
         break
