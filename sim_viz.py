@@ -25,6 +25,7 @@ args = parser.parse_args()
 
 servers = get_servers_from_system(args.log, args.config)
 s_dict = server_list_to_dict(servers)
+s_boxes = dict()
 
 l_width = 5
 width = 1200
@@ -34,24 +35,19 @@ margin = 30
 last_time = Server.last_time
 x_offset = margin * 2
 
+pSG.SetOptions(font=("Helvetica", 10), background_color="whitesmoke")
+
 column = [
-    [pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height), key="graph")]
+    [pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height),
+               key="graph", change_submits=True, drag_submits=False)]
 ]
 layout = [
-    [pSG.Frame(
-        "Selection",
-        [[pSG.Text("Server Type", size=(15, 1)),
-          pSG.Spin(values=list(s_dict.keys()), initial_value=servers[0].kind, size=(8, 2), key="kind")],
-         [pSG.Text("Server ID", size=(15, 1)),
-          pSG.Spin(values=[i for i in range(len(max(s_dict.values(), key=len)))],  # Max sid of all server types
-                   initial_value=0, size=(8, 2), key="sid")],
-         [pSG.Button("Submit", bind_return_key=True)]]), pSG.Txt("", size=(50, 6), key="output")],
+    [pSG.Txt("", size=(50, 6), key="output")],
     [pSG.Slider(range=(0, Server.last_time), default_value=0, size=(88, 15), pad=((x_offset, 0), 0),
                 orientation="horizontal", enable_events=True, key="slider")],
     [pSG.Column(column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
-window = pSG.Window("sim-viz", layout, size=(width + 60, height + menu_height), background_color="whitesmoke",
-                    resizable=True)
+window = pSG.Window("sim-viz", layout, size=(width + 60, height + menu_height), resizable=True)
 window.Finalize()
 graph = window.Element("graph")
 
@@ -81,12 +77,22 @@ def norm_server_failures(failures: List[ServerFailure]) -> List[ServerFailure]:
     return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
 
+box_x1 = 3
+box_x2 = x_offset - 2
+
+
 def draw() -> None:
     top = height - margin
     last = top
 
     for s in servers:
         offset = s.cores * l_width + l_width
+
+        box_y1 = last - offset - 6
+        box_y2 = last - 6
+        s_boxes[range(box_y1, box_y2)] = s
+        graph.DrawRectangle((box_x1, box_y1), (box_x2, box_y2))
+
         y = last - offset
         graph.DrawText("{} {}".format(s.kind, s.sid), (margin, y))
 
@@ -117,20 +123,32 @@ def draw() -> None:
 
 draw()
 timeline = graph.DrawLine((x_offset, height), (x_offset, 0), width=2, color="grey")
+server = servers[0]
+time = 0
 
 while True:
     event, values = window.Read()
 
     if event is not None:
-        kind = values["kind"]
-        sid = int(values["sid"])
-        time = int(values["slider"])
-        server = s_dict[kind][sid]
-        server_details = server.get_server_at(time).print_server(server)
+        if event == "slider":
+            time = int(values["slider"])
+            norm_time = int(np.interp(np.array([time]), (margin, last_time), (x_offset, width - margin))[0])
+            graph.RelocateFigure(timeline, norm_time, height)
 
-        norm_time = int(np.interp(np.array([time]), (margin, last_time), (x_offset, width - margin))[0])
-        graph.RelocateFigure(timeline, norm_time, height)
+            window.Element("output").Update(server.get_server_at(time).print_server(server))
+        elif event == "graph":
+            mouse = values["graph"]
 
-        window.Element("output").Update(server_details)
+            if mouse == (None, None):
+                continue
+            box_x = mouse[0]
+            box_y = mouse[1]
+            x_range = range(box_x1, box_x2)
+
+            for y_range, s in s_boxes.items():
+                if box_x in x_range and box_y in y_range:
+                    server = s
+                    window.Element("output").Update(server.get_server_at(time).print_server(server))
+                    break
     else:
         break
