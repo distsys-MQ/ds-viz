@@ -1,2 +1,0 @@
-PySimpleGUI >=4.0
-numpy >=1.16
