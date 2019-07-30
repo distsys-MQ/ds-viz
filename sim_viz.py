@@ -6,7 +6,7 @@ import numpy as np
 import PySimpleGUI as pSG
 
 from job import Job
-from server import Server, get_servers_from_system, server_list_to_dict
+from server import Server, get_servers_from_system, server_list_to_dict, get_results
 from server_failure import ServerFailure
 
 
@@ -37,15 +37,18 @@ x_offset = margin * 2
 
 pSG.SetOptions(font=("Helvetica", 10), background_color="whitesmoke")
 
-column = [
-    [pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height),
-               key="graph", change_submits=True, drag_submits=False)]
-]
+graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height),
+                           key="graph", change_submits=True, drag_submits=False)]]
+frame_size = (45, 6)
 layout = [
-    [pSG.Txt("", size=(50, 6), key="output")],
+    [pSG.Frame("Current Server", [[pSG.Txt("", size=frame_size, key="output")]]),
+     pSG.Frame("Current Results", [[pSG.Txt("", size=frame_size, key="")]]),
+     pSG.Frame("Final Results", [[
+         pSG.Column([[pSG.Txt(get_results(args.log), size=(60, 8), font=("Helvetica", 7))]],
+                    size=(350, 85), scrollable=True)]])],
     [pSG.Slider(range=(0, Server.last_time), default_value=0, size=(88, 15), pad=((x_offset, 0), 0),
                 orientation="horizontal", enable_events=True, key="slider")],
-    [pSG.Column(column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
+    [pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
 window = pSG.Window("sim-viz", layout, size=(width + 60, height + menu_height), resizable=True)
 window.Finalize()

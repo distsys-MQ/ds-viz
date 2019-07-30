@@ -170,9 +170,10 @@ def get_results(log: str) -> str:
 
         while True:
             line = f.readline().replace("\r\n", "\n")
-            results.append(line)
+            results.append(line[2:])  # Remove '#'s
 
             if "SENT QUIT" in line:
+                results.pop(2)  # Remove "[ Overall ]" line
                 return ''.join(reversed(results[:-2]))
 
 
