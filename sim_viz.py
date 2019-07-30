@@ -31,23 +31,24 @@ l_width = 5
 width = 1200
 height = sum([s.cores for s in servers]) * l_width * 2
 menu_height = 150
-margin = 30
+left_margin = 30
+right_margin = 15
 last_time = Server.last_time
-x_offset = margin * 2
+x_offset = left_margin * 2
 
-pSG.SetOptions(font=("Helvetica", 10), background_color="whitesmoke")
+pSG.SetOptions(font=("Helvetica", 10), background_color="whitesmoke", element_padding=(0, 0))
 
 graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height),
                            key="graph", change_submits=True, drag_submits=False)]]
-frame_size = (45, 6)
+frame_size = (47, 6)
 layout = [
-    [pSG.Frame("Current Server", [[pSG.Txt("", size=frame_size, key="output")]]),
-     pSG.Frame("Current Results", [[pSG.Txt("", size=frame_size, key="")]]),
+    [pSG.Frame("Current Server", [[pSG.Txt("", size=frame_size, key="current_server")]]),
+     pSG.Frame("Current Results", [[pSG.Txt("", size=frame_size, key="current_results")]]),
      pSG.Frame("Final Results", [[
-         pSG.Column([[pSG.Txt(get_results(args.log), size=(60, 8), font=("Helvetica", 7))]],
+         pSG.Column([[pSG.Txt(get_results(args.log), font=("Helvetica", 7))]],
                     size=(350, 85), scrollable=True)]])],
-    [pSG.Slider(range=(0, Server.last_time), default_value=0, size=(88, 15), pad=((x_offset, 0), 0),
-                orientation="horizontal", enable_events=True, key="slider")],
+    [pSG.Slider(range=(0, Server.last_time), default_value=0, size=(89, 15), pad=((x_offset - 7, 0), 0),
+                orientation="h", enable_events=True, key="slider")],
     [pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
 window = pSG.Window("sim-viz", layout, size=(width + 60, height + menu_height), resizable=True)
@@ -60,7 +61,7 @@ def norm_jobs(jobs: List[Job]) -> List[Job]:
         return []
 
     arr = np.array([(j.start, j.end) for j in jobs])
-    arr = np.interp(arr, (margin, last_time), (x_offset, width - margin))
+    arr = np.interp(arr, (left_margin, last_time), (x_offset, width - right_margin))
     res = [j.copy() for j in jobs]
 
     for (start, end), j in zip(arr, res):
@@ -75,7 +76,7 @@ def norm_server_failures(failures: List[ServerFailure]) -> List[ServerFailure]:
         return []
 
     arr = np.array([(f.fail, f.recover) for f in failures])
-    arr = np.interp(arr, (margin, last_time), (x_offset, width - margin))
+    arr = np.interp(arr, (left_margin, last_time), (x_offset, width - right_margin))
 
     return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
@@ -85,7 +86,7 @@ box_x2 = x_offset - 2
 
 
 def draw() -> None:
-    top = height - margin
+    top = height - left_margin
     last = top
 
     for s in servers:
@@ -97,7 +98,7 @@ def draw() -> None:
         graph.DrawRectangle((box_x1, box_y1), (box_x2, box_y2))
 
         y = last - offset
-        graph.DrawText("{} {}".format(s.kind, s.sid), (margin, y))
+        graph.DrawText("{} {}".format(s.kind, s.sid), (left_margin, y))
 
         if len(s.jobs) == 0:  # Add empty space for jobless servers
             last -= s.cores * l_width + l_width
@@ -135,10 +136,10 @@ while True:
     if event is not None:
         if event == "slider":
             time = int(values["slider"])
-            norm_time = int(np.interp(np.array([time]), (margin, last_time), (x_offset, width - margin))[0])
+            norm_time = int(np.interp(np.array([time]), (left_margin, last_time), (x_offset, width - right_margin))[0])
             graph.RelocateFigure(timeline, norm_time, height)
 
-            window.Element("output").Update(server.get_server_at(time).print_server(server))
+            window.Element("current_server").Update(server.get_server_at(time).print_server(server))
         elif event == "graph":
             mouse = values["graph"]
 
@@ -151,7 +152,7 @@ while True:
             for y_range, s in s_boxes.items():
                 if box_x in x_range and box_y in y_range:
                     server = s
-                    window.Element("output").Update(server.get_server_at(time).print_server(server))
+                    window.Element("current_server").Update(server.get_server_at(time).print_server(server))
                     break
     else:
         break
