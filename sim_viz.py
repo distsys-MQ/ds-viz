@@ -144,11 +144,12 @@ while True:
             window.Element("current_server").Update(server.get_server_at(time).print_server(server))
 
         # Handle pressing left/right arrow keys
-        elif "Left" in event or "Right" in event:
-            if "Left" in event:
-                time = time - 1 if time > 1 else 0
-            else:
-                time = time + 1 if time < last_time else last_time
+        elif "Left" in event:
+            time = time - 1 if time > 1 else 0
+            window.Element("slider").Update(time)
+            window.Element("current_server").Update(server.get_server_at(time).print_server(server))
+        elif "Right" in event:
+            time = time + 1 if time < last_time else last_time
             window.Element("slider").Update(time)
             window.Element("current_server").Update(server.get_server_at(time).print_server(server))
 
