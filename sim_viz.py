@@ -51,7 +51,8 @@ layout = [
                 orientation="h", enable_events=True, key="slider")],
     [pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
-window = pSG.Window("sim-viz", layout, size=(width + 60, height + menu_height), resizable=True)
+window = pSG.Window("sim-viz", layout, size=(width + 60, height + menu_height),
+                    resizable=True, return_keyboard_events=True)
 window.Finalize()
 graph = window.Element("graph")
 
@@ -134,12 +135,24 @@ while True:
     event, values = window.Read()
 
     if event is not None:
+        # Handle slider input
         if event == "slider":
             time = int(values["slider"])
             norm_time = int(np.interp(np.array([time]), (left_margin, last_time), (x_offset, width - right_margin))[0])
             graph.RelocateFigure(timeline, norm_time, height)
 
             window.Element("current_server").Update(server.get_server_at(time).print_server(server))
+
+        # Handle pressing left/right arrow keys
+        elif "Left" in event or "Right" in event:
+            if "Left" in event:
+                time = time - 1 if time > 1 else 0
+            else:
+                time = time + 1 if time < last_time else last_time
+            window.Element("slider").Update(time)
+            window.Element("current_server").Update(server.get_server_at(time).print_server(server))
+
+        # Handle clicking in the graph
         elif event == "graph":
             mouse = values["graph"]
 
