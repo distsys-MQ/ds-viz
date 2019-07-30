@@ -117,7 +117,7 @@ def draw() -> None:
                 job_y = y + job_offset * l_width
                 last = min(last, job_y)
 
-                colour = "blue" if job.failed else "black"
+                colour = f"#{job.fails * 100:06X}"
                 graph.DrawLine((job.start, job_y), (job.end, job_y), width=l_width, color=colour)
 
         for fail in norm_server_failures(s.failures):
