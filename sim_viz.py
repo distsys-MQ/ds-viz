@@ -118,6 +118,7 @@ def draw() -> None:
                 for k in range(job.cores):
                     # Offset by number of job's cores + number of concurrent jobs
                     # If offset would exceed server height, reset to the bottom
+                    # TODO Fix job representation
                     used_cores = k + len(overlap)
                     job_offset = used_cores if used_cores < s.cores else 0
 
@@ -148,18 +149,18 @@ while True:
             norm_time = int(np.interp(np.array([time]), (left_margin, last_time), (x_offset, width - right_margin))[0])
             graph.RelocateFigure(timeline, norm_time, height)
 
-            window.Element("current_server").Update(server.get_server_at(time).print_server(server))
+            window.Element("current_server").Update(server.print_server_at(time))
 
         # Handle pressing left/right arrow keys
         # Probably not necessary https://github.com/PySimpleGUI/PySimpleGUI/issues/1756
         elif "Left" in event:
             time = time - 1 if time > 1 else 0
             window.Element("slider").Update(time)
-            window.Element("current_server").Update(server.get_server_at(time).print_server(server))
+            window.Element("current_server").Update(server.print_server_at(time))
         elif "Right" in event:
             time = time + 1 if time < last_time else last_time
             window.Element("slider").Update(time)
-            window.Element("current_server").Update(server.get_server_at(time).print_server(server))
+            window.Element("current_server").Update(server.print_server_at(time))
 
         # Handle clicking in the graph
         elif event == "graph":
@@ -174,7 +175,7 @@ while True:
             for y_range, s in s_boxes.items():
                 if box_x in x_range and box_y in y_range:
                     server = s
-                    window.Element("current_server").Update(server.get_server_at(time).print_server(server))
+                    window.Element("current_server").Update(server.print_server_at(time))
                     break
     else:
         break
