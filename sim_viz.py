@@ -90,40 +90,47 @@ def draw() -> None:
     top = height - left_margin
     last = top
 
-    for s in servers:
-        offset = s.cores * l_width + l_width
+    for kind, kind_dict in s_dict.items():
+        # Get first server of the current kind to calculate the kind's offset
+        # Defining a 'kind' separately could make this easier
+        kind_offset = list(kind_dict.values())[0].cores * l_width + l_width
+        text_margin = 6
+        graph.DrawText(f"{kind}", (left_margin - text_margin, last - kind_offset))
 
-        box_y1 = last - offset - 6
-        box_y2 = last - 6
-        s_boxes[range(box_y1, box_y2)] = s
-        graph.DrawRectangle((box_x1, box_y1), (box_x2, box_y2))
+        for s in kind_dict.values():
+            offset = s.cores * l_width + l_width
 
-        y = last - offset
-        graph.DrawText("{} {}".format(s.kind, s.sid), (left_margin, y))
+            box_y1 = last - offset - text_margin
+            box_y2 = last - text_margin
+            s_boxes[range(box_y1, box_y2)] = s
+            graph.DrawRectangle((box_x1, box_y1), (box_x2, box_y2))
 
-        if len(s.jobs) == 0:  # Add empty space for jobless servers
-            last -= s.cores * l_width + l_width
+            sid_y = last - offset
+            graph.DrawText(f"{s.sid}", (x_offset - text_margin, sid_y))
 
-        jobs = norm_jobs(s.jobs)
-        for job in jobs:
-            overlap = list(filter(lambda j: j.is_overlapping(job), jobs[:jobs.index(job)]))
+            if len(s.jobs) == 0:  # Add empty space for jobless servers
+                last -= s.cores * l_width + l_width
 
-            for k in range(job.cores):
-                # Offset by number of job's cores + number of concurrent jobs
-                # If offset would exceed server height, reset to the bottom
-                used_cores = k + len(overlap)
-                job_offset = used_cores if used_cores < s.cores else 0
+            jobs = norm_jobs(s.jobs)
+            for job in jobs:
+                overlap = list(filter(lambda j: j.is_overlapping(job), jobs[:jobs.index(job)]))
 
-                job_y = y + job_offset * l_width
-                last = min(last, job_y)
+                for k in range(job.cores):
+                    # Offset by number of job's cores + number of concurrent jobs
+                    # If offset would exceed server height, reset to the bottom
+                    used_cores = k + len(overlap)
+                    job_offset = used_cores if used_cores < s.cores else 0
 
-                colour = f"#{job.fails * 100:06X}"
-                graph.DrawLine((job.start, job_y), (job.end, job_y), width=l_width, color=colour)
+                    job_y = sid_y + job_offset * l_width
+                    last = min(last, job_y)
 
-        for fail in norm_server_failures(s.failures):
-            fail_y = y - 2
-            graph.DrawRectangle((fail.fail, fail_y), (fail.recover, fail_y + s.cores * l_width),
-                                fill_color="red", line_color="red")
+                    colour = f"#{job.fails * 100:06X}"
+                    graph.DrawLine((job.start, job_y), (job.end, job_y), width=l_width, color=colour)
+
+            for fail in norm_server_failures(s.failures):
+                fail_y = sid_y - 2
+                graph.DrawRectangle((fail.fail, fail_y), (fail.recover, fail_y + s.cores * l_width),
+                                    fill_color="red", line_color="red")
 
 
 draw()
@@ -144,6 +151,7 @@ while True:
             window.Element("current_server").Update(server.get_server_at(time).print_server(server))
 
         # Handle pressing left/right arrow keys
+        # Probably not necessary https://github.com/PySimpleGUI/PySimpleGUI/issues/1756
         elif "Left" in event:
             time = time - 1 if time > 1 else 0
             window.Element("slider").Update(time)
