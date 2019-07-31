@@ -1,4 +1,5 @@
 import sys
+from textwrap import dedent
 from typing import List, Dict, BinaryIO
 from xml.etree.ElementTree import parse
 
@@ -53,10 +54,10 @@ class Server:
     def print_server_at(self, time: int) -> str:
         cur = self.get_server_at(time)
 
-        return f"""\
-{self.kind} {self.sid}: {cur.states[0].name};  cores: {cur.cores} ({self.cores})
-memory: {cur.memory} ({self.memory});  disk: {cur.disk} ({self.disk})
-running jobs: {len(cur.jobs)}"""
+        return dedent(f"""\
+        {self.kind} {self.sid}: {cur.states[0].name};  cores: {cur.cores} ({self.cores})
+        memory: {cur.memory} ({self.memory});  disk: {cur.disk} ({self.disk})
+        running jobs: {len(cur.jobs)}""")
 
     def get_server_states(self, log: str) -> None:
         states = {0: ServerState.inactive}

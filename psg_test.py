@@ -1,7 +1,5 @@
 import PySimpleGUI as pSG
 
-width = 1000
-height = 600
 pSG.SetOptions(font=("Helvetica", 10))
 layout = [
     [pSG.Text("=" * 162)],
