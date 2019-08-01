@@ -11,19 +11,19 @@ from server_failure import ServerFailure
 
 
 # https://stackoverflow.com/a/11541450/8031185
-def is_valid_file(psr: ArgumentParser, arg: str) -> str:
-    if not os.path.isfile(arg):
-        psr.error("The file '{}' does not exist!".format(arg))
-    else:
-        return arg
+# def is_valid_file(psr: ArgumentParser, arg: str) -> str:
+#     if not os.path.isfile(arg):
+#         psr.error("The file '{}' does not exist!".format(arg))
+#     else:
+#         return arg
+# parser = ArgumentParser(description="Visualises DS simulations")
+# parser.add_argument("log", type=lambda f: is_valid_file(parser, f), help="simulation log file to visualise")
+# parser.add_argument("config", type=lambda f: is_valid_file(parser, f), help="configuration file used in simulation")
+# args = parser.parse_args()
 
-
-parser = ArgumentParser(description="Visualises DS simulations")
-parser.add_argument("log", type=lambda f: is_valid_file(parser, f), help="simulation log file to visualise")
-parser.add_argument("config", type=lambda f: is_valid_file(parser, f), help="configuration file used in simulation")
-args = parser.parse_args()
-
-servers = get_servers_from_system(args.log, args.config)
+log = "./logs/personal-config6-fail.xml.your.log"
+system = "./configs/personal-config6-fail.xml"
+servers = get_servers_from_system(log, system)
 s_dict = server_list_to_dict(servers)
 s_boxes = dict()
 
@@ -45,7 +45,7 @@ layout = [
     [pSG.Frame("Current Server", [[pSG.Txt("", size=frame_size, key="current_server")]]),
      pSG.Frame("Current Results", [[pSG.Txt("", size=frame_size, key="current_results")]]),
      pSG.Frame("Final Results", [[
-         pSG.Column([[pSG.Txt(get_results(args.log), font=("Helvetica", 7))]],
+         pSG.Column([[pSG.Txt(get_results(log), font=("Helvetica", 7))]],
                     size=(350, 85), scrollable=True)]])],
     [pSG.Slider(range=(0, Server.last_time), default_value=0, size=(89, 15), pad=((x_offset - 7, 0), 0),
                 orientation="h", enable_events=True, key="slider")],
