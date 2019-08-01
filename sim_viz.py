@@ -53,7 +53,7 @@ layout = [
 ]
 window = pSG.Window("sim-viz", layout, size=(width + 60, height + menu_height),
                     resizable=True, return_keyboard_events=True)
-window.Finalize()
+# window.Finalize()
 graph = window.Element("graph")
 
 
@@ -134,48 +134,48 @@ def draw() -> None:
                                     fill_color="red", line_color="red")
 
 
-draw()
-timeline = graph.DrawLine((x_offset, height), (x_offset, 0), width=2, color="grey")
-server = servers[0]
-time = 0
-
-while True:
-    event, values = window.Read()
-
-    if event is not None:
-        # Handle slider input
-        if event == "slider":
-            time = int(values["slider"])
-            norm_time = int(np.interp(np.array([time]), (left_margin, last_time), (x_offset, width - right_margin))[0])
-            graph.RelocateFigure(timeline, norm_time, height)
-
-            window.Element("current_server").Update(server.print_server_at(time))
-
-        # Handle pressing left/right arrow keys
-        # Probably not necessary https://github.com/PySimpleGUI/PySimpleGUI/issues/1756
-        elif "Left" in event:
-            time = time - 1 if time > 1 else 0
-            window.Element("slider").Update(time)
-            window.Element("current_server").Update(server.print_server_at(time))
-        elif "Right" in event:
-            time = time + 1 if time < last_time else last_time
-            window.Element("slider").Update(time)
-            window.Element("current_server").Update(server.print_server_at(time))
-
-        # Handle clicking in the graph
-        elif event == "graph":
-            mouse = values["graph"]
-
-            if mouse == (None, None):
-                continue
-            box_x = mouse[0]
-            box_y = mouse[1]
-            x_range = range(box_x1, box_x2)
-
-            for y_range, s in s_boxes.items():
-                if box_x in x_range and box_y in y_range:
-                    server = s
-                    window.Element("current_server").Update(server.print_server_at(time))
-                    break
-    else:
-        break
+# draw()
+# timeline = graph.DrawLine((x_offset, height), (x_offset, 0), width=2, color="grey")
+# server = servers[0]
+# time = 0
+#
+# while True:
+#     event, values = window.Read()
+#
+#     if event is not None:
+#         # Handle slider input
+#         if event == "slider":
+#             time = int(values["slider"])
+#             norm_time = int(np.interp(np.array([time]), (left_margin, last_time), (x_offset, width - right_margin))[0])
+#             graph.RelocateFigure(timeline, norm_time, height)
+#
+#             window.Element("current_server").Update(server.print_server_at(time))
+#
+#         # Handle pressing left/right arrow keys
+#         # Probably not necessary https://github.com/PySimpleGUI/PySimpleGUI/issues/1756
+#         elif "Left" in event:
+#             time = time - 1 if time > 1 else 0
+#             window.Element("slider").Update(time)
+#             window.Element("current_server").Update(server.print_server_at(time))
+#         elif "Right" in event:
+#             time = time + 1 if time < last_time else last_time
+#             window.Element("slider").Update(time)
+#             window.Element("current_server").Update(server.print_server_at(time))
+#
+#         # Handle clicking in the graph
+#         elif event == "graph":
+#             mouse = values["graph"]
+#
+#             if mouse == (None, None):
+#                 continue
+#             box_x = mouse[0]
+#             box_y = mouse[1]
+#             x_range = range(box_x1, box_x2)
+#
+#             for y_range, s in s_boxes.items():
+#                 if box_x in x_range and box_y in y_range:
+#                     server = s
+#                     window.Element("current_server").Update(server.print_server_at(time))
+#                     break
+#     else:
+#         break
