@@ -1,3 +1,4 @@
+import math
 import os
 from argparse import ArgumentParser
 from typing import List
@@ -90,13 +91,12 @@ def draw() -> None:
     top = height - left_margin
     last = top
     font = ("Courier New", 8)
+    char_width = 2.5
+    text_margin = int(char_width * 2)
 
     for kind, kind_dict in s_dict.items():
-        # Get first server of the current kind to calculate the kind's offset
-        # Defining a 'kind' separately could make this easier
-        kind_offset = list(kind_dict.values())[0].cores * l_width + l_width
-        text_margin = 6
-        graph.DrawText(f"{kind}", (left_margin - text_margin, last - kind_offset), font=font)
+        kind_y = last - text_margin * 2
+        graph.DrawText(f"{kind}", (left_margin, kind_y), font=font)
 
         for s in kind_dict.values():
             offset = s.cores * l_width + l_width
@@ -106,8 +106,12 @@ def draw() -> None:
             s_boxes[range(box_y1, box_y2)] = s
             graph.DrawRectangle((box_x1, box_y1), (box_x2, box_y2))
 
+            # https://stackoverflow.com/a/2189827/8031185
+            sid_length = 1 if s.sid == 0 else int(math.log10(s.sid)) + 1
+
+            sid_x = x_offset - text_margin - (sid_length * char_width)
             sid_y = last - offset
-            graph.DrawText(f"{s.sid}", (x_offset - text_margin, sid_y), font=font)
+            graph.DrawText(f"{s.sid}", (sid_x, sid_y), font=font)
 
             if len(s.jobs) == 0:  # Add empty space for jobless servers
                 last -= s.cores * l_width + l_width
