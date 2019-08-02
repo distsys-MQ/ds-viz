@@ -3,7 +3,7 @@ import PySimpleGUI as pSG
 width = 100
 height = 60
 text = "testing"
-font = ("Courier New", 10)
+font = ("Courier New", -30)
 
 pSG.SetOptions(font=font, element_padding=(0, 0))
 layout = [
@@ -14,13 +14,13 @@ layout = [
 
 window = pSG.Window("test", layout, margins=(0, 0))
 graph = window.Finalize().Element("graph")
-graph.DrawText("Testing1", (0, 0), font=font)
-graph.DrawText("Testing2", (width, 0), font=font)
-graph.DrawText("Testing3", (25, 15), font=font)
-graph.DrawText("Testing4", (width/2, height/2), font=font)
-graph.DrawText("Testing5", (0, height), font=font)
-graph.DrawText("Testing6", (width, height), font=font)
-graph.DrawText("X", (7, 45), font=font)
+# graph.DrawText("Testing1", (0, 0), font=font)
+# graph.DrawText("Testing2", (width, 0), font=font)
+# graph.DrawText("Testing3", (25, 15), font=font)
+# graph.DrawText("Testing4", (width/2, height/2), font=font)
+# graph.DrawText("Testing5", (0, height), font=font)
+# graph.DrawText("Testing6", (width, height), font=font)
+graph.DrawText("X", (width/2, height/2), font=font)
 
 while True:
     event, values = window.Read()

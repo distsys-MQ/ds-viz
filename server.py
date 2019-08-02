@@ -51,13 +51,19 @@ class Server:
                 diff = d
         return best
 
-    def print_server_at(self, time: int) -> str:
-        cur = self.get_server_at(time)
+    def print_server_at(self, t: int) -> str:
+        # TODO Add more details
+        cur = self.get_server_at(t)
+
+        queued_jobs = list(filter(lambda j: j.is_queued_at(t), self.jobs))
+        completed_jobs = list(filter(lambda j: j.is_completed_at(t), self.jobs))
+        failed_jobs = list(filter(lambda j: j.is_failed_at(t), self.jobs))
 
         return dedent(f"""\
         {self.kind} {self.sid}: {cur.states[0].name};  cores: {cur.cores} ({self.cores})
         memory: {cur.memory} ({self.memory});  disk: {cur.disk} ({self.disk})
-        running jobs: {len(cur.jobs)}""")
+        running jobs: {len(cur.jobs)};  queued jobs: {len(queued_jobs)};
+        completed jobs: {len(completed_jobs)};  failed jobs: {len(failed_jobs)}""")
 
     def get_server_states(self, log: str) -> None:
         states = {0: ServerState.inactive}
