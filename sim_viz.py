@@ -37,18 +37,18 @@ right_margin = 15
 last_time = Server.last_time
 x_offset = left_margin * 2
 
-pSG.SetOptions(font=("Courier New", 10), background_color="whitesmoke", element_padding=(0, 0))
+pSG.SetOptions(font=("Courier New", 10), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
 graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height),
                            key="graph", change_submits=True, drag_submits=False)]]
-frame_size = (47, 6)
+frame_size = (49, 6)
 layout = [
     [pSG.Frame("Current Server", [[pSG.Txt("", size=frame_size, key="current_server")]]),
      pSG.Frame("Current Results", [[pSG.Txt("", size=frame_size, key="current_results")]]),
      pSG.Frame("Final Results", [[
          pSG.Column([[pSG.Txt(get_results(args.log), font=("Courier New", 8))]],
-                    size=(350, 85), scrollable=True)]])],
-    [pSG.Slider(range=(0, Server.last_time), default_value=0, size=(89, 15), pad=((x_offset - 7, 0), 0),
+                    size=(400, 83), scrollable=True)]])],
+    [pSG.Slider(range=(0, Server.last_time), default_value=0, size=(89, 15), pad=((44, 0), 0),
                 orientation="h", enable_events=True, key="slider")],
     [pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
