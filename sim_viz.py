@@ -7,7 +7,7 @@ import numpy as np
 import PySimpleGUI as pSG
 
 from job import Job
-from server import Server, get_servers_from_system, server_list_to_dict, get_results
+from server import Server, get_servers_from_system, server_list_to_dict, get_results, print_servers_at
 from server_failure import ServerFailure
 
 
@@ -56,6 +56,8 @@ window = pSG.Window("sim-viz", layout, size=(width + 60, height + menu_height),
                     resizable=True, return_keyboard_events=True)
 window.Finalize()
 graph = window.Element("graph")
+current_server = window.Element("current_server")
+current_results = window.Element("current_results")
 
 
 def norm_jobs(jobs: List[Job]) -> List[Job]:
@@ -139,6 +141,11 @@ def draw() -> None:
                                     fill_color="red", line_color="red")
 
 
+def update_output(t: int):
+    current_server.Update(server.print_server_at(t))
+    current_results.Update(print_servers_at(servers, t))
+
+
 draw()
 timeline = graph.DrawLine((x_offset, height), (x_offset, 0), width=2, color="grey")
 server = servers[0]
@@ -156,18 +163,18 @@ while True:
         norm_time = int(np.interp(np.array([time]), (left_margin, last_time), (x_offset, width - right_margin))[0])
         graph.RelocateFigure(timeline, norm_time, height)
 
-        window.Element("current_server").Update(server.print_server_at(time))
+        update_output(time)
 
     # Handle pressing left/right arrow keys
-    # Probably not necessary https://github.com/PySimpleGUI/PySimpleGUI/issues/1756
+    # Replace with this once PSG has been updated https://github.com/PySimpleGUI/PySimpleGUI/issues/1756
     elif "Left" in event:
         time = time - 1 if time > 1 else 0
         window.Element("slider").Update(time)
-        window.Element("current_server").Update(server.print_server_at(time))
+        update_output(time)
     elif "Right" in event:
         time = time + 1 if time < last_time else last_time
         window.Element("slider").Update(time)
-        window.Element("current_server").Update(server.print_server_at(time))
+        update_output(time)
 
     # Handle clicking in the graph
     elif event == "graph":
@@ -182,7 +189,7 @@ while True:
         for y_range, s in s_boxes.items():
             if box_x in x_range and box_y in y_range:
                 server = s
-                window.Element("current_server").Update(server.print_server_at(time))
+                update_output(time)
                 break
 
 window.Close()
