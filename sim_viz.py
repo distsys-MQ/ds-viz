@@ -34,7 +34,7 @@ j_graph_ids: Dict[int, List[int]] = {jid: [] for jid in unique_jids}
 
 l_width = 5
 width = 1200
-height = sum([s.cores for s in servers]) * l_width * 2
+height = int(sum([s.cores for s in servers]) * l_width * 1.5)
 menu_height = 150
 left_margin = 30
 right_margin = 15
@@ -62,8 +62,7 @@ layout = [
                 orientation="h", enable_events=True, key="time_slider")],
     [pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
-window = pSG.Window("sim-viz", layout, size=(width + 60, height + menu_height),
-                    resizable=True, return_keyboard_events=True)
+window = pSG.Window("sim-viz", layout, resizable=True, return_keyboard_events=True)
 window.Finalize()
 graph = window.Element("graph")
 current_server = window.Element("current_server")
