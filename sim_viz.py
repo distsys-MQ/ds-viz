@@ -1,12 +1,13 @@
 import math
 import os
 from argparse import ArgumentParser
+from operator import attrgetter
 from typing import List, Dict, Tuple
 
 import numpy as np
 import PySimpleGUI as pSG
 
-from job import Job
+from job import Job, get_job_at
 from server import Server, get_servers_from_system, server_list_to_dict, get_results, print_servers_at
 from server_failure import ServerFailure
 
@@ -32,6 +33,8 @@ s_dict = server_list_to_dict(servers)
 s_boxes: Dict[range, Server] = {}
 
 unique_jids = sorted({j.jid for s in servers for j in s.jobs})
+j_dict: Dict[int, List[Job]] = {
+    jid: sorted([j for s in servers for j in s.jobs if j.jid == jid], key=attrgetter("schd")) for jid in unique_jids}
 j_graph_ids: Dict[int, List[Tuple[int, str]]] = {jid: [] for jid in unique_jids}
 
 l_width = 5
@@ -75,6 +78,7 @@ window = pSG.Window("sim-viz", layout, resizable=True, return_keyboard_events=Tr
 window.Finalize()
 graph = window.Element("graph")
 current_server = window.Element("current_server")
+current_job = window.Element("current_job")
 current_results = window.Element("current_results")
 t_slider = window.Element("time_slider")
 j_slider = window.Element("job_slider")
@@ -139,10 +143,10 @@ def draw() -> None:
                 last -= s.cores * l_width + l_width
 
             jobs = norm_jobs(s.jobs)
-            for job in jobs:
-                overlap = list(filter(lambda j: j.is_overlapping(job), jobs[:jobs.index(job)]))
+            for jb in jobs:
+                overlap = list(filter(lambda j: j.is_overlapping(jb), jobs[:jobs.index(jb)]))
 
-                for k in range(job.cores):
+                for k in range(jb.cores):
                     # Offset by number of job's cores + number of concurrent jobs
                     # If offset would exceed server height, reset to the bottom
                     # TODO Fix job representation
@@ -152,9 +156,9 @@ def draw() -> None:
                     job_y = sid_y + job_offset * l_width
                     last = min(last, job_y)
 
-                    col = f"#{job.fails * 100:06X}"
-                    j_graph_ids[job.jid].append(
-                        (graph.DrawLine((job.start, job_y), (job.end, job_y), width=l_width, color=col), col))
+                    col = f"#{jb.fails * 50:06X}"  # Need to improve, maybe normalise against most-failed job
+                    j_graph_ids[jb.jid].append(
+                        (graph.DrawLine((jb.start, job_y), (jb.end, job_y), width=l_width, color=col), col))
 
             for fail in norm_server_failures(s.failures):
                 fail_y = sid_y - 2
@@ -167,6 +171,7 @@ prev_jid = unique_jids[0]
 
 def update_output(t: int):
     current_server.Update(server.print_server_at(t))
+    current_job.Update(job.print_job(t))
     current_results.Update(print_servers_at(servers, t))
 
 
@@ -191,6 +196,7 @@ def change_selected_job(jid: int):
 draw()
 timeline = graph.DrawLine((x_offset, height), (x_offset, 0), width=2, color="grey")
 server = servers[0]
+job = j_dict[unique_jids[0]][0]
 time = 0
 
 while True:
@@ -202,14 +208,19 @@ while True:
     # Handle time slider input
     if event == "time_slider":
         time = int(values["time_slider"])
+        job = get_job_at(j_dict[job.jid], time)
         norm_time = int(np.interp(np.array([time]), (left_margin, last_time), (x_offset, width - right_margin))[0])
         graph.RelocateFigure(timeline, norm_time, height)
 
         update_output(time)
 
-    if event == "job_slider" and show_job:
+    if event == "job_slider":
         jid = int(values["job_slider"])
-        change_selected_job(jid)
+        job = get_job_at(j_dict[jid], time)
+        update_output(time)
+
+        if show_job:
+            change_selected_job(jid)
 
     if event == "show_job":
         show_job = not show_job

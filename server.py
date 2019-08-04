@@ -26,8 +26,8 @@ class Server:
         self.jobs = jobs if jobs else []
         self.failures = failures if failures else []
 
-    # def __repr__(self):
-    # def __str__(self):
+    def __str__(self):
+        return f"{self.kind} {self.sid}"
 
     def get_server_at(self, t: int) -> "Server":
         jobs = list(filter(lambda j: j.is_running_at(t), self.jobs))
