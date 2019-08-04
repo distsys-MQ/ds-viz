@@ -70,12 +70,17 @@ class Server:
         completed_jobs = list(filter(lambda j: j.is_completed_at(t), self.jobs))
         failed_jobs = list(filter(lambda j: j.is_failed_at(t), self.jobs))
 
-        return dedent(f"""\
-        {self.kind} {self.sid}: {cur.states[0].name};  cores: {cur.cores} ({self.cores})
-        memory: {cur.memory} ({self.memory});  disk: {cur.disk} ({self.disk})
-        running jobs: {len(cur.jobs)};  queued jobs: {len(queued_jobs)};
-        completed jobs: {len(completed_jobs)};  failed jobs: {len(failed_jobs)}
-        total server failures: {self.count_failures_at(t)}""")
+        return (
+            f"{self.kind} {self.sid}: {cur.states[0].name},  "
+            f"cores: {cur.cores} ({self.cores}),  "
+            f"memory: {cur.memory} ({self.memory}),\n"
+            f"disk: {cur.disk} ({self.disk}),  "
+            f"running jobs: {len(cur.jobs)},  "
+            f"queued jobs: {len(queued_jobs)},\n"
+            f"completed jobs: {len(completed_jobs)},  "
+            f"failed jobs: {len(failed_jobs)},  "
+            f"server failures: {self.count_failures_at(t)}"
+        )
 
     def get_server_states(self, log: str) -> None:
         states = {0: state.inactive}
@@ -220,11 +225,17 @@ def print_servers_at(servers: List[Server], t: int) -> str:
     j_completed = list(chain.from_iterable(filter(lambda job: job.is_completed_at(t), s.jobs) for s in servers))
     j_failed = list(chain.from_iterable(filter(lambda job: job.is_failed_at(t), s.jobs) for s in servers))
 
-    return dedent(f"""\
-    SERVERS: inactive: {len(s_inactive)};  booting: {len(s_booting)}
-      idle: {len(s_idle)};  active: {len(s_active)};  unavailable: {len(s_unavailable)} ({s_failures})
-    JOBS: running: {len(j_running)};  queued: {len(j_queued)}
-      completed: {len(j_completed)};  failed: {len(j_failed)}""")
+    return (
+        f"SERVERS: inactive: {len(s_inactive)},  "
+        f"booting: {len(s_booting)},  "
+        f"idle: {len(s_idle)},  "
+        f"active: {len(s_active)},\n"
+        f"  unavailable: {len(s_unavailable)} ({s_failures})\n"
+        f"JOBS: running: {len(j_running)},  "
+        f"queued: {len(j_queued)},  "
+        f"completed: {len(j_completed)},  "
+        f"failed: {len(j_failed)}"
+    )
 
 
 def server_list_to_dict(servers: List[Server]) -> Dict[str, Dict[int, Server]]:

@@ -45,17 +45,24 @@ x_offset = left_margin * 2
 
 pSG.SetOptions(font=("Courier New", 10), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
-graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height),
-                           key="graph", change_submits=True, drag_submits=False)]]
-frame_size = (49, 6)
+tab_size = (75, 3)
 t_slider_width = 89
 sj_btn_width = 10
 
+graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height),
+                           key="graph", change_submits=True, drag_submits=False)]]
+left_tabs = pSG.TabGroup(
+    [[pSG.Tab("Current Server", [[pSG.Txt("", size=tab_size, key="current_server")]]),
+      pSG.Tab("Current Job", [[pSG.Txt("", size=tab_size, key="current_job")]])]]
+)
+right_tabs = pSG.TabGroup(
+    [[pSG.Tab("Current Results", [[pSG.Txt("", size=tab_size, key="current_results")]]),
+      pSG.Tab("Final Results", [[pSG.Multiline(
+          get_results(args.log), font=("Courier New", 8), size=tab_size, disabled=True)]])]]
+)
+
 layout = [
-    [pSG.Frame("Current Server", [[pSG.Txt("", size=frame_size, key="current_server")]]),
-     pSG.Frame("Current Results", [[pSG.Txt("", size=frame_size, key="current_results")]]),
-     pSG.Frame("Final Results", [[
-         pSG.Column([[pSG.Txt(get_results(args.log), font=("Courier New", 8))]], size=(400, 83), scrollable=True)]])],
+    [left_tabs, right_tabs],
     [pSG.Button("Show Job", size=(sj_btn_width, 1), button_color=("white", "red"), key="show_job"),
      pSG.Slider((unique_jids[0], unique_jids[-1]), default_value=unique_jids[0],
                 size=(t_slider_width - sj_btn_width, 10), orientation="h", enable_events=True, key="job_slider")],
