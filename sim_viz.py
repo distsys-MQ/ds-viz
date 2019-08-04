@@ -19,6 +19,8 @@ def is_valid_file(psr: ArgumentParser, arg: str) -> str:
         return arg
 
 
+# TODO cleanup code, revise scoping
+
 parser = ArgumentParser(description="Visualises DS simulations")
 parser.add_argument("log", type=lambda f: is_valid_file(parser, f), help="simulation log file to visualise")
 parser.add_argument("config", type=lambda f: is_valid_file(parser, f), help="configuration file used in simulation")
@@ -48,20 +50,20 @@ graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0)
 frame_size = (49, 6)
 t_slider_width = 89
 sj_btn_width = 10
-slider_settings = {"size": (89, 5), "pad": ((44, 0), 0), "orientation": 'h', "enable_events": True}
+
 layout = [
     [pSG.Frame("Current Server", [[pSG.Txt("", size=frame_size, key="current_server")]]),
      pSG.Frame("Current Results", [[pSG.Txt("", size=frame_size, key="current_results")]]),
      pSG.Frame("Final Results", [[
-         pSG.Column([[pSG.Txt(get_results(args.log), font=("Courier New", 8))]],
-                    size=(400, 83), scrollable=True)]])],
-    [pSG.Button("Show Job", size=(sj_btn_width, 1), button_color=("white", "green"), key="show_job"),
+         pSG.Column([[pSG.Txt(get_results(args.log), font=("Courier New", 8))]], size=(400, 83), scrollable=True)]])],
+    [pSG.Button("Show Job", size=(sj_btn_width, 1), button_color=("white", "red"), key="show_job"),
      pSG.Slider((unique_jids[0], unique_jids[-1]), default_value=unique_jids[0],
                 size=(t_slider_width - sj_btn_width, 10), orientation="h", enable_events=True, key="job_slider")],
     [pSG.Slider((0, Server.last_time), default_value=0, size=(t_slider_width, 10), pad=((44, 0), 0),
                 orientation="h", enable_events=True, key="time_slider")],
     [pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
+
 window = pSG.Window("sim-viz", layout, resizable=True, return_keyboard_events=True)
 window.Finalize()
 graph = window.Element("graph")
@@ -153,9 +155,30 @@ def draw() -> None:
                                     fill_color="red", line_color="red")
 
 
+prev_jid = unique_jids[0]
+
+
 def update_output(t: int):
     current_server.Update(server.print_server_at(t))
     current_results.Update(print_servers_at(servers, t))
+
+
+def change_job_colour(jid: int, col: str):
+    for j_graph_id, _ in j_graph_ids[jid]:
+        graph.Widget.itemconfig(j_graph_id, fill=col)
+
+
+def reset_job_colour(jid: int):
+    for j_graph_id, orig_col in j_graph_ids[jid]:
+        graph.Widget.itemconfig(j_graph_id, fill=orig_col)
+
+
+def change_selected_job(jid: int):
+    global prev_jid
+
+    change_job_colour(jid, "green")
+    reset_job_colour(prev_jid)
+    prev_jid = jid
 
 
 draw()
@@ -177,15 +200,20 @@ while True:
 
         update_output(time)
 
+    if event == "job_slider" and show_job:
+        jid = int(values["job_slider"])
+        change_selected_job(jid)
+
     if event == "show_job":
         show_job = not show_job
         jid = int(values["job_slider"])
 
-        colour = "green" if show_job else "black"
-        window.Element("show_job").Update(button_color=("white", ("red", "green")[show_job]))
-
-        for j_graph_id, orig_col in j_graph_ids[jid]:
-            graph.Widget.itemconfig(j_graph_id, fill=(orig_col, colour)[show_job])
+        if show_job:
+            window.Element("show_job").Update(button_color=("white", "green"))
+            change_job_colour(jid, "green")
+        else:
+            window.Element("show_job").Update(button_color=("white", "red"))
+            reset_job_colour(jid)
 
     # Handle pressing left/right arrow keys
     # Replace with this once PSG has been updated https://github.com/PySimpleGUI/PySimpleGUI/issues/1756
