@@ -1,7 +1,7 @@
 import math
 import os
 from argparse import ArgumentParser
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 import numpy as np
 import PySimpleGUI as pSG
@@ -30,7 +30,7 @@ s_dict = server_list_to_dict(servers)
 s_boxes: Dict[range, Server] = {}
 
 unique_jids = sorted({j.jid for s in servers for j in s.jobs})
-j_graph_ids: Dict[int, List[int]] = {jid: [] for jid in unique_jids}
+j_graph_ids: Dict[int, List[Tuple[int, str]]] = {jid: [] for jid in unique_jids}
 
 l_width = 5
 width = 1200
@@ -143,9 +143,9 @@ def draw() -> None:
                     job_y = sid_y + job_offset * l_width
                     last = min(last, job_y)
 
-                    colour = f"#{job.fails * 100:06X}"
+                    col = f"#{job.fails * 100:06X}"
                     j_graph_ids[job.jid].append(
-                        graph.DrawLine((job.start, job_y), (job.end, job_y), width=l_width, color=colour))
+                        (graph.DrawLine((job.start, job_y), (job.end, job_y), width=l_width, color=col), col))
 
             for fail in norm_server_failures(s.failures):
                 fail_y = sid_y - 2
@@ -181,10 +181,11 @@ while True:
         show_job = not show_job
         jid = int(values["job_slider"])
 
+        colour = "green" if show_job else "black"
         window.Element("show_job").Update(button_color=("white", ("red", "green")[show_job]))
 
-        for j_graph_id in j_graph_ids[jid]:
-            graph.Widget.itemconfig(j_graph_id, fill="green")
+        for j_graph_id, orig_col in j_graph_ids[jid]:
+            graph.Widget.itemconfig(j_graph_id, fill=(orig_col, colour)[show_job])
 
     # Handle pressing left/right arrow keys
     # Replace with this once PSG has been updated https://github.com/PySimpleGUI/PySimpleGUI/issues/1756
