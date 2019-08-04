@@ -77,7 +77,7 @@ class Job:
 
 # noinspection PyUnresolvedReferences
 def get_jobs(log: str, servers: Dict[str, Dict[int, "Server"]]) -> None:
-    job_failures = dict()
+    job_failures = {}
 
     with open(log, "rb") as f:
         while True:

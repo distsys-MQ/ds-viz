@@ -1,7 +1,7 @@
 import math
 import os
 from argparse import ArgumentParser
-from typing import List
+from typing import List, Dict
 
 import numpy as np
 import PySimpleGUI as pSG
@@ -25,8 +25,12 @@ parser.add_argument("config", type=lambda f: is_valid_file(parser, f), help="con
 args = parser.parse_args()
 
 servers = get_servers_from_system(args.log, args.config)
+
 s_dict = server_list_to_dict(servers)
-s_boxes = dict()
+s_boxes: Dict[range, Server] = {}
+
+unique_jids = sorted({j.jid for s in servers for j in s.jobs})
+j_graph_ids: Dict[int, List[int]] = {jid: [] for jid in unique_jids}
 
 l_width = 5
 width = 1200
@@ -42,14 +46,20 @@ pSG.SetOptions(font=("Courier New", 10), background_color="whitesmoke", element_
 graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height),
                            key="graph", change_submits=True, drag_submits=False)]]
 frame_size = (49, 6)
+t_slider_width = 89
+sj_btn_width = 10
+slider_settings = {"size": (89, 5), "pad": ((44, 0), 0), "orientation": 'h', "enable_events": True}
 layout = [
     [pSG.Frame("Current Server", [[pSG.Txt("", size=frame_size, key="current_server")]]),
      pSG.Frame("Current Results", [[pSG.Txt("", size=frame_size, key="current_results")]]),
      pSG.Frame("Final Results", [[
          pSG.Column([[pSG.Txt(get_results(args.log), font=("Courier New", 8))]],
                     size=(400, 83), scrollable=True)]])],
-    [pSG.Slider(range=(0, Server.last_time), default_value=0, size=(89, 15), pad=((44, 0), 0),
-                orientation="h", enable_events=True, key="slider")],
+    [pSG.Button("Show Job", size=(sj_btn_width, 1), button_color=("white", "green"), key="show_job"),
+     pSG.Slider((unique_jids[0], unique_jids[-1]), default_value=unique_jids[0],
+                size=(t_slider_width - sj_btn_width, 10), orientation="h", enable_events=True, key="job_slider")],
+    [pSG.Slider((0, Server.last_time), default_value=0, size=(t_slider_width, 10), pad=((44, 0), 0),
+                orientation="h", enable_events=True, key="time_slider")],
     [pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
 window = pSG.Window("sim-viz", layout, size=(width + 60, height + menu_height),
@@ -58,6 +68,9 @@ window.Finalize()
 graph = window.Element("graph")
 current_server = window.Element("current_server")
 current_results = window.Element("current_results")
+t_slider = window.Element("time_slider")
+j_slider = window.Element("job_slider")
+show_job = False
 
 
 def norm_jobs(jobs: List[Job]) -> List[Job]:
@@ -90,8 +103,7 @@ box_x2 = x_offset - 2
 
 
 def draw() -> None:
-    top = height - left_margin
-    last = top
+    last = height - l_width
     font = ("Courier New", 8)
     char_width = 2.5
     text_margin = int(char_width * 2)
@@ -133,7 +145,8 @@ def draw() -> None:
                     last = min(last, job_y)
 
                     colour = f"#{job.fails * 100:06X}"
-                    graph.DrawLine((job.start, job_y), (job.end, job_y), width=l_width, color=colour)
+                    j_graph_ids[job.jid].append(
+                        graph.DrawLine((job.start, job_y), (job.end, job_y), width=l_width, color=colour))
 
             for fail in norm_server_failures(s.failures):
                 fail_y = sid_y - 2
@@ -157,23 +170,32 @@ while True:
     if event is None or event == 'Exit':
         break
 
-    # Handle slider input
-    if event == "slider":
-        time = int(values["slider"])
+    # Handle time slider input
+    if event == "time_slider":
+        time = int(values["time_slider"])
         norm_time = int(np.interp(np.array([time]), (left_margin, last_time), (x_offset, width - right_margin))[0])
         graph.RelocateFigure(timeline, norm_time, height)
 
         update_output(time)
 
+    if event == "show_job":
+        show_job = not show_job
+        jid = int(values["job_slider"])
+
+        window.Element("show_job").Update(button_color=("white", ("red", "green")[show_job]))
+
+        for j_graph_id in j_graph_ids[jid]:
+            graph.Widget.itemconfig(j_graph_id, fill="green")
+
     # Handle pressing left/right arrow keys
     # Replace with this once PSG has been updated https://github.com/PySimpleGUI/PySimpleGUI/issues/1756
     elif "Left" in event:
         time = time - 1 if time > 1 else 0
-        window.Element("slider").Update(time)
+        t_slider.Update(time)
         update_output(time)
     elif "Right" in event:
         time = time + 1 if time < last_time else last_time
-        window.Element("slider").Update(time)
+        t_slider.Update(time)
         update_output(time)
 
     # Handle clicking in the graph

@@ -12,7 +12,7 @@ from server_state import ServerState as state
 
 
 class Server:
-    last_time = None
+    last_time: int = None
 
     def __init__(self, kind: str, sid: int, cores: int, memory: int, disk: int,
                  states: Dict[int, state] = None, jobs: List[Job] = None,
