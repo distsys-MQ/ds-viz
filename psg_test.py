@@ -1,19 +1,27 @@
 import PySimpleGUI as pSG
 
-width = 400
-height = 200
+width = 200
+height = 600
 layout = [
-    [pSG.Graph((width, height), (0, height), (width, 0), key="graph", enable_events=True)]
+    [pSG.Graph((width, height), (0, height), (width, 0), key="graph", enable_events=True)],
+    [pSG.Btn('<', key="left_arrow"), pSG.Btn('>', key="right_arrow")]
 ]
-window = pSG.Window("test", layout, margins=(0, 0))
-graph = window.Finalize().Element("graph")          # type: pSG.Graph
+window = pSG.Window("test", layout, margins=(0, 0), size=(400, 1000))
+graph = window.Finalize().Element("graph")
 
-x1 = 40
-y1 = 20
-x2 = 360
-y2 = 180
-colour = "black"
-rid = graph.DrawRectangle((x1, y1), (x2, y2), fill_color=colour)
+step = 50
+tup = (0, step)
+
+
+def draw(bounds):
+    y = 10
+
+    for i in range(*bounds):
+        y += 10
+        graph.DrawText(i, (width / 2, y), font=("Courier New", 10))
+
+
+draw(tup)
 
 while True:
     event, values = window.Read()
@@ -21,13 +29,14 @@ while True:
     if event is None or event == 'Exit':
         break
 
-    elif event == "graph":
-        mouse = values["graph"]
+    elif event == "left_arrow":
+        graph.Erase()
+        tup = tuple((i - step for i in tup))
+        draw(tup)
 
-        if mouse == (None, None):
-            continue
-        if mouse[0] in range(x1, x2) and mouse[1] in range(y1, y2):
-            colour = "red" if colour == "black" else "black"
-            graph.Widget.itemconfig(rid, fill=colour)
+    elif event == "right_arrow":
+        graph.Erase()
+        tup = tuple(i + step for i in tup)
+        draw(tup)
 
 window.Close()

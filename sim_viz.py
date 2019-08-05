@@ -37,6 +37,10 @@ j_dict: Dict[int, List[Job]] = {
     jid: sorted([j for s in servers for j in s.jobs if j.jid == jid], key=attrgetter("schd")) for jid in unique_jids}
 j_graph_ids: Dict[int, List[Tuple[int, str]]] = {jid: [] for jid in unique_jids}
 
+step = 8
+start = 0
+stop = start + step
+
 l_width = 5
 width = 1200
 height = int(sum([s.cores for s in servers]) * l_width * 1.5)
@@ -51,6 +55,7 @@ pSG.SetOptions(font=("Courier New", -13), background_color="whitesmoke", element
 tab_size = (75, 3)
 t_slider_width = 89
 sj_btn_width = 10
+arw_btn_width = 2
 
 graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height),
                            key="graph", change_submits=True, drag_submits=False)]]
@@ -71,7 +76,9 @@ layout = [
                 size=(t_slider_width - sj_btn_width, 10), orientation="h", enable_events=True, key="job_slider")],
     [pSG.Slider((0, Server.last_time), default_value=0, size=(t_slider_width, 10), pad=((44, 0), 0),
                 orientation="h", enable_events=True, key="time_slider")],
-    [pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
+    [pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)],
+    [pSG.Btn('<', size=(arw_btn_width, 1), key="left_arrow"), pSG.Txt(" " * (150 - arw_btn_width * 2)),
+     pSG.Btn('>', size=(arw_btn_width, 1), key="right_arrow")]
 ]
 
 window = pSG.Window("sim-viz", layout, resizable=True, return_keyboard_events=True)
@@ -93,8 +100,8 @@ def norm_jobs(jobs: List[Job]) -> List[Job]:
     arr = np.interp(arr, (left_margin, last_time), (x_offset, width - right_margin))
     res = [j.copy() for j in jobs]
 
-    for (start, end), j in zip(arr, res):
-        j.start = int(start)
+    for (begin, end), j in zip(arr, res):
+        j.start = int(begin)
         j.end = int(end)
 
     return res
@@ -112,22 +119,27 @@ def norm_server_failures(failures: List[ServerFailure]) -> List[ServerFailure]:
 
 box_x1 = 3
 box_x2 = x_offset - 2
+norm_time = x_offset
+timeline = None
 
 
 def draw() -> None:
+    global timeline, s_boxes
+
     last = height - l_width
     font = ("Courier New", -11)
     char_width = 2.5
     text_margin = int(char_width * 2)
     max_s_length = 8
+    s_boxes = {}
 
-    for kind, kind_dict in s_dict.items():
+    for kind in list(s_dict)[start:stop]:
         kind_y = last - text_margin * 2
         s_kind = kind if len(kind) <= max_s_length else kind[:5] + ".."
 
         graph.DrawText(f"{s_kind}", (left_margin, kind_y), font=font)
 
-        for s in kind_dict.values():
+        for s in s_dict[kind].values():
             offset = s.cores * l_width + l_width
 
             box_y1 = last - offset - text_margin
@@ -167,6 +179,7 @@ def draw() -> None:
                 fail_y = sid_y - 2
                 graph.DrawRectangle((fail.fail, fail_y), (fail.recover, fail_y + s.cores * l_width),
                                     fill_color="red", line_color="red")
+    timeline = graph.DrawLine((norm_time, height), (norm_time, 0), width=2, color="grey")
 
 
 prev_jid = unique_jids[0]
@@ -191,13 +204,12 @@ def reset_job_colour(jid: int):
 def change_selected_job(jid: int):
     global prev_jid
 
-    change_job_colour(jid, "green")
     reset_job_colour(prev_jid)
+    change_job_colour(jid, "green")
     prev_jid = jid
 
 
 draw()
-timeline = graph.DrawLine((x_offset, height), (x_offset, 0), width=2, color="grey")
 server = servers[0]
 job = j_dict[unique_jids[0]][0]
 time = 0
@@ -208,7 +220,7 @@ while True:
     if event is None or event == 'Exit':
         break
 
-    # Handle time slider input
+    # Handle time slider movement
     if event == "time_slider":
         time = int(values["time_slider"])
         job = get_job_at(j_dict[job.jid], time)
@@ -217,6 +229,7 @@ while True:
 
         update_output(time)
 
+    # Handle job slider movement
     if event == "job_slider":
         jid = int(values["job_slider"])
         job = get_job_at(j_dict[jid], time)
@@ -225,6 +238,7 @@ while True:
         if show_job:
             change_selected_job(jid)
 
+    # Handle clicking "show job" button
     if event == "show_job":
         show_job = not show_job
         jid = int(values["job_slider"])
@@ -246,6 +260,25 @@ while True:
         time = time + 1 if time < last_time else last_time
         t_slider.Update(time)
         update_output(time)
+
+    elif event == "left_arrow":
+        graph.Erase()
+
+        (start, stop) = (start - step, stop - step) if stop > step else (0, step)
+        draw()
+
+        if show_job:
+            change_selected_job(int(values["job_slider"]))
+
+    elif event == "right_arrow":
+        graph.Erase()
+
+        hi_bound = len(s_dict) - step
+        (start, stop) = (start + step, stop + step) if start < hi_bound else (hi_bound, len(s_dict))
+        draw()
+
+        if show_job:
+            change_selected_job(int(values["job_slider"]))
 
     # Handle clicking in the graph
     elif event == "graph":
