@@ -263,7 +263,10 @@ while True:
     elif event == "left_arrow":
         graph.Erase()
 
-        (start, stop) = (start - step, stop - step) if stop > step else (0, step)
+        n_start = start - step
+        n_stop = stop - step
+        (start, stop) = (n_start, n_stop) if n_start > 0 else (0, step)
+
         draw()
 
         if show_job:
@@ -273,7 +276,10 @@ while True:
         graph.Erase()
 
         hi_bound = len(s_dict) - step
-        (start, stop) = (start + step, stop + step) if start < hi_bound else (hi_bound, len(s_dict))
+        n_start = start + step
+        n_stop = stop + step
+        (start, stop) = (n_start, n_stop) if start < hi_bound else (start, len(s_dict))
+
         draw()
 
         if show_job:
