@@ -55,7 +55,7 @@ pSG.SetOptions(font=("Courier New", -13), background_color="whitesmoke", element
 tab_size = (75, 3)
 t_slider_width = 89
 sj_btn_width = 10
-arw_btn_width = 2
+arw_btn_width = int(sj_btn_width / 2)
 
 graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height),
                            key="graph", change_submits=True, drag_submits=False)]]
@@ -73,12 +73,11 @@ layout = [
     [left_tabs, right_tabs],
     [pSG.Button("Show Job", size=(sj_btn_width, 1), button_color=("white", "red"), key="show_job"),
      pSG.Slider((unique_jids[0], unique_jids[-1]), default_value=unique_jids[0],
-                size=(t_slider_width - sj_btn_width, 10), orientation="h", enable_events=True, key="job_slider")],
+                size=(t_slider_width - sj_btn_width, 10), orientation="h", enable_events=True, key="job_slider"),
+     pSG.Btn('<', size=(arw_btn_width, 1), key="left_arrow"), pSG.Btn('>', size=(arw_btn_width, 1), key="right_arrow")],
     [pSG.Slider((0, Server.last_time), default_value=0, size=(t_slider_width, 10), pad=((44, 0), 0),
                 orientation="h", enable_events=True, key="time_slider")],
-    [pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)],
-    [pSG.Btn('<', size=(arw_btn_width, 1), key="left_arrow"), pSG.Txt(" " * (150 - arw_btn_width * 2)),
-     pSG.Btn('>', size=(arw_btn_width, 1), key="right_arrow")]
+    [pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
 
 window = pSG.Window("sim-viz", layout, resizable=True, return_keyboard_events=True)
