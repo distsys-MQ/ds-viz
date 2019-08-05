@@ -46,7 +46,7 @@ right_margin = 15
 last_time = Server.last_time
 x_offset = left_margin * 2
 
-pSG.SetOptions(font=("Courier New", 10), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
+pSG.SetOptions(font=("Courier New", -13), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
 tab_size = (75, 3)
 t_slider_width = 89
@@ -61,7 +61,7 @@ left_tabs = pSG.TabGroup(
 right_tabs = pSG.TabGroup(
     [[pSG.Tab("Current Results", [[pSG.Txt("", size=tab_size, key="current_results")]]),
       pSG.Tab("Final Results", [[pSG.Multiline(
-          get_results(args.log), font=("Courier New", 8), size=tab_size, disabled=True)]])]]
+          get_results(args.log), font=("Courier New", -11), size=tab_size, disabled=True)]])]]
 )
 
 layout = [
@@ -116,13 +116,16 @@ box_x2 = x_offset - 2
 
 def draw() -> None:
     last = height - l_width
-    font = ("Courier New", 8)
+    font = ("Courier New", -11)
     char_width = 2.5
     text_margin = int(char_width * 2)
+    max_s_length = 8
 
     for kind, kind_dict in s_dict.items():
         kind_y = last - text_margin * 2
-        graph.DrawText(f"{kind}", (left_margin, kind_y), font=font)
+        s_kind = kind if len(kind) <= max_s_length else kind[:5] + ".."
+
+        graph.DrawText(f"{s_kind}", (left_margin, kind_y), font=font)
 
         for s in kind_dict.values():
             offset = s.cores * l_width + l_width
