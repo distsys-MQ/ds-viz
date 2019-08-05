@@ -57,7 +57,7 @@ t_slider_width = 89
 sj_btn_width = 10
 arw_btn_width = int(sj_btn_width / 2)
 
-graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, 0), graph_top_right=(width, height),
+graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, height), graph_top_right=(width, 0),
                            key="graph", change_submits=True, drag_submits=False)]]
 left_tabs = pSG.TabGroup(
     [[pSG.Tab("Current Server", [[pSG.Txt("", size=tab_size, key="current_server")]]),
@@ -125,7 +125,7 @@ timeline = None
 def draw() -> None:
     global timeline, s_boxes
 
-    last = height - l_width
+    last = l_width
     font = ("Courier New", -11)
     char_width = 2.5
     text_margin = int(char_width * 2)
@@ -133,7 +133,7 @@ def draw() -> None:
     s_boxes = {}
 
     for kind in list(s_dict)[start:stop]:
-        kind_y = last - text_margin * 2
+        kind_y = last + text_margin * 2
         s_kind = kind if len(kind) <= max_s_length else kind[:5] + ".."
 
         graph.DrawText(f"{s_kind}", (left_margin, kind_y), font=font)
@@ -141,8 +141,8 @@ def draw() -> None:
         for s in s_dict[kind].values():
             offset = s.cores * l_width + l_width
 
-            box_y1 = last - offset - text_margin
-            box_y2 = last - text_margin
+            box_y1 = last + text_margin
+            box_y2 = last + offset + text_margin
             s_boxes[range(box_y1, box_y2)] = s
             graph.DrawRectangle((box_x1, box_y1), (box_x2, box_y2))
 
@@ -150,11 +150,11 @@ def draw() -> None:
             sid_length = 1 if s.sid == 0 else int(math.log10(s.sid)) + 1
 
             sid_x = x_offset - text_margin - (sid_length * char_width)
-            sid_y = last - offset
+            sid_y = last + offset
             graph.DrawText(f"{s.sid}", (sid_x, sid_y), font=font)
 
             if len(s.jobs) == 0:  # Add empty space for jobless servers
-                last -= s.cores * l_width + l_width
+                last += s.cores * l_width + l_width
 
             jobs = norm_jobs(s.jobs)
             for jb in jobs:
@@ -167,16 +167,16 @@ def draw() -> None:
                     used_cores = k + len(overlap)
                     job_offset = used_cores if used_cores < s.cores else 0
 
-                    job_y = sid_y + job_offset * l_width
-                    last = min(last, job_y)
+                    job_y = sid_y - job_offset * l_width
+                    last = max(last, job_y)
 
                     col = f"#{jb.fails * 50:06X}"  # Need to improve, maybe normalise against most-failed job
                     j_graph_ids[jb.jid].append(
                         (graph.DrawLine((jb.start, job_y), (jb.end, job_y), width=l_width, color=col), col))
 
             for fail in norm_server_failures(s.failures):
-                fail_y = sid_y - 2
-                graph.DrawRectangle((fail.fail, fail_y), (fail.recover, fail_y + s.cores * l_width),
+                fail_y = sid_y + 2
+                graph.DrawRectangle((fail.fail, fail_y), (fail.recover, fail_y - s.cores * l_width),
                                     fill_color="red", line_color="red")
     timeline = graph.DrawLine((norm_time, height), (norm_time, 0), width=2, color="grey")
 
