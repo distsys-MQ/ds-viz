@@ -7,6 +7,22 @@ class ServerFailure:
         self.recover = recover
 
 
+# noinspection PyUnresolvedReferences
+def get_failures_from_resources(resource_failures: str, servers: Dict[str, Dict[int, "Server"]]) -> None:
+    with open(resource_failures) as f:
+        next(f)  # Skip first line
+
+        for line in f:
+            msg = line.split()
+            fail = int(msg[0])
+            recover = int(msg[1])
+            kind = msg[2]
+            sid = int(msg[3])
+
+            failure = ServerFailure(fail, recover)
+            servers[kind][sid].failures.append(failure)
+
+
 def get_failures(log: str, servers, last_time: int) -> List[ServerFailure]:
     failures = []
 

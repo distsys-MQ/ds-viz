@@ -25,9 +25,10 @@ def is_valid_file(psr: ArgumentParser, arg: str) -> str:
 parser = ArgumentParser(description="Visualises DS simulations")
 parser.add_argument("log", type=lambda f: is_valid_file(parser, f), help="simulation log file to visualise")
 parser.add_argument("config", type=lambda f: is_valid_file(parser, f), help="configuration file used in simulation")
+parser.add_argument("failures", type=lambda f: is_valid_file(parser, f), help="resource-failures file from simulation")
 args = parser.parse_args()
 
-servers = get_servers_from_system(args.log, args.config)
+servers = get_servers_from_system(args.log, args.config, args.failures)
 
 s_dict = server_list_to_dict(servers)
 s_boxes: Dict[range, Server] = {}
@@ -170,7 +171,7 @@ def draw() -> None:
                     job_y = sid_y - job_offset * l_width
                     last = max(last, job_y)
 
-                    col = f"#{jb.fails * 50:06X}"  # Need to improve, maybe normalise against most-failed job
+                    col = f"#{jb.fails:06X}"  # Need to improve, maybe normalise against most-failed job
                     j_graph_ids[jb.jid].append(
                         (graph.DrawLine((jb.start, job_y), (jb.end, job_y), width=l_width, color=col), col))
 
@@ -204,7 +205,7 @@ def change_selected_job(jid: int):
     global prev_jid
 
     reset_job_colour(prev_jid)
-    change_job_colour(jid, "green")
+    change_job_colour(jid, "yellow")
     prev_jid = jid
 
 
@@ -244,7 +245,7 @@ while True:
 
         if show_job:
             window.Element("show_job").Update(button_color=("white", "green"))
-            change_job_colour(jid, "green")
+            change_job_colour(jid, "yellow")
         else:
             window.Element("show_job").Update(button_color=("white", "red"))
             reset_job_colour(jid)

@@ -1,13 +1,12 @@
 import sys
 from itertools import chain
-from textwrap import dedent
 from typing import List, Dict, BinaryIO
 from xml.etree.ElementTree import parse
 
 from file_read_backwards import FileReadBackwards
 
 from job import Job, get_jobs
-from server_failure import ServerFailure, get_failures
+from server_failure import ServerFailure, get_failures, get_failures_from_resources
 from server_state import ServerState as state
 
 
@@ -118,6 +117,25 @@ class Server:
         self.states = states
 
 
+def get_servers_from_system(log: str, system: str, resource_failures: str) -> List[Server]:
+    Server.last_time = get_last_time(log, system)
+    servers = []
+
+    for s in parse(system).iter("server"):
+        for i in range(int(s.attrib["limit"])):
+            servers.append(Server(
+                s.attrib["type"], i, int(s.attrib["coreCount"]), int(s.attrib["memory"]), int(s.attrib["disk"])))
+
+    s_dict = server_list_to_dict(servers)
+    get_jobs(log, s_dict)
+    get_failures_from_resources(resource_failures, s_dict)
+
+    for s in servers:
+        s.get_server_states(log)
+
+    return servers
+
+
 def get_servers(log: str) -> List[Server]:
     with open(log, "rb") as f:
         while True:
@@ -133,25 +151,6 @@ def get_servers(log: str) -> List[Server]:
 
             if not line:
                 break
-
-
-def get_servers_from_system(log: str, system: str) -> List[Server]:
-    Server.last_time = get_last_time(log, system)
-    servers = []
-
-    for s in parse(system).iter("server"):
-        for i in range(int(s.attrib["limit"])):
-            servers.append(Server(
-                s.attrib["type"], i, int(s.attrib["coreCount"]), int(s.attrib["memory"]), int(s.attrib["disk"])))
-
-    s_dict = server_list_to_dict(servers)
-    get_jobs(log, s_dict)
-    get_failures(log, s_dict, Server.last_time)
-
-    for s in servers:
-        s.get_server_states(log)
-
-    return servers
 
 
 def make_servers(f: BinaryIO) -> List[Server]:
@@ -182,7 +181,7 @@ def get_results(log: str) -> str:
             line = f.readline().replace("\r\n", "\n")
             results.append(line[2:])  # Remove '#'s
 
-            if "SENT QUIT" in line:
+            if line.startswith("t:", 0, 2):
                 results.pop(2)  # Remove "[ Overall ]" line
                 return ''.join(reversed(results[:-2]))
 
