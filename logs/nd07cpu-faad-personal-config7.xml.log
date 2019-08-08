@@ -1,0 +1,173 @@
+# ds-sim server 6Aug, 2019 @ MQ
+# Server-side simulator started with './ds-server -n -v brief -c configs/scheduling/personal-config7.xml -f nd07cpu'
+# Waiting for connection to port 49152 of IP address 127.0.0.1
+RCVD HELO
+SENT OK
+RCVD AUTH jak0723
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+SENT OK
+RCVD REDY
+SENT JOBN 83 0 37232 2 500 600
+RCVD SCHD 0 tiny 0
+t:         83 job     0 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        143 job     0 on # 0 of server tiny RUNNING
+SENT JOBN 290 1 899 1 400 1200
+RCVD SCHD 1 tiny 2
+t:        290 job     1 (waiting) on # 2 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBN 336 2 129 5 5300 7100
+RCVD SCHD 2 medium 0
+t:        336 job     2 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        350 job     1 on # 2 of server tiny RUNNING
+t:        396 job     2 on # 0 of server medium RUNNING
+SENT JOBN 443 3 282 2 500 1100
+RCVD SCHD 3 small 0
+t:        443 job     3 (waiting) on # 0 of server small (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 642 3 282 2 500 1100
+RCVD SCHD 3 tiny 1
+t:        642 job     3 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        702 job     3 on # 1 of server tiny RUNNING
+SENT JOBN 728 4 1431 8 8000 15400
+RCVD SCHD 4 medium 1
+t:        728 job     4 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        788 job     4 on # 1 of server medium RUNNING
+SENT JOBN 867 5 604 1 800 1400
+RCVD SCHD 5 small 0
+t:        867 job     5 (waiting) on # 0 of server small (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBN 870 6 709 1 900 200
+RCVD SCHD 6 tiny 1
+t:        870 job     6 (waiting) on # 1 of server tiny (active) SCHEDULED
+SENT OK
+RCVD REDY
+t:        927 job     5 on # 0 of server small RUNNING
+t:        944 job     3 on # 1 of server tiny COMPLETED
+t:        944 job     6 on # 1 of server tiny RUNNING
+SENT JOBN 954 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:        954 job     7 (running) on # 1 of server tiny (active) SCHEDULED
+t:        954 job     7 on # 1 of server tiny RUNNING
+SENT OK
+RCVD REDY
+SENT JOBF 998 5 604 1 800 1400
+RCVD SCHD 5 tiny 1
+t:        998 job     5 (waiting) on # 1 of server tiny (active) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBN 1042 8 477 1 800 1700
+RCVD SCHD 8 tiny 1
+t:       1042 job     8 (waiting) on # 1 of server tiny (active) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBN 1064 9 47267 8 6300 4100
+RCVD SCHD 9 medium 2
+t:       1064 job     9 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:       1249 job     1 on # 2 of server tiny COMPLETED
+t:       1341 job     2 on # 0 of server medium COMPLETED
+t:       1342 job     6 on # 1 of server tiny COMPLETED
+t:       1342 job     5 on # 1 of server tiny RUNNING
+t:       1946 job     5 on # 1 of server tiny COMPLETED
+t:       1946 job     8 on # 1 of server tiny RUNNING
+t:       2306 job     8 on # 1 of server tiny COMPLETED
+SENT JOBF 2493 9 47267 8 6300 4100
+RCVD SCHD 9 medium 0
+t:       2493 job     9 (running) on # 0 of server medium (active) SCHEDULED
+t:       2493 job     9 on # 0 of server medium RUNNING
+SENT OK
+RCVD REDY
+SENT JOBF 3112 7 26259 1 1000 900
+RCVD SCHD 7 medium 2
+t:       3112 job     7 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 3952 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:       3952 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 4885 7 26259 1 1000 900
+RCVD SCHD 7 medium 2
+t:       4885 job     7 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:       5365 job     4 on # 1 of server medium COMPLETED
+SENT JOBF 9791 7 26259 1 1000 900
+RCVD SCHD 7 small 1
+t:       9791 job     7 (waiting) on # 1 of server small (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 9826 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:       9826 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 10675 7 26259 1 1000 900
+RCVD SCHD 7 medium 2
+t:      10675 job     7 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      10735 job     7 on # 2 of server medium RUNNING
+t:      19466 job     0 on # 0 of server tiny COMPLETED
+SENT JOBF 29925 9 47267 8 6300 4100
+RCVD SCHD 9 medium 1
+t:      29925 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      29985 job     9 on # 1 of server medium RUNNING
+SENT JOBF 51533 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:      51533 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 57276 7 26259 1 1000 900
+RCVD SCHD 7 medium 2
+t:      57276 job     7 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 62853 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:      62853 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 63698 7 26259 1 1000 900
+RCVD SCHD 7 medium 2
+t:      63698 job     7 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 67558 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:      67558 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 72641 7 26259 1 1000 900
+RCVD SCHD 7 medium 2
+t:      72641 job     7 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT NONE
+RCVD QUIT
+t:      72701 job     7 on # 2 of server medium RUNNING
+t:     110542 job     9 on # 1 of server medium COMPLETED
+t:     144545 job     7 on # 2 of server medium COMPLETED
+# ---------------------------------------------------------------------------
+# 3 tiny servers used with a utilisation of 10.58 at the cost of $52.62
+# 0 small servers used with a utilisation of 0.00 at the cost of $0.00
+# 3 medium servers used with a utilisation of 36.84 at the cost of $109.12
+# =============================== [ Overall ] ===============================
+# total #servers used: 6, avg utilisation: 23.71 and total cost: $161.75
+# avg waiting time: 10262, avg exec time: 17974 and avg turnaround time: 28236

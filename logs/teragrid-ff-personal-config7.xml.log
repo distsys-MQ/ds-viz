@@ -1,0 +1,89 @@
+# ds-sim server 6Aug, 2019 @ MQ
+# Server-side simulator started with './ds-server -n -v brief -c configs/scheduling/personal-config7.xml -f teragrid'
+# Waiting for connection to port 49152 of IP address 127.0.0.1
+RCVD HELO
+SENT OK
+RCVD AUTH jak0723
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+SENT OK
+RCVD REDY
+SENT JOBN 83 0 37232 2 500 600
+RCVD SCHD 0 tiny 0
+t:         83 job     0 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        143 job     0 on # 0 of server tiny RUNNING
+SENT JOBN 290 1 899 1 400 1200
+RCVD SCHD 1 tiny 1
+t:        290 job     1 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBN 336 2 129 5 5300 7100
+RCVD SCHD 2 medium 0
+t:        336 job     2 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        350 job     1 on # 1 of server tiny RUNNING
+t:        396 job     2 on # 0 of server medium RUNNING
+SENT JOBN 443 3 282 2 500 1100
+RCVD SCHD 3 tiny 2
+t:        443 job     3 (waiting) on # 2 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        503 job     3 on # 2 of server tiny RUNNING
+SENT JOBN 728 4 1431 8 8000 15400
+RCVD SCHD 4 medium 1
+t:        728 job     4 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        745 job     3 on # 2 of server tiny COMPLETED
+t:        788 job     4 on # 1 of server medium RUNNING
+SENT JOBN 867 5 604 1 800 1400
+RCVD SCHD 5 tiny 1
+t:        867 job     5 (running) on # 1 of server tiny (active) SCHEDULED
+t:        867 job     5 on # 1 of server tiny RUNNING
+SENT OK
+RCVD REDY
+SENT JOBN 870 6 709 1 900 200
+RCVD SCHD 6 tiny 2
+t:        870 job     6 (running) on # 2 of server tiny (active) SCHEDULED
+t:        870 job     6 on # 2 of server tiny RUNNING
+SENT OK
+RCVD REDY
+SENT JOBN 954 7 26259 1 1000 900
+RCVD SCHD 7 tiny 2
+t:        954 job     7 (running) on # 2 of server tiny (active) SCHEDULED
+t:        954 job     7 on # 2 of server tiny RUNNING
+SENT OK
+RCVD REDY
+SENT JOBN 1042 8 477 1 800 1700
+RCVD SCHD 8 small 0
+t:       1042 job     8 (waiting) on # 0 of server small (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBN 1064 9 47267 8 6300 4100
+RCVD SCHD 9 medium 2
+t:       1064 job     9 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT NONE
+RCVD QUIT
+t:       1102 job     8 on # 0 of server small RUNNING
+t:       1124 job     9 on # 2 of server medium RUNNING
+t:       1249 job     1 on # 1 of server tiny COMPLETED
+t:       1268 job     6 on # 2 of server tiny COMPLETED
+t:       1341 job     2 on # 0 of server medium COMPLETED
+t:       1462 job     8 on # 0 of server small COMPLETED
+t:       1471 job     5 on # 1 of server tiny COMPLETED
+t:       5365 job     4 on # 1 of server medium COMPLETED
+t:      19466 job     0 on # 0 of server tiny COMPLETED
+t:      72798 job     7 on # 2 of server tiny COMPLETED
+t:      81681 job     9 on # 2 of server medium COMPLETED
+# ---------------------------------------------------------------------------
+# 3 tiny servers used with a utilisation of 37.99 at the cost of $13.56
+# 1 small servers used with a utilisation of 0.45 at the cost of $8.95
+# 3 medium servers used with a utilisation of 35.61 at the cost of $53.94
+# =============================== [ Overall ] ===============================
+# total #servers used: 7, avg utilisation: 31.61 and total cost: $76.45
+# avg waiting time: 42, avg exec time: 17974 and avg turnaround time: 18016
