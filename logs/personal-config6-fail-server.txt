@@ -1,0 +1,100 @@
+SENT JOBN 83 0 37232 2 500 600
+RCVD SCHD 0 tiny 0
+t:        143 job     0 on # 0 of server tiny RUNNING
+SENT RESF tiny 0 960
+SENT RESR tiny 0 1020
+SENT JOBN 1134 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:       1194 job     7 on # 0 of server tiny RUNNING
+SENT JOBN 1462 8 477 1 800 1700
+RCVD SCHD 8 tiny 0
+t:       1462 job     8 on # 0 of server tiny RUNNING
+SENT RESF tiny 0 1680
+
+SENT RESF tiny 1 240
+SENT RESR tiny 1 360
+SENT RESF tiny 1 420
+SENT RESR tiny 1 600
+SENT JOBN 867 5 604 1 800 1400
+RCVD SCHD 5 tiny 1
+SENT JOBN 870 6 709 1 900 200
+RCVD SCHD 6 tiny 1
+SENT RESF tiny 1 960
+SENT RESR tiny 1 1080
+SENT RESF tiny 1 1500
+SENT RESR tiny 1 1560
+SENT JOBF 1680 8 477 1 800 1700
+RCVD SCHD 8 tiny 1
+SENT JOBF 1680 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+SENT JOBF 1680 0 37232 2 500 600
+RCVD SCHD 0 tiny 1
+t:       1740 job     8 on # 1 of server tiny RUNNING
+t:       1740 job     7 on # 1 of server tiny RUNNING
+t:       2100 job     8 on # 1 of server tiny COMPLETED
+t:      73584 job     7 on # 1 of server tiny COMPLETED
+t:      73584 job     0 on # 1 of server tiny RUNNING
+t:      92907 job     0 on # 1 of server tiny COMPLETED
+
+SENT RESF small 0 240
+SENT RESR small 0 360
+SENT RESF small 0 420
+SENT RESR small 0 600
+SENT RESF small 0 960
+SENT RESR small 0 1080
+SENT RESF small 0 1500
+SENT RESR small 0 1560
+SENT JOBF 1680 5 604 1 800 1400
+RCVD SCHD 5 small 0
+SENT JOBF 1680 6 709 1 900 200
+RCVD SCHD 6 small 0
+SENT JOBF 1680 1 899 1 400 1200
+RCVD SCHD 1 small 0
+t:       1740 job     5 on # 0 of server small RUNNING
+t:       1740 job     6 on # 0 of server small RUNNING
+t:       1740 job     1 on # 0 of server small RUNNING
+t:       2138 job     6 on # 0 of server small COMPLETED
+t:       2344 job     5 on # 0 of server small COMPLETED
+t:       2639 job     1 on # 0 of server small COMPLETED
+
+SENT JOBN 290 1 899 1 400 1200
+RCVD SCHD 1 small 1
+t:        350 job     1 on # 1 of server small RUNNING
+SENT JOBN 443 3 282 2 500 1100
+RCVD SCHD 3 small 1
+t:        443 job     3 on # 1 of server small RUNNING
+t:        685 job     3 on # 1 of server small COMPLETED
+SENT RESF small 1 960
+SENT RESR small 1 1020
+SENT RESF small 1 1680
+
+SENT JOBN 336 2 129 5 5300 7100
+RCVD SCHD 2 medium 0
+t:        396 job     2 on # 0 of server medium RUNNING
+SENT JOBF 960 0 37232 2 500 600
+RCVD SCHD 0 medium 0
+t:        960 job     0 on # 0 of server medium RUNNING
+SENT JOBF 960 5 604 1 800 1400
+RCVD SCHD 5 medium 0
+t:        960 job     5 on # 0 of server medium RUNNING
+SENT JOBF 960 6 709 1 900 200
+RCVD SCHD 6 medium 0
+SENT JOBF 960 1 899 1 400 1200
+RCVD SCHD 1 medium 0
+t:       1341 job     2 on # 0 of server medium COMPLETED
+t:       1341 job     6 on # 0 of server medium RUNNING
+t:       1341 job     1 on # 0 of server medium RUNNING
+SENT RESF medium 0 1680
+
+SENT RESF medium 1 300
+SENT RESR medium 1 360
+SENT RESF medium 1 420
+SENT RESR medium 1 480
+SENT JOBN 728 4 1431 8 8000 15400
+RCVD SCHD 4 medium 1
+t:        788 job     4 on # 1 of server medium RUNNING
+SENT JOBN 1724 9 47267 8 6300 4100
+RCVD SCHD 9 medium 1
+t:       5365 job     4 on # 1 of server medium COMPLETED
+t:       5365 job     9 on # 1 of server medium RUNNING
+t:      85922 job     9 on # 1 of server medium COMPLETED
