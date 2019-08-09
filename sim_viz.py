@@ -42,14 +42,14 @@ step = 8
 start = 0
 stop = start + step
 
-s_height = 4
-width = 1200
-height = s_height * len(servers) + s_height * 5  # Adjust for paging
-menu_height = 150
 left_margin = 30
 right_margin = 15
 last_time = Server.last_time
 x_offset = left_margin * 2
+
+s_height = 2
+width = 1200
+height = s_height * len(servers) + s_height * 5 + left_margin  # Adjust for paging
 
 pSG.SetOptions(font=("Courier New", -13), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
@@ -88,7 +88,6 @@ current_server = window.Element("current_server")
 current_job = window.Element("current_job")
 current_results = window.Element("current_results")
 t_slider = window.Element("time_slider")
-j_slider = window.Element("job_slider")
 show_job = False
 
 
@@ -117,44 +116,38 @@ def norm_server_failures(failures: List[ServerFailure]) -> List[ServerFailure]:
     return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
 
-box_x1 = 3
-box_x2 = x_offset - 2
+box_x1 = 0
+box_x2 = x_offset - 1
 norm_time = x_offset
 timeline = None
+graph.DrawLine((box_x2, 0), (box_x2, height))
 
 
 def draw() -> None:
     global timeline, s_boxes
 
-    last = s_height
+    last = int(right_margin / 2)
     font = ("Courier New", -9)
-    char_width = 2.5
-    text_margin = int(char_width * 2)
     max_s_length = 8
     s_boxes = {}
+    min_tick = 3
 
     for kind in list(s_dict):
-        kind_y = last + text_margin * 2
+        kind_y = last + s_height
         s_kind = kind if len(kind) <= max_s_length else kind[:5] + ".."
+        graph.DrawText(f"{s_kind}", (left_margin, kind_y), font=font)
+        graph.DrawLine((box_x2 - min_tick * 2, kind_y), (box_x2, kind_y))
 
         for s in s_dict[kind].values():
-            box_y1 = last + text_margin
-            box_y2 = last + s_height + text_margin
-            s_boxes[range(box_y1, box_y2)] = s
-            graph.DrawRectangle((box_x1, box_y1), (box_x2, box_y2))
+            s_boxes[range(last, last + s_height)] = s
 
-            # https://stackoverflow.com/a/2189827/8031185
-            sid_length = 1 if s.sid == 0 else int(math.log10(s.sid)) + 1
-
-            sid_x = x_offset - text_margin - (sid_length * char_width)
             sid_y = last + s_height
-            graph.DrawText(f"{s.sid}", (sid_x, sid_y + 1), font=font)
+            graph.DrawLine((box_x2 - min_tick, sid_y), (box_x2, sid_y))
 
             if len(s.jobs) == 0:  # Add empty space for jobless servers
                 last += s_height
 
-            jobs = norm_jobs(s.jobs)
-            for jb in jobs:
+            for jb in norm_jobs(s.jobs):
                 last = sid_y
 
                 col = f"#{jb.fails * 3:06X}"  # Need to improve, maybe normalise against most-failed job
@@ -166,11 +159,7 @@ def draw() -> None:
                 fail_y2 = sid_y + s_height / 2 - 1
                 graph.DrawRectangle((fail.fail, fail_y1), (fail.recover, fail_y2), fill_color="red", line_color="red")
 
-        graph.DrawRectangle((box_x1 + 3, kind_y - 3), (box_x2 - 9, kind_y + 5),  # Make text visible in front of boxes
-                            fill_color="whitesmoke", line_color="whitesmoke")
-        graph.DrawText(f"{s_kind}", (left_margin, kind_y), font=font)
-
-    timeline = graph.DrawLine((norm_time, height), (norm_time, 0), width=2, color="grey")
+    timeline = graph.DrawLine((norm_time, 0), (norm_time, height), color="grey")
 
 
 prev_jid = unique_jids[0]
@@ -216,7 +205,7 @@ while True:
         time = int(values["time_slider"])
         job = get_job_at(j_dict[job.jid], time)
         norm_time = int(np.interp(np.array([time]), (left_margin, last_time), (x_offset, width - right_margin))[0])
-        graph.RelocateFigure(timeline, norm_time, height)
+        graph.RelocateFigure(timeline, norm_time, 0)
 
         update_output(time)
 
