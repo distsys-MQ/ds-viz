@@ -82,7 +82,7 @@ layout = [
                 orientation="h", enable_events=True, key="time_slider")],
     [pSG.Slider((len(servers) - 1, 0), default_value=0, size=(s_slider_height, 5), disable_number_display=True,
                 orientation="v", enable_events=True, key="server_slider"),
-     pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
+     pSG.Column(graph_column, size=(width, height * 2), scrollable=True, vertical_scroll_only=True, key="column")]
 ]
 
 window = pSG.Window("sim-viz", layout, resizable=True, return_keyboard_events=True)
@@ -92,6 +92,8 @@ current_server = window.Element("current_server")
 current_job = window.Element("current_job")
 current_results = window.Element("current_results")
 t_slider = window.Element("time_slider")
+column = window.Element("column")
+s_slider = window.Element("server_slider")
 show_job = False
 
 
@@ -124,7 +126,6 @@ box_x1 = 0
 box_x2 = x_offset - 1
 norm_time = x_offset
 timeline = None
-graph.DrawLine((box_x2, 0), (box_x2, height))
 
 
 def draw() -> None:
@@ -135,6 +136,7 @@ def draw() -> None:
     max_s_length = 8
     s_boxes = {}
     min_tick = 3
+    graph.DrawLine((box_x2, 0), (box_x2, height))
 
     for kind in list(s_dict):
         kind_y = last + s_height
@@ -193,6 +195,18 @@ def change_selected_job(jid: int):
     prev_jid = jid
 
 
+def change_scaling(scale: int):
+    global height, graph
+
+    graph.Erase()
+    height = scale * len(servers) + scale * 5 + left_margin
+    graph.Widget.configure(height=height)
+    column.Widget.configure(height=height)
+    s_slider.Widget.configure(length=height)
+
+    draw()
+
+
 draw()
 server = servers[0]
 job = j_dict[unique_jids[0]][0]
@@ -249,6 +263,13 @@ while True:
         time = time + 1 if time < last_time else last_time
         t_slider.Update(time)
         update_output(time)
+
+    elif "Up" in event:
+        s_height += 1
+        change_scaling(s_height)
+    elif "Down" in event:
+        s_height = s_height - 1 if s_height > 1 else 1
+        change_scaling(s_height)
 
     elif event == "left_arrow":
         graph.Erase()
