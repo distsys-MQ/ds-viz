@@ -57,6 +57,7 @@ tab_size = (75, 3)
 t_slider_width = 89
 sj_btn_width = 10
 arw_btn_width = int(sj_btn_width / 2)
+s_slider_height = max(len(servers) / (s_height * 3), 5)
 
 graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, height), graph_top_right=(width, 0),
                            key="graph", change_submits=True, drag_submits=False)]]
@@ -78,7 +79,9 @@ layout = [
      pSG.Btn('<', size=(arw_btn_width, 1), key="left_arrow"), pSG.Btn('>', size=(arw_btn_width, 1), key="right_arrow")],
     [pSG.Slider((0, Server.last_time), default_value=0, size=(t_slider_width, 10), pad=((44, 0), 0),
                 orientation="h", enable_events=True, key="time_slider")],
-    [pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
+    [pSG.Slider((len(servers) - 1, 0), default_value=0, size=(s_slider_height, 5), disable_number_display=True,
+                orientation="v", enable_events=True, key="server_slider"),
+     pSG.Column(graph_column, size=(width, height), scrollable=True, vertical_scroll_only=True)]
 ]
 
 window = pSG.Window("sim-viz", layout, resizable=True, return_keyboard_events=True)
@@ -217,6 +220,11 @@ while True:
 
         if show_job:
             change_selected_job(jid)
+
+    # Handle server slider movement
+    if event == "server_slider":
+        server = servers[int(values["server_slider"])]
+        update_output(time)
 
     # Handle clicking "show job" button
     if event == "show_job":
