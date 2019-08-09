@@ -26,6 +26,7 @@ parser = ArgumentParser(description="Visualises DS simulations")
 parser.add_argument("log", type=lambda f: is_valid_file(parser, f), help="simulation log file to visualise")
 parser.add_argument("config", type=lambda f: is_valid_file(parser, f), help="configuration file used in simulation")
 parser.add_argument("failures", type=lambda f: is_valid_file(parser, f), help="resource-failures file from simulation")
+parser.add_argument("-s", "--scale", type=int, default=4, help="set scaling factor of visualisation")
 args = parser.parse_args()
 
 servers = get_servers_from_system(args.log, args.config, args.failures)
@@ -47,7 +48,7 @@ right_margin = 15
 last_time = Server.last_time
 x_offset = left_margin * 2
 
-s_height = 2
+s_height = args.scale
 width = 1200
 height = s_height * len(servers) + s_height * 5 + left_margin  # Adjust for paging
 
