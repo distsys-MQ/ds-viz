@@ -42,7 +42,7 @@ step = 8
 start = 0
 stop = start + step
 
-s_height = 1
+s_height = 4
 width = 1200
 height = s_height * len(servers) + s_height * 5  # Adjust for paging
 menu_height = 150
@@ -138,11 +138,8 @@ def draw() -> None:
         s_kind = kind if len(kind) <= max_s_length else kind[:5] + ".."
 
         for s in s_dict[kind].values():
-            l_width = s_height
-            offset = l_width
-
             box_y1 = last + text_margin
-            box_y2 = last + offset + text_margin
+            box_y2 = last + s_height + text_margin
             s_boxes[range(box_y1, box_y2)] = s
             graph.DrawRectangle((box_x1, box_y1), (box_x2, box_y2))
 
@@ -150,11 +147,11 @@ def draw() -> None:
             sid_length = 1 if s.sid == 0 else int(math.log10(s.sid)) + 1
 
             sid_x = x_offset - text_margin - (sid_length * char_width)
-            sid_y = last + offset
+            sid_y = last + s_height
             graph.DrawText(f"{s.sid}", (sid_x, sid_y + 1), font=font)
 
             if len(s.jobs) == 0:  # Add empty space for jobless servers
-                last += offset
+                last += s_height
 
             jobs = norm_jobs(s.jobs)
             for jb in jobs:
@@ -162,11 +159,12 @@ def draw() -> None:
 
                 col = f"#{jb.fails * 3:06X}"  # Need to improve, maybe normalise against most-failed job
                 j_graph_ids[jb.jid].append(
-                    (graph.DrawLine((jb.start, sid_y), (jb.end, sid_y), width=l_width, color=col), col))
+                    (graph.DrawLine((jb.start, sid_y), (jb.end, sid_y), width=s_height, color=col), col))
 
             for fail in norm_server_failures(s.failures):
-                graph.DrawRectangle((fail.fail, sid_y + 1), (fail.recover, sid_y - l_width / 2),
-                                    fill_color="red", line_color="red")
+                fail_y1 = sid_y - s_height / 2
+                fail_y2 = sid_y + s_height / 2 - 1
+                graph.DrawRectangle((fail.fail, fail_y1), (fail.recover, fail_y2), fill_color="red", line_color="red")
 
         graph.DrawRectangle((box_x1 + 3, kind_y - 3), (box_x2 - 9, kind_y + 5),  # Make text visible in front of boxes
                             fill_color="whitesmoke", line_color="whitesmoke")
