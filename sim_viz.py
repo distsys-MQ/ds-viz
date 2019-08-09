@@ -42,9 +42,9 @@ step = 8
 start = 0
 stop = start + step
 
-l_width = 5
+s_height = 1
 width = 1200
-height = int(sum([s.cores for s in servers]) * l_width * 1.5)
+height = s_height * len(servers) + s_height * 5  # Adjust for paging
 menu_height = 150
 left_margin = 30
 right_margin = 15
@@ -126,21 +126,20 @@ timeline = None
 def draw() -> None:
     global timeline, s_boxes
 
-    last = l_width
-    font = ("Courier New", -11)
+    last = s_height
+    font = ("Courier New", -9)
     char_width = 2.5
     text_margin = int(char_width * 2)
     max_s_length = 8
     s_boxes = {}
 
-    for kind in list(s_dict)[start:stop]:
+    for kind in list(s_dict):
         kind_y = last + text_margin * 2
         s_kind = kind if len(kind) <= max_s_length else kind[:5] + ".."
 
-        graph.DrawText(f"{s_kind}", (left_margin, kind_y), font=font)
-
         for s in s_dict[kind].values():
-            offset = s.cores * l_width + l_width
+            l_width = s_height
+            offset = l_width
 
             box_y1 = last + text_margin
             box_y2 = last + offset + text_margin
@@ -152,33 +151,27 @@ def draw() -> None:
 
             sid_x = x_offset - text_margin - (sid_length * char_width)
             sid_y = last + offset
-            graph.DrawText(f"{s.sid}", (sid_x, sid_y), font=font)
+            graph.DrawText(f"{s.sid}", (sid_x, sid_y + 1), font=font)
 
             if len(s.jobs) == 0:  # Add empty space for jobless servers
-                last += s.cores * l_width + l_width
+                last += offset
 
             jobs = norm_jobs(s.jobs)
             for jb in jobs:
-                overlap = list(filter(lambda j: j.is_overlapping(jb), jobs[:jobs.index(jb)]))
+                last = sid_y
 
-                for k in range(jb.cores):
-                    # Offset by number of job's cores + number of concurrent jobs
-                    # If offset would exceed server height, reset to the bottom
-                    # TODO Fix job representation
-                    used_cores = k + len(overlap)
-                    job_offset = used_cores if used_cores < s.cores else 0
-
-                    job_y = sid_y - job_offset * l_width
-                    last = max(last, job_y)
-
-                    col = f"#{jb.fails:06X}"  # Need to improve, maybe normalise against most-failed job
-                    j_graph_ids[jb.jid].append(
-                        (graph.DrawLine((jb.start, job_y), (jb.end, job_y), width=l_width, color=col), col))
+                col = f"#{jb.fails * 3:06X}"  # Need to improve, maybe normalise against most-failed job
+                j_graph_ids[jb.jid].append(
+                    (graph.DrawLine((jb.start, sid_y), (jb.end, sid_y), width=l_width, color=col), col))
 
             for fail in norm_server_failures(s.failures):
-                fail_y = sid_y + 2
-                graph.DrawRectangle((fail.fail, fail_y), (fail.recover, fail_y - s.cores * l_width),
+                graph.DrawRectangle((fail.fail, sid_y + 1), (fail.recover, sid_y - l_width / 2),
                                     fill_color="red", line_color="red")
+
+        graph.DrawRectangle((box_x1 + 3, kind_y - 3), (box_x2 - 9, kind_y + 5),  # Make text visible in front of boxes
+                            fill_color="whitesmoke", line_color="whitesmoke")
+        graph.DrawText(f"{s_kind}", (left_margin, kind_y), font=font)
+
     timeline = graph.DrawLine((norm_time, height), (norm_time, 0), width=2, color="grey")
 
 
