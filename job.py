@@ -90,7 +90,7 @@ class Job:
                 if msg[1] == "JOBF" and int(msg[3]) == self.jid:
                     self.failed = True
                     self.fails += 1
-                    job_failures[self.jid] += self.fails
+                    job_failures[self.jid] = self.fails
                     self.end = time
 
                     if self.start is None:
