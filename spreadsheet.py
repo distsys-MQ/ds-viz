@@ -135,6 +135,11 @@ def make_spreadsheet(results: Dict[str, Dict[str, Dict[str, Dict[int, Union[str,
 
                 for algo in sorted(mod_dict, key=sort_algorithms):
                     writer.writerow([algo] + list(mod_dict[algo].values()))
+            writer.writerow(["average"])
+
+            for algo in sorted(mod_dict, key=sort_algorithms):
+                writer.writerow([algo] + [''] * len(sizes))
+
             writer.writerow('')
 
 
