@@ -1,6 +1,7 @@
 import csv
 import os
 import re
+from argparse import ArgumentParser
 from typing import Union, Callable, Dict, List
 
 from file_read_backwards import FileReadBackwards
@@ -40,7 +41,8 @@ def parse_log(log: str) -> str:
 
 
 def extract(find: str, string: str, type_: Callable) -> Union[int, float]:
-    return type_(re.search(find + r"(\d+\.?\d*)", string).group(1))
+    match = re.search(find + r"(-?\d+\.?\d*)", string)
+    return type_(match.group(1))
 
 
 def get_filename_info(filename: str) -> Dict[str, str]:
@@ -103,20 +105,8 @@ def get_results_dict(folder: str) -> Dict[str, Dict[str, Dict[int, Result]]]:
 
 def result_list_to_dict(result_dict: Dict[str, Dict[str, Dict[int, Result]]]) -> \
         Dict[str, Dict[str, Dict[str, Dict[int, Union[str, int, float]]]]]:
-    # result_list = []
-    # for m_dict in result_dict.values():
-    #     for algo_dict in m_dict.values():
-    #         for res in algo_dict.values():
-    #             result_list.append(res)
-    # models = list({res.model for res in result_list})
-    # algorithms = list({res.algorithm for res in result_list})
-    # sizes = list({res.size for res in result_list})
-    # models = list(result_dict.keys())
-    # algorithms = list(result_dict[models[0]].keys())
-    # sizes = natsorted(list(result_dict[models[0]][algorithms[0]].keys()))
-
     result_d = {"servers used": {}, "avg utilisation": {}, "total cost": {},
-                "avg waiting time": {}, "avg exec time": {}, "avg turnaround time": {}}
+                "avg waiting time": {}, "avg turnaround time": {}}
 
     for metric in result_d:
         for model in result_dict:
@@ -151,4 +141,9 @@ def make_spreadsheet(results: Dict[str, Dict[str, Dict[str, Dict[int, Union[str,
             writer.writerow('')
 
 
-make_spreadsheet(result_list_to_dict(get_results_dict("test-logs")))
+parser = ArgumentParser(description="Generates spreadsheets from logs")
+parser.add_argument("dir", help="directory of logs")
+parser.add_argument("-o", "--output", default="results.csv", help="name of output file")
+args = parser.parse_args()
+
+make_spreadsheet(result_list_to_dict(get_results_dict(args.dir)), args.output)
