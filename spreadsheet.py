@@ -2,7 +2,7 @@ import csv
 import os
 import re
 from argparse import ArgumentParser
-from typing import Union, Callable, Dict, List
+from typing import Union, Callable, Dict, Tuple
 
 from file_read_backwards import FileReadBackwards
 from natsort import natsorted
@@ -33,6 +33,13 @@ class Result:
             "avg exec time": self.execution,
             "avg turnaround time": self.turnaround
         }
+
+
+def sort_algorithms(string: str) -> Tuple[int, str]:
+    if string in "ff bf wf":
+        return 0, string
+    else:
+        return 1, string
 
 
 def parse_log(log: str) -> str:
@@ -74,17 +81,7 @@ def make_result(log: str) -> Result:
     return Result(model, algo, size, servers, util, cost, wait, execute, turn)
 
 
-def get_results(folder: str) -> List[Result]:
-    results = []
-
-    for filename in natsorted(os.listdir(folder)):
-        res = make_result(f"./{folder}/{filename}")
-        results.append(res)
-
-    return results
-
-
-def get_results_dict(folder: str) -> Dict[str, Dict[str, Dict[int, Result]]]:
+def get_results(folder: str) -> Dict[str, Dict[str, Dict[int, Result]]]:
     result_d = {}
 
     for filename in os.listdir(folder):
@@ -103,22 +100,22 @@ def get_results_dict(folder: str) -> Dict[str, Dict[str, Dict[int, Result]]]:
     return result_d
 
 
-def result_list_to_dict(result_dict: Dict[str, Dict[str, Dict[int, Result]]]) -> \
-        Dict[str, Dict[str, Dict[str, Dict[int, Union[str, int, float]]]]]:
+def get_structured_results(log: str) -> Dict[str, Dict[str, Dict[str, Dict[int, Union[str, int, float]]]]]:
     result_d = {"servers used": {}, "avg utilisation": {}, "total cost": {},
                 "avg waiting time": {}, "avg turnaround time": {}}
+    results = get_results(log)
 
     for metric in result_d:
-        for model in result_dict:
+        for model in results:
             if model not in result_d[metric]:
                 result_d[metric][model] = {}
 
-            for algorithm in result_dict[model]:
+            for algorithm in results[model]:
                 if algorithm not in result_d[metric][model]:
                     result_d[metric][model][algorithm] = {}
 
-                for size in natsorted(result_dict[model][algorithm]):
-                    res = result_dict[model][algorithm][size].to_dict()
+                for size in natsorted(results[model][algorithm]):
+                    res = results[model][algorithm][size].to_dict()
                     result_d[metric][model][algorithm][size] = res[metric]
     return result_d
 
@@ -136,8 +133,8 @@ def make_spreadsheet(results: Dict[str, Dict[str, Dict[str, Dict[int, Union[str,
             for model, mod_dict in met_dict.items():
                 writer.writerow([model])
 
-                for algo, res in mod_dict.items():
-                    writer.writerow([algo] + list(res.values()))
+                for algo in sorted(mod_dict, key=sort_algorithms):
+                    writer.writerow([algo] + list(mod_dict[algo].values()))
             writer.writerow('')
 
 
@@ -146,4 +143,4 @@ parser.add_argument("dir", help="directory of logs")
 parser.add_argument("-o", "--output", default="results.csv", help="name of output file")
 args = parser.parse_args()
 
-make_spreadsheet(result_list_to_dict(get_results_dict(args.dir)), args.output)
+make_spreadsheet(get_structured_results(args.dir), args.output)
