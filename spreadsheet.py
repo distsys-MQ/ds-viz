@@ -1,13 +1,13 @@
 import csv
 import os
 import re
-from typing import Union, Callable
+from typing import Union, Callable, Dict
 
 from file_read_backwards import FileReadBackwards
 from natsort import natsorted
 
 
-class Results:
+class Result:
     def __init__(self, servers: int, utilisation: float, cost: float, waiting: int, execution: int, turnaround: int):
         self.servers = servers
         self.utilisation = utilisation
@@ -26,7 +26,7 @@ def extract(find: str, string: str, type_: Callable) -> Union[int, float]:
     return type_(re.search(find + r"(\d+\.?\d*)", string).group(1))
 
 
-def make_results(log: str) -> Results:
+def make_result(log: str) -> Result:
     raw_text = parse_log(log)
 
     servers = extract(r"servers used: ", raw_text, int)
@@ -36,24 +36,43 @@ def make_results(log: str) -> Results:
     execute = extract(r"avg exec time: ", raw_text, int)
     turn = extract(r"avg turnaround time: ", raw_text, int)
 
-    return Results(servers, util, cost, wait, execute, turn)
+    return Result(servers, util, cost, wait, execute, turn)
 
 
-folder = "test-logs"
-csv_filename = "test.csv"
+def get_results(folder: str) -> Dict[str, Dict[str, Dict[int, Result]]]:
+    result_d = {}
 
-print()
-with open(csv_filename, 'w', newline='') as csv_f:
-    writer = csv.writer(csv_f)
-    writer.writerow(["failure model", "algorithm", "number of servers", "servers used", "avg utilisation",
-                     "total cost", "avg waiting time", "avg exec time", "avg turnaround time"])
-
-    for filename in natsorted(os.listdir(folder)):
+    for filename in os.listdir(folder):
         cats = re.split(r"[\-.]", filename.replace("config", ''))[:-2]
         f_model = cats[0]
         algo = cats[1]
-        size = cats[2]
+        size = int(cats[2])
 
-        res = make_results(f"./{folder}/{filename}")
-        writer.writerow([f_model, algo, size, res.servers, res.utilisation,
-                         res.cost, res.waiting, res.execution, res.turnaround])
+        if f_model not in result_d:
+            result_d[f_model] = {}
+        if algo not in result_d[f_model]:
+            result_d[f_model][algo] = {}
+
+        result_d[f_model][algo][size] = make_result(f"./{folder}/{filename}")
+
+    return result_d
+
+
+def make_spreadsheet(results: Dict[str, Dict[str, Dict[int, Result]]], filename: str = "results.csv") -> None:
+    with open(filename, 'w', newline='') as csv_f:
+        writer = csv.writer(csv_f)
+        writer.writerow(["number of servers", "servers used", "avg utilisation", "total cost",
+                         "avg waiting time", "avg exec time", "avg turnaround time"])
+
+        for model, m_dict in results.items():
+            writer.writerow([model])
+
+            for algo, algo_dict in m_dict.items():
+                writer.writerow([algo])
+
+                for size, res in natsorted(algo_dict.items()):
+                    writer.writerow([size, res.servers, res.utilisation,
+                                     res.cost, res.waiting, res.execution, res.turnaround])
+
+
+make_spreadsheet(get_results("test-logs"))
