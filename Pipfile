@@ -9,5 +9,6 @@ verify_ssl = true
 file-read-backwards = "*"
 numpy = "*"
 PySimpleGUI = "*"
+natsort = "*"
 
 [requires]
