@@ -20,6 +20,19 @@ class Result:
         self.execution = execution
         self.turnaround = turnaround
 
+    def to_dict(self) -> Dict[str, Union[str, int, float]]:
+        return {
+            "model": self.model,
+            "algorithm": self.algorithm,
+            "size": self.size,
+            "servers used": self.servers,
+            "avg utilisation": self.utilisation,
+            "total cost": self.cost,
+            "avg waiting time": self.waiting,
+            "avg exec time": self.execution,
+            "avg turnaround time": self.turnaround
+        }
+
 
 def parse_log(log: str) -> str:
     with FileReadBackwards(log, encoding="utf-8") as log_f:
@@ -88,21 +101,54 @@ def get_results_dict(folder: str) -> Dict[str, Dict[str, Dict[int, Result]]]:
     return result_d
 
 
-def make_spreadsheet(results: Dict[str, Dict[str, Dict[int, Result]]], filename: str = "results.csv") -> None:
+def result_list_to_dict(result_dict: Dict[str, Dict[str, Dict[int, Result]]]) -> \
+        Dict[str, Dict[str, Dict[str, Dict[int, Union[str, int, float]]]]]:
+    # result_list = []
+    # for m_dict in result_dict.values():
+    #     for algo_dict in m_dict.values():
+    #         for res in algo_dict.values():
+    #             result_list.append(res)
+    # models = list({res.model for res in result_list})
+    # algorithms = list({res.algorithm for res in result_list})
+    # sizes = list({res.size for res in result_list})
+    # models = list(result_dict.keys())
+    # algorithms = list(result_dict[models[0]].keys())
+    # sizes = natsorted(list(result_dict[models[0]][algorithms[0]].keys()))
+
+    result_d = {"servers used": {}, "avg utilisation": {}, "total cost": {},
+                "avg waiting time": {}, "avg exec time": {}, "avg turnaround time": {}}
+
+    for metric in result_d:
+        for model in result_dict:
+            if model not in result_d[metric]:
+                result_d[metric][model] = {}
+
+            for algorithm in result_dict[model]:
+                if algorithm not in result_d[metric][model]:
+                    result_d[metric][model][algorithm] = {}
+
+                for size in natsorted(result_dict[model][algorithm]):
+                    res = result_dict[model][algorithm][size].to_dict()
+                    result_d[metric][model][algorithm][size] = res[metric]
+    return result_d
+
+
+def make_spreadsheet(results: Dict[str, Dict[str, Dict[str, Dict[int, Union[str, int, float]]]]],
+                     filename: str = "results.csv") -> None:
     with open(filename, 'w', newline='') as csv_f:
         writer = csv.writer(csv_f)
-        writer.writerow(["number of servers", "servers used", "avg utilisation", "total cost",
-                         "avg waiting time", "avg exec time", "avg turnaround time"])
+        sizes = list(next(iter(next(iter(next(iter(results.values())).values())).values())).keys())
+        writer.writerow([''] + sizes)
 
-        for model, m_dict in results.items():
-            writer.writerow([model])
+        for metric, met_dict in results.items():
+            writer.writerow([metric])
 
-            for algo, algo_dict in m_dict.items():
-                writer.writerow([algo])
+            for model, mod_dict in met_dict.items():
+                writer.writerow([model])
 
-                for size, res in natsorted(algo_dict.items()):
-                    writer.writerow([size, res.servers, res.utilisation,
-                                     res.cost, res.waiting, res.execution, res.turnaround])
+                for algo, res in mod_dict.items():
+                    writer.writerow([algo] + list(res.values()))
+            writer.writerow('')
 
 
-make_spreadsheet(get_results_dict("test-logs"))
+make_spreadsheet(result_list_to_dict(get_results_dict("test-logs")))
