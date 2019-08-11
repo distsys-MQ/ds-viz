@@ -26,13 +26,13 @@ parser = ArgumentParser(description="Visualises DS simulations")
 parser.add_argument("log", type=lambda f: is_valid_file(parser, f), help="simulation log file to visualise")
 parser.add_argument("config", type=lambda f: is_valid_file(parser, f), help="configuration file used in simulation")
 parser.add_argument("failures", type=lambda f: is_valid_file(parser, f), help="resource-failures file from simulation")
-parser.add_argument("-s", "--scale", type=int, default=4, help="set scaling factor of visualisation")
+parser.add_argument("-c", "--core_height", type=int, default=4, help="set core height")
+parser.add_argument("-s", "--scale", type=int, default=1, help="set scaling factor of visualisation")
 args = parser.parse_args()
 
 servers = get_servers_from_system(args.log, args.config, args.failures)
 
 s_dict = server_list_to_dict(servers)
-s_boxes: Dict[range, Server] = {}
 
 unique_jids = sorted({j.jid for s in servers for j in s.jobs})
 j_dict: Dict[int, List[Job]] = {
@@ -48,9 +48,9 @@ right_margin = 15
 last_time = Server.last_time
 x_offset = left_margin * 2
 
-s_height = args.scale
+c_height = args.core_height
 width = 1200
-height = s_height * len(servers) + s_height * 5 + left_margin  # Adjust for paging
+height = c_height * len(servers) + c_height * 5 + left_margin  # Adjust for paging
 
 pSG.SetOptions(font=("Courier New", -13), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
@@ -58,7 +58,7 @@ tab_size = (75, 3)
 t_slider_width = 89
 sj_btn_width = 10
 arw_btn_width = int(sj_btn_width / 2)
-s_slider_height = max(len(servers) / (s_height * 3), 5)
+s_slider_height = max(len(servers) / (c_height * 3), 5)
 
 graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, height), graph_top_right=(width, 0),
                            key="graph", change_submits=True, drag_submits=False)]]
@@ -129,40 +129,37 @@ timeline = None
 
 
 def draw() -> None:
-    global timeline, s_boxes
+    global timeline
 
     last = int(right_margin / 2)
     font = ("Courier New", -9)
     max_s_length = 8
-    s_boxes = {}
     min_tick = 3
-    graph.DrawLine((box_x2, 0), (box_x2, height))
+    graph.DrawLine((box_x2, 0), (box_x2, height))  # y-axis
 
     for kind in list(s_dict):
-        kind_y = last + s_height
+        kind_y = last + c_height
         s_kind = kind if len(kind) <= max_s_length else kind[:5] + ".."
         graph.DrawText(f"{s_kind}", (left_margin, kind_y), font=font)
         graph.DrawLine((box_x2 - min_tick * 2, kind_y), (box_x2, kind_y))
 
         for s in s_dict[kind].values():
-            s_boxes[range(last, last + s_height)] = s
-
-            sid_y = last + s_height
-            graph.DrawLine((box_x2 - min_tick, sid_y), (box_x2, sid_y))
+            sid_y = last + c_height
+            graph.DrawLine((box_x2 - min_tick, sid_y), (box_x2, sid_y))  # tick marks
 
             if len(s.jobs) == 0:  # Add empty space for jobless servers
-                last += s_height
+                last += c_height
 
             for jb in norm_jobs(s.jobs):
                 last = sid_y
 
                 col = f"#{jb.fails * 3:06X}"  # Need to improve, maybe normalise against most-failed job
                 j_graph_ids[jb.jid].append(
-                    (graph.DrawLine((jb.start, sid_y), (jb.end, sid_y), width=s_height, color=col), col))
+                    (graph.DrawLine((jb.start, sid_y), (jb.end, sid_y), width=c_height, color=col), col))
 
             for fail in norm_server_failures(s.failures):
-                fail_y1 = sid_y - s_height / 2
-                fail_y2 = sid_y + s_height / 2 - 1
+                fail_y1 = sid_y - c_height / 2
+                fail_y2 = sid_y + c_height / 2 - 1
                 graph.DrawRectangle((fail.fail, fail_y1), (fail.recover, fail_y2), fill_color="red", line_color="red")
 
     timeline = graph.DrawLine((norm_time, 0), (norm_time, height), color="grey")
@@ -265,11 +262,11 @@ while True:
         update_output(time)
 
     elif "Up" in event:
-        s_height += 1
-        change_scaling(s_height)
+        c_height += 1
+        change_scaling(c_height)
     elif "Down" in event:
-        s_height = s_height - 1 if s_height > 1 else 1
-        change_scaling(s_height)
+        c_height = c_height - 1 if c_height > 1 else 1
+        change_scaling(c_height)
 
     elif event == "left_arrow":
         graph.Erase()
@@ -295,21 +292,5 @@ while True:
 
         if show_job:
             change_selected_job(int(values["job_slider"]))
-
-    # Handle clicking in the graph
-    elif event == "graph":
-        mouse = values["graph"]
-
-        if mouse == (None, None):
-            continue
-        box_x = mouse[0]
-        box_y = mouse[1]
-        x_range = range(box_x1, box_x2)
-
-        for y_range, s in s_boxes.items():
-            if box_x in x_range and box_y in y_range:
-                server = s
-                update_output(time)
-                break
 
 window.Close()
