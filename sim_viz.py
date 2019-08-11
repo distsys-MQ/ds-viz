@@ -131,41 +131,47 @@ def norm_server_failures(failures: List[ServerFailure]) -> List[ServerFailure]:
     return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
 
-box_x1 = 0
-box_x2 = x_offset - 1
+axis = x_offset - 1
 norm_time = x_offset
 timeline = None
+s_index = 0
 s_ticks = []
+
+start = int(right_margin / 2)
+highlight_x1 = axis - 9
+s_highlight = None
 
 
 def draw(scale: int = base_scale) -> None:
-    global timeline
+    global timeline, s_highlight, s_ticks
 
-    last = int(right_margin / 2)
+    last = start
     font = ("Courier New", -9)
     max_s_length = 8
     tick = 3
-    graph.DrawLine((box_x2, 0), (box_x2, height))  # y-axis
+    graph.DrawLine((axis, 0), (axis, height))  # y-axis
     s_height = None
     s_factor = 2 ** scale
+    s_ticks = []
 
     for kind in list(s_dict):
         kind_y = last
         s_kind = kind if len(kind) <= max_s_length else kind[:5] + ".."
 
         graph.DrawText(f"{s_kind}", (left_margin, kind_y), font=font)
-        graph.DrawLine((box_x2 - tick * 3, kind_y), (box_x2, kind_y))  # Server type tick mark
+        graph.DrawLine((axis - tick * 3, kind_y), (axis, kind_y))  # Server type tick mark
 
         for i, s in enumerate(s_dict[kind].values()):
             s_scale = min(s.cores, s_factor)
             s_height = s_scale * c_height
 
             sid_y = kind_y + s_height * i
-            s_ticks.append(graph.DrawLine((box_x2 - tick * 2, sid_y), (box_x2, sid_y)))  # Server ID tick mark
+            graph.DrawLine((axis - tick * 2, sid_y), (axis, sid_y))  # Server ID tick mark
+            s_ticks.append(sid_y)
 
             for k in range(s_scale):
                 core_y = sid_y + c_height * k
-                graph.DrawLine((box_x2 - tick, core_y), (box_x2, core_y))  # Server core tick mark
+                graph.DrawLine((axis - tick, core_y), (axis, core_y))  # Server core tick mark
 
             jobs = norm_jobs(s.jobs)
             for jb in jobs:
@@ -196,11 +202,12 @@ def draw(scale: int = base_scale) -> None:
 
         last = kind_y + s_height * len(s_dict[kind])
 
+    # Need to redraw these for them to persist after 'erase' call
     timeline = graph.DrawLine((norm_time, 0), (norm_time, height), color="grey")
+    s_highlight = graph.DrawLine((highlight_x1, s_ticks[s_index]), (axis, s_ticks[s_index]), width=5, color="green")
 
 
 prev_jid = unique_jids[0]
-prev_s = 0
 
 
 def update_output(t: int):
@@ -225,14 +232,6 @@ def change_selected_job(jid: int):
     reset_job_colour(prev_jid)
     change_job_colour(jid, "yellow")
     prev_jid = jid
-
-
-def change_selected_server(server_index: int):
-    global prev_s
-
-    graph.Widget.itemconfig(s_ticks[prev_s], fill="black", width=1)
-    graph.Widget.itemconfig(s_ticks[server_index], fill="green", width=4)
-    prev_s = server_index
 
 
 def change_scaling(scale: int):
@@ -278,7 +277,7 @@ while True:
     if event == "server_slider":
         s_index = int(values["server_slider"])
         server = servers[s_index]
-        change_selected_server(s_index)
+        graph.RelocateFigure(s_highlight, highlight_x1, s_ticks[s_index])
         update_output(time)
 
     # Handle clicking "show job" button
