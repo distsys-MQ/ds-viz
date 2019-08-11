@@ -13,7 +13,7 @@
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/sim_viz.py" />
-    <option name="PARAMETERS" value=".\logs\g5k06-bf-personal-config8.xml.log .\configs\personal-config8.xml .\failures\g5k06-personal-config8.xml-resource-failures.txt -s 4 -c 10" />
+    <option name="PARAMETERS" value=".\logs\g5k06-bf-personal-config8.xml.log .\configs\personal-config8.xml .\failures\g5k06-personal-config8.xml-resource-failures.txt -c 10" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />

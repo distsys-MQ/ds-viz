@@ -27,7 +27,7 @@ parser.add_argument("log", type=lambda f: is_valid_file(parser, f), help="simula
 parser.add_argument("config", type=lambda f: is_valid_file(parser, f), help="configuration file used in simulation")
 parser.add_argument("failures", type=lambda f: is_valid_file(parser, f), help="resource-failures file from simulation")
 parser.add_argument("-c", "--core_height", type=int, default=4, help="set core height")
-parser.add_argument("-s", "--scale", type=int, default=1, help="set scaling factor of visualisation")
+parser.add_argument("-s", "--scale", type=int, default=0, help="set scaling factor of visualisation")
 args = parser.parse_args()
 
 servers = get_servers_from_system(args.log, args.config, args.failures)
@@ -45,7 +45,7 @@ tab_size = (75, 3)
 c_height = args.core_height
 base_scale = args.scale
 last_time = Server.last_time
-max_cores = max(s.cores for s in servers)
+max_scale = int(math.log(max(s.cores for s in servers), 2))
 
 width = 1200
 height = sum(s.cores for s in servers) * c_height  # Adjust for paging
@@ -84,7 +84,7 @@ slider_label_size = (6, 1)
 layout = [
     [left_tabs, right_tabs],
     [pSG.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"), key="show_job"),
-     pSG.T(f"Scale: {base_scale} ", size=(134, 1), justification="right", key="scale"),
+     pSG.T(f"Scale: {base_scale} ({2 ** base_scale} max cores)", size=(134, 1), justification="right", key="scale"),
      pSG.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
      pSG.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")],
     [pSG.T("Server", size=slider_label_size),
@@ -146,6 +146,7 @@ def draw(scale: int = base_scale) -> None:
     tick = 3
     graph.DrawLine((box_x2, 0), (box_x2, height))  # y-axis
     s_height = None
+    s_factor = 2 ** scale
 
     for kind in list(s_dict):
         kind_y = last
@@ -155,7 +156,7 @@ def draw(scale: int = base_scale) -> None:
         graph.DrawLine((box_x2 - tick * 3, kind_y), (box_x2, kind_y))  # Server type tick mark
 
         for i, s in enumerate(s_dict[kind].values()):
-            s_scale = min(s.cores, scale)
+            s_scale = min(s.cores, s_factor)
             s_height = s_scale * c_height
 
             sid_y = kind_y + s_height * i
@@ -167,7 +168,7 @@ def draw(scale: int = base_scale) -> None:
 
             jobs = norm_jobs(s.jobs)
             for jb in jobs:
-                j_scale = min(jb.cores, scale)
+                j_scale = min(jb.cores, s_factor)
                 overlap = list(filter(lambda j: j.is_overlapping(jb), jobs[:jobs.index(jb)]))
 
                 for k in range(j_scale):
@@ -222,6 +223,12 @@ def change_selected_job(jid: int):
     reset_job_colour(prev_jid)
     change_job_colour(jid, "yellow")
     prev_jid = jid
+
+
+def change_scaling(scale: int):
+    graph.Erase()
+    draw(scale)
+    scale_output.Update(f"Scale: {scale} ({2 ** scale} max cores)")
 
 
 show_job = False
@@ -285,14 +292,10 @@ while True:
         update_output(time)
 
     elif event == "decrease_scale":
-        cur_scale = cur_scale - 1 if cur_scale > 1 else 1
-        graph.Erase()
-        draw(cur_scale)
-        scale_output.Update(f"Scale: {cur_scale} ")
+        cur_scale = cur_scale - 1 if cur_scale > 0 else 0
+        change_scaling(cur_scale)
     elif event == "increase_scale":
-        cur_scale = cur_scale + 1 if cur_scale < max_cores else max_cores
-        graph.Erase()
-        draw(cur_scale)
-        scale_output.Update(f"Scale: {cur_scale} ")
+        cur_scale = cur_scale + 1 if cur_scale < max_scale else max_scale
+        change_scaling(cur_scale)
 
 window.Close()
