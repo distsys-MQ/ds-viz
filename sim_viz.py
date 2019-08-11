@@ -173,14 +173,13 @@ def draw() -> None:
                     # Should distinguish jobs that never fail, maybe colour them green
                     col = f"#{jb.fails * 3:06X}"
 
-                    # Lines are drawn centered on 'y'
-                    # May need to adjust so that tick marks meet at top edge of line, not middle
+                    job_y_adj = job_y + c_height * 0.5
                     j_graph_ids[jb.jid].append(
-                        (graph.DrawLine((jb.start, job_y), (jb.end, job_y), width=c_height, color=col), col))
+                        (graph.DrawLine((jb.start, job_y_adj), (jb.end, job_y_adj), width=c_height, color=col), col))
 
             for fail in norm_server_failures(s.failures):
-                fail_y1 = sid_y - s_height / 2
-                fail_y2 = sid_y + s_height / 2 - 1
+                fail_y1 = sid_y
+                fail_y2 = sid_y + s_height - 1
                 graph.DrawRectangle((fail.fail, fail_y1), (fail.recover, fail_y2), fill_color="red", line_color="red")
 
     timeline = graph.DrawLine((norm_time, 0), (norm_time, height), color="grey")
