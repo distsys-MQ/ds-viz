@@ -134,32 +134,53 @@ def draw() -> None:
     last = int(right_margin / 2)
     font = ("Courier New", -9)
     max_s_length = 8
-    min_tick = 3
+    tick = 3
     graph.DrawLine((box_x2, 0), (box_x2, height))  # y-axis
 
     for kind in list(s_dict):
         kind_y = last + c_height
         s_kind = kind if len(kind) <= max_s_length else kind[:5] + ".."
+
         graph.DrawText(f"{s_kind}", (left_margin, kind_y), font=font)
-        graph.DrawLine((box_x2 - min_tick * 2, kind_y), (box_x2, kind_y))
+        graph.DrawLine((box_x2 - tick * 3, kind_y), (box_x2, kind_y))
 
         for s in s_dict[kind].values():
-            sid_y = last + c_height
-            graph.DrawLine((box_x2 - min_tick, sid_y), (box_x2, sid_y))  # tick marks
+            s_scale = min(s.cores, args.scale)
+            s_height = s_scale * c_height
+
+            sid_y = last + s_height
+            graph.DrawLine((box_x2 - tick * 2, sid_y), (box_x2, sid_y))  # tick marks
 
             if len(s.jobs) == 0:  # Add empty space for jobless servers
-                last += c_height
+                last += s_height
 
-            for jb in norm_jobs(s.jobs):
-                last = sid_y
+            jobs = norm_jobs(s.jobs)
+            for jb in jobs:
+                j_scale = min(jb.cores, args.scale)
+                overlap = list(filter(lambda j: j.is_overlapping(jb), jobs[:jobs.index(jb)]))
 
-                col = f"#{jb.fails * 3:06X}"  # Need to improve, maybe normalise against most-failed job
-                j_graph_ids[jb.jid].append(
-                    (graph.DrawLine((jb.start, sid_y), (jb.end, sid_y), width=c_height, color=col), col))
+                # Make scaling expand multi-core servers
+                for k in range(j_scale):
+                    # Offset by number of job's cores + number of concurrent jobs
+                    # If offset would exceed server height, reset to the bottom
+                    used_cores = k + len(overlap)
+                    job_offset = used_cores if used_cores < s_scale else 0
+
+                    job_y = sid_y - job_offset * c_height
+                    last = max(last, job_y)
+
+                    # Need to improve, maybe normalise against most-failed job
+                    # Should distinguish jobs that never fail, maybe colour them green
+                    col = f"#{jb.fails * 3:06X}"
+
+                    # Lines are drawn centered on 'y'
+                    # May need to adjust so that tick marks meet at top edge of line, not middle
+                    j_graph_ids[jb.jid].append(
+                        (graph.DrawLine((jb.start, job_y), (jb.end, job_y), width=c_height, color=col), col))
 
             for fail in norm_server_failures(s.failures):
-                fail_y1 = sid_y - c_height / 2
-                fail_y2 = sid_y + c_height / 2 - 1
+                fail_y1 = sid_y - s_height / 2
+                fail_y2 = sid_y + s_height / 2 - 1
                 graph.DrawRectangle((fail.fail, fail_y1), (fail.recover, fail_y2), fill_color="red", line_color="red")
 
     timeline = graph.DrawLine((norm_time, 0), (norm_time, height), color="grey")
