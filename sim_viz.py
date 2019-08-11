@@ -38,51 +38,62 @@ j_dict: Dict[int, List[Job]] = {
     jid: sorted([j for s in servers for j in s.jobs if j.jid == jid], key=attrgetter("schd")) for jid in unique_jids}
 j_graph_ids: Dict[int, List[Tuple[int, str]]] = {jid: [] for jid in unique_jids}
 
-step = 8
-start = 0
-stop = start + step
-
 left_margin = 30
 right_margin = 15
-last_time = Server.last_time
 x_offset = left_margin * 2
-
+tab_size = (75, 3)
 c_height = args.core_height
 base_scale = args.scale
+last_time = Server.last_time
+max_cores = max(s.cores for s in servers)
+
 width = 1200
 height = sum(s.cores for s in servers) * c_height  # Adjust for paging
 
 pSG.SetOptions(font=("Courier New", -13), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
-tab_size = (75, 3)
-t_slider_width = 89
-sj_btn_width = 10
-arw_btn_width = int(sj_btn_width / 2)
-s_slider_height = max(len(servers) / (c_height * 3), 5)
-
 graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, height), graph_top_right=(width, 0),
                            key="graph", change_submits=True, drag_submits=False)]]
 left_tabs = pSG.TabGroup(
-    [[pSG.Tab("Current Server", [[pSG.Txt("", size=tab_size, key="current_server")]]),
-      pSG.Tab("Current Job", [[pSG.Txt("", size=tab_size, key="current_job")]])]]
+    [[pSG.Tab("Current Server",
+              [[pSG.T("", size=tab_size, key="current_server")]]),
+      pSG.Tab("Current Job",
+              [[pSG.T("", size=tab_size, key="current_job")]])
+      ]]
 )
 right_tabs = pSG.TabGroup(
-    [[pSG.Tab("Current Results", [[pSG.Txt("", size=tab_size, key="current_results")]]),
-      pSG.Tab("Final Results", [[pSG.Multiline(
-          get_results(args.log), font=("Courier New", -11), size=tab_size, disabled=True)]])]]
+    [[pSG.Tab("Current Results",
+              [[pSG.T("", size=tab_size, key="current_results")]]),
+      pSG.Tab("Final Results",
+              [[pSG.Multiline(get_results(args.log), font=("Courier New", -11), size=tab_size, disabled=True)]])
+      ]]
 )
+
+t_slider_width = 89
+btn_width = 10
+slider_height = 5
+s_slider_height = max(len(servers) / (c_height * 3), 5)
+btn_font = ("Courier New", -10)
+slider_settings = {
+    "size": (89, 5),
+    "orientation": "h",
+    "enable_events": True
+}
+slider_label_size = (6, 1)
 
 layout = [
     [left_tabs, right_tabs],
-    [pSG.Button("Show Job", size=(sj_btn_width, 1), button_color=("white", "red"), key="show_job"),
-     pSG.Slider((unique_jids[0], unique_jids[-1]), default_value=unique_jids[0],
-                size=(t_slider_width - sj_btn_width, 10), orientation="h", enable_events=True, key="job_slider"),
-     pSG.Btn('<', size=(arw_btn_width, 1), key="left_arrow"), pSG.Btn('>', size=(arw_btn_width, 1), key="right_arrow")],
-    [pSG.Slider((0, Server.last_time), default_value=0, size=(t_slider_width, 10), pad=((44, 0), 0),
-                orientation="h", enable_events=True, key="time_slider")],
-    [pSG.Slider((len(servers) - 1, 0), default_value=0, size=(s_slider_height, 5), disable_number_display=True,
-                orientation="v", enable_events=True, key="server_slider"),
-     pSG.Column(graph_column, size=(width, height * 1.1), scrollable=True, vertical_scroll_only=True, key="column")]
+    [pSG.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"), key="show_job"),
+     pSG.T(f"Scale: {base_scale} ", size=(134, 1), justification="right", key="scale"),
+     pSG.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
+     pSG.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")],
+    [pSG.T("Server", size=slider_label_size),
+     pSG.Slider((0, len(servers) - 1), default_value=servers[0].sid, key="server_slider", **slider_settings)],
+    [pSG.T("Job", size=slider_label_size),
+     pSG.Slider((unique_jids[0], unique_jids[-1]), default_value=unique_jids[0], key="job_slider", **slider_settings)],
+    [pSG.T("Time", size=slider_label_size),
+     pSG.Slider((0, Server.last_time), default_value=0, key="time_slider", **slider_settings)],
+    [pSG.Column(graph_column, size=(width, height * 1.1), scrollable=True, vertical_scroll_only=True, key="column")]
 ]
 
 window = pSG.Window("sim-viz", layout, resizable=True, return_keyboard_events=True)
@@ -92,9 +103,7 @@ current_server = window.Element("current_server")
 current_job = window.Element("current_job")
 current_results = window.Element("current_results")
 t_slider = window.Element("time_slider")
-column = window.Element("column")
-s_slider = window.Element("server_slider")
-show_job = False
+scale_output = window.Element("scale")
 
 
 def norm_jobs(jobs: List[Job]) -> List[Job]:
@@ -215,18 +224,13 @@ def change_selected_job(jid: int):
     prev_jid = jid
 
 
-def change_scaling(scale: int):
-    global graph
-
-    graph.Erase()
-    draw(scale)
-
-
+show_job = False
 cur_scale = base_scale
 draw(base_scale)
 server = servers[0]
 job = j_dict[unique_jids[0]][0]
 time = 0
+update_output(time)
 
 while True:
     event, values = window.Read()
@@ -280,36 +284,15 @@ while True:
         t_slider.Update(time)
         update_output(time)
 
-    elif "Up" in event:
-        cur_scale += 1
-        change_scaling(cur_scale)
-    elif "Down" in event:
+    elif event == "decrease_scale":
         cur_scale = cur_scale - 1 if cur_scale > 1 else 1
-        change_scaling(cur_scale)
-
-    elif event == "left_arrow":
         graph.Erase()
-
-        n_start = start - step
-        n_stop = stop - step
-        (start, stop) = (n_start, n_stop) if n_start > 0 else (0, step)
-
-        draw()
-
-        if show_job:
-            change_selected_job(int(values["job_slider"]))
-
-    elif event == "right_arrow":
+        draw(cur_scale)
+        scale_output.Update(f"Scale: {cur_scale} ")
+    elif event == "increase_scale":
+        cur_scale = cur_scale + 1 if cur_scale < max_cores else max_cores
         graph.Erase()
-
-        hi_bound = len(s_dict) - step
-        n_start = start + step
-        n_stop = stop + step
-        (start, stop) = (n_start, n_stop) if start < hi_bound else (start, len(s_dict))
-
-        draw()
-
-        if show_job:
-            change_selected_job(int(values["job_slider"]))
+        draw(cur_scale)
+        scale_output.Update(f"Scale: {cur_scale} ")
 
 window.Close()
