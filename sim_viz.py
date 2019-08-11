@@ -31,7 +31,6 @@ parser.add_argument("-s", "--scale", type=int, default=1, help="set scaling fact
 args = parser.parse_args()
 
 servers = get_servers_from_system(args.log, args.config, args.failures)
-
 s_dict = server_list_to_dict(servers)
 
 unique_jids = sorted({j.jid for s in servers for j in s.jobs})
@@ -49,8 +48,9 @@ last_time = Server.last_time
 x_offset = left_margin * 2
 
 c_height = args.core_height
+base_scale = args.scale
 width = 1200
-height = c_height * len(servers) + c_height * 5 + left_margin  # Adjust for paging
+height = sum(s.cores for s in servers) * c_height  # Adjust for paging
 
 pSG.SetOptions(font=("Courier New", -13), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
@@ -82,7 +82,7 @@ layout = [
                 orientation="h", enable_events=True, key="time_slider")],
     [pSG.Slider((len(servers) - 1, 0), default_value=0, size=(s_slider_height, 5), disable_number_display=True,
                 orientation="v", enable_events=True, key="server_slider"),
-     pSG.Column(graph_column, size=(width, height * 2), scrollable=True, vertical_scroll_only=True, key="column")]
+     pSG.Column(graph_column, size=(width, height * 1.1), scrollable=True, vertical_scroll_only=True, key="column")]
 ]
 
 window = pSG.Window("sim-viz", layout, resizable=True, return_keyboard_events=True)
@@ -128,7 +128,7 @@ norm_time = x_offset
 timeline = None
 
 
-def draw() -> None:
+def draw(scale: int = base_scale) -> None:
     global timeline
 
     last = int(right_margin / 2)
@@ -136,38 +136,39 @@ def draw() -> None:
     max_s_length = 8
     tick = 3
     graph.DrawLine((box_x2, 0), (box_x2, height))  # y-axis
+    s_height = None
 
     for kind in list(s_dict):
-        kind_y = last + c_height
+        kind_y = last
         s_kind = kind if len(kind) <= max_s_length else kind[:5] + ".."
 
         graph.DrawText(f"{s_kind}", (left_margin, kind_y), font=font)
-        graph.DrawLine((box_x2 - tick * 3, kind_y), (box_x2, kind_y))
+        graph.DrawLine((box_x2 - tick * 3, kind_y), (box_x2, kind_y))  # Server type tick mark
 
-        for s in s_dict[kind].values():
-            s_scale = min(s.cores, args.scale)
+        for i, s in enumerate(s_dict[kind].values()):
+            s_scale = min(s.cores, scale)
             s_height = s_scale * c_height
 
-            sid_y = last + s_height
-            graph.DrawLine((box_x2 - tick * 2, sid_y), (box_x2, sid_y))  # tick marks
+            sid_y = kind_y + s_height * i
+            graph.DrawLine((box_x2 - tick * 2, sid_y), (box_x2, sid_y))  # Server ID tick mark
 
-            if len(s.jobs) == 0:  # Add empty space for jobless servers
-                last += s_height
+            for k in range(s_scale):
+                core_y = sid_y + c_height * k
+                graph.DrawLine((box_x2 - tick, core_y), (box_x2, core_y))  # Server core tick mark
 
             jobs = norm_jobs(s.jobs)
             for jb in jobs:
-                j_scale = min(jb.cores, args.scale)
+                j_scale = min(jb.cores, scale)
                 overlap = list(filter(lambda j: j.is_overlapping(jb), jobs[:jobs.index(jb)]))
 
-                # Make scaling expand multi-core servers
                 for k in range(j_scale):
+                    # job_y = sid_y + k * c_height
+
                     # Offset by number of job's cores + number of concurrent jobs
                     # If offset would exceed server height, reset to the bottom
                     used_cores = k + len(overlap)
                     job_offset = used_cores if used_cores < s_scale else 0
-
-                    job_y = sid_y - job_offset * c_height
-                    last = max(last, job_y)
+                    job_y = sid_y + job_offset * c_height
 
                     # Need to improve, maybe normalise against most-failed job
                     # Should distinguish jobs that never fail, maybe colour them green
@@ -181,6 +182,8 @@ def draw() -> None:
                 fail_y1 = sid_y
                 fail_y2 = sid_y + s_height - 1
                 graph.DrawRectangle((fail.fail, fail_y1), (fail.recover, fail_y2), fill_color="red", line_color="red")
+
+        last = kind_y + s_height * len(s_dict[kind])
 
     timeline = graph.DrawLine((norm_time, 0), (norm_time, height), color="grey")
 
@@ -213,18 +216,14 @@ def change_selected_job(jid: int):
 
 
 def change_scaling(scale: int):
-    global height, graph
+    global graph
 
     graph.Erase()
-    height = scale * len(servers) + scale * 5 + left_margin
-    graph.Widget.configure(height=height)
-    column.Widget.configure(height=height)
-    s_slider.Widget.configure(length=height)
-
-    draw()
+    draw(scale)
 
 
-draw()
+cur_scale = base_scale
+draw(base_scale)
 server = servers[0]
 job = j_dict[unique_jids[0]][0]
 time = 0
@@ -282,11 +281,11 @@ while True:
         update_output(time)
 
     elif "Up" in event:
-        c_height += 1
-        change_scaling(c_height)
+        cur_scale += 1
+        change_scaling(cur_scale)
     elif "Down" in event:
-        c_height = c_height - 1 if c_height > 1 else 1
-        change_scaling(c_height)
+        cur_scale = cur_scale - 1 if cur_scale > 1 else 1
+        change_scaling(cur_scale)
 
     elif event == "left_arrow":
         graph.Erase()
