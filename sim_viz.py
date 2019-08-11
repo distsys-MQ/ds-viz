@@ -135,6 +135,7 @@ box_x1 = 0
 box_x2 = x_offset - 1
 norm_time = x_offset
 timeline = None
+s_ticks = []
 
 
 def draw(scale: int = base_scale) -> None:
@@ -160,7 +161,7 @@ def draw(scale: int = base_scale) -> None:
             s_height = s_scale * c_height
 
             sid_y = kind_y + s_height * i
-            graph.DrawLine((box_x2 - tick * 2, sid_y), (box_x2, sid_y))  # Server ID tick mark
+            s_ticks.append(graph.DrawLine((box_x2 - tick * 2, sid_y), (box_x2, sid_y)))  # Server ID tick mark
 
             for k in range(s_scale):
                 core_y = sid_y + c_height * k
@@ -199,6 +200,7 @@ def draw(scale: int = base_scale) -> None:
 
 
 prev_jid = unique_jids[0]
+prev_s = 0
 
 
 def update_output(t: int):
@@ -225,6 +227,14 @@ def change_selected_job(jid: int):
     prev_jid = jid
 
 
+def change_selected_server(server_index: int):
+    global prev_s
+
+    graph.Widget.itemconfig(s_ticks[prev_s], fill="black", width=1)
+    graph.Widget.itemconfig(s_ticks[server_index], fill="green", width=4)
+    prev_s = server_index
+
+
 def change_scaling(scale: int):
     graph.Erase()
     draw(scale)
@@ -242,6 +252,7 @@ update_output(time)
 while True:
     event, values = window.Read()
 
+    # Handle closing the window
     if event is None or event == 'Exit':
         break
 
@@ -265,7 +276,9 @@ while True:
 
     # Handle server slider movement
     if event == "server_slider":
-        server = servers[int(values["server_slider"])]
+        s_index = int(values["server_slider"])
+        server = servers[s_index]
+        change_selected_server(s_index)
         update_output(time)
 
     # Handle clicking "show job" button
@@ -291,6 +304,7 @@ while True:
         t_slider.Update(time)
         update_output(time)
 
+    # Handle clicking on scale buttons
     elif event == "decrease_scale":
         cur_scale = cur_scale - 1 if cur_scale > 0 else 0
         change_scaling(cur_scale)
