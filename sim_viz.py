@@ -84,7 +84,9 @@ slider_label_size = (6, 1)
 layout = [
     [left_tabs, right_tabs],
     [pSG.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"), key="show_job"),
-     pSG.T(f"Scale: {base_scale} ({2 ** base_scale} max cores)", size=(134, 1), justification="right", key="scale"),
+     pSG.T(f"Visualising: {os.path.basename(args.log)}", size=(104, 1),
+           font=("Courier New", -13, "underline"), justification="center"),
+     pSG.T(f"Scale: {base_scale} ({2 ** base_scale} max cores)", size=(30, 1), justification="right", key="scale"),
      pSG.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
      pSG.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")],
     [pSG.T("Server", size=slider_label_size),
