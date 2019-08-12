@@ -47,10 +47,13 @@ base_scale = args.scale
 last_time = Server.last_time
 max_scale = int(math.log(max(s.cores for s in servers), 2))
 
+fnt_f = "Courier New"
+fnt_s = -13
+
 width = 1200
 height = sum(s.cores for s in servers) * c_height  # Adjust for paging
 
-pSG.SetOptions(font=("Courier New", -13), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
+pSG.SetOptions(font=(fnt_f, fnt_s), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
 graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, height), graph_top_right=(width, 0),
                            key="graph", change_submits=True, drag_submits=False)]]
@@ -65,7 +68,7 @@ right_tabs = pSG.TabGroup(
     [[pSG.Tab("Current Results",
               [[pSG.T("", size=tab_size, key="current_results")]]),
       pSG.Tab("Final Results",
-              [[pSG.Multiline(get_results(args.log), font=("Courier New", -11), size=tab_size, disabled=True)]])
+              [[pSG.Multiline(get_results(args.log), font=(fnt_f, fnt_s + 2), size=tab_size, disabled=True)]])
       ]]
 )
 
@@ -73,7 +76,7 @@ t_slider_width = 89
 btn_width = 10
 slider_height = 5
 s_slider_height = max(len(servers) / (c_height * 3), 5)
-btn_font = ("Courier New", -10)
+btn_font = (fnt_f, fnt_s + 3)
 slider_settings = {
     "size": (89, 5),
     "orientation": "h",
@@ -85,7 +88,7 @@ layout = [
     [left_tabs, right_tabs],
     [pSG.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"), key="show_job"),
      pSG.T(f"Visualising: {os.path.basename(args.log)}", size=(104, 1),
-           font=("Courier New", -13, "underline"), justification="center"),
+           font=(fnt_f, fnt_s, "underline"), justification="center"),
      pSG.T(f"Scale: {base_scale} ({2 ** base_scale} max cores)", size=(30, 1), justification="right", key="scale"),
      pSG.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
      pSG.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")],
@@ -148,7 +151,7 @@ def draw(scale: int = base_scale) -> None:
     global timeline, s_highlight, s_ticks
 
     last = start
-    font = ("Courier New", -9)
+    font = (fnt_f, fnt_s + 4)
     max_s_length = 8
     tick = 3
     graph.DrawLine((axis, 0), (axis, height))  # y-axis
