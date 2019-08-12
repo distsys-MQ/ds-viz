@@ -23,9 +23,9 @@ def is_valid_file(psr: ArgumentParser, arg: str) -> str:
 # TODO cleanup code, revise scoping
 
 parser = ArgumentParser(description="Visualises DS simulations")
-parser.add_argument("log", type=lambda f: is_valid_file(parser, f), help="simulation log file to visualise")
 parser.add_argument("config", type=lambda f: is_valid_file(parser, f), help="configuration file used in simulation")
 parser.add_argument("failures", type=lambda f: is_valid_file(parser, f), help="resource-failures file from simulation")
+parser.add_argument("log", type=lambda f: is_valid_file(parser, f), help="simulation log file to visualise")
 parser.add_argument("-c", "--core_height", type=int, default=4, help="set core height")
 parser.add_argument("-s", "--scale", type=int, default=0, help="set scaling factor of visualisation")
 args = parser.parse_args()
