@@ -136,12 +136,14 @@ def make_job(f: BinaryIO, servers: Dict[str, Dict[int, "Server"]], job_failures:
     memory = int(msg[6])
     disk = int(msg[7])
     fails = 0
+    failed = False
 
     if jid not in job_failures:
         job_failures[jid] = 0
 
     if msg[1] == "JOBF":
         fails = job_failures[jid]
+        failed = True
 
     while True:
         line = f.readline()
@@ -152,7 +154,7 @@ def make_job(f: BinaryIO, servers: Dict[str, Dict[int, "Server"]], job_failures:
             sid = int(msg[4])
             server = servers[s_kind][sid]
 
-            job = Job(jid, cores, memory, disk, schd, fails=fails, server=server)
+            job = Job(jid, cores, memory, disk, schd, failed=failed, fails=fails, server=server)
             job.set_job_times(f.name, f.tell(), job_failures)
             server.jobs.append(job)
 

@@ -189,7 +189,7 @@ def draw(scale: int = base_scale) -> None:
 
                     # Need to improve, maybe normalise against most-failed job
                     # Should distinguish jobs that never fail, maybe colour them green
-                    col = f"#{jb.fails * 3:06X}"
+                    col = "green" if not jb.failed else f"#{jb.fails * 3:06X}"
 
                     job_y_adj = job_y + c_height * 0.5
                     j_graph_ids[jb.jid].append(
