@@ -34,9 +34,9 @@ servers = get_servers_from_system(args.log, args.config, args.failures)
 s_dict = server_list_to_dict(servers)
 
 unique_jids = sorted({j.jid for s in servers for j in s.jobs})
-j_dict: Dict[int, List[Job]] = {
+j_dict = {  # type: Dict[int, List[Job]]
     jid: sorted([j for s in servers for j in s.jobs if j.jid == jid], key=attrgetter("schd")) for jid in unique_jids}
-j_graph_ids: Dict[int, List[Tuple[int, str]]] = {jid: [] for jid in unique_jids}
+j_graph_ids = {jid: [] for jid in unique_jids}  # type: Dict[int, List[Tuple[int, str]]]
 
 left_margin = 30
 right_margin = 15
@@ -87,9 +87,10 @@ slider_label_size = (6, 1)
 layout = [
     [left_tabs, right_tabs],
     [pSG.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"), key="show_job"),
-     pSG.T(f"Visualising: {os.path.basename(args.log)}", size=(104, 1),
-           font=(fnt_f, fnt_s, "underline"), justification="center"),
-     pSG.T(f"Scale: {base_scale} ({2 ** base_scale} max cores)", size=(30, 1), justification="right", key="scale"),
+     pSG.T("Visualising: {}".format(os.path.basename(args.log)),
+           size=(104, 1), font=(fnt_f, fnt_s, "underline"), justification="center"),
+     pSG.T("Scale: {} ({} max cores)".format(base_scale, 2 ** base_scale),
+           size=(30, 1), justification="right", key="scale"),
      pSG.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
      pSG.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")],
     [pSG.T("Server", size=slider_label_size),
@@ -163,7 +164,7 @@ def draw(scale: int = base_scale) -> None:
         kind_y = last
         s_kind = kind if len(kind) <= max_s_length else kind[:5] + ".."
 
-        graph.DrawText(f"{s_kind}", (left_margin, kind_y), font=font)
+        graph.DrawText(s_kind, (left_margin, kind_y), font=font)
         graph.DrawLine((axis - tick * 3, kind_y), (axis, kind_y))  # Server type tick mark
 
         for i, s in enumerate(s_dict[kind].values()):
@@ -194,7 +195,7 @@ def draw(scale: int = base_scale) -> None:
 
                     # Need to improve, maybe normalise against most-failed job
                     # Should distinguish jobs that never fail, maybe colour them green
-                    col = "green" if not jb.failed else f"#{jb.fails * 3:06X}"
+                    col = "green" if not jb.failed else "#{:06X}".format(jb.fails * 3)
 
                     job_y_adj = job_y + c_height * 0.5
                     j_graph_ids[jb.jid].append(
@@ -243,7 +244,7 @@ def change_scaling(scale: int):
     graph.Erase()
     draw(scale)
     change_job_colour(prev_jid, "yellow")
-    scale_output.Update(f"Scale: {scale} ({2 ** scale} max cores)")
+    scale_output.Update("Scale: {} ({} max cores)".format(scale, 2 ** scale))
 
 
 show_job = False

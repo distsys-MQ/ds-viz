@@ -18,7 +18,7 @@ class Job:
         self.server = server
 
     def __str__(self) -> str:
-        return f"j{self.jid} {self.schd}:{self.start}:{self.start} f{self.fails}"
+        return "j{} {}:{}:{} f{}".format(self.jid, self.schd, self.start, self.start, self.fails)
 
     def is_overlapping(self, job: "Job") -> bool:
         if self.start <= job.start and self.end >= job.end:  # self's runtime envelops job's runtime
@@ -63,16 +63,16 @@ class Job:
 
     def print_job(self, t: int) -> str:
         return (
-            f"j{self.jid}: {self.current_status(t)}  "
-            f"cores: {self.cores},  "
-            f"memory: {self.memory},  "
-            f"disk: {self.disk},\n"
-            f"schd: {self.schd},  "
-            f"start: {self.start},  "
-            f"end: {self.end},  "
-            f"failed: {self.failed},  "
-            f"fails: {self.fails},\n"
-            f"On server: {self.server.kind} {self.server.sid}"
+                "j{}: {}  ".format(self.jid, self.current_status(t)) +
+                "cores: {},  ".format(self.cores) +
+                "memory: {},  ".format(self.memory) +
+                "disk: {},\n".format(self.disk) +
+                "schd: {},  ".format(self.schd) +
+                "start: {},  ".format(self.start) +
+                "end: {},  ".format(self.end) +
+                "failed: {},  ".format(self.failed) +
+                "fails: {},\n".format(self.fails) +
+                "On server: {} {}".format(self.server.kind, self.server.sid)
         )
 
     def set_job_times(self, log: str, pos: int, job_failures: Dict[int, int]) -> None:

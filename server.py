@@ -7,26 +7,26 @@ from file_read_backwards import FileReadBackwards
 
 from job import Job, get_jobs
 from server_failure import ServerFailure, get_failures, get_failures_from_resources
-from server_state import ServerState as state
+from server_state import ServerState as State
 
 
 class Server:
-    last_time: int = None
+    last_time = None  # type: int
 
     def __init__(self, kind: str, sid: int, cores: int, memory: int, disk: int,
-                 states: Dict[int, state] = None, jobs: List[Job] = None,
+                 states: Dict[int, State] = None, jobs: List[Job] = None,
                  failures: List[ServerFailure] = None):
         self.kind = kind
         self.sid = sid
         self.cores = cores
         self.memory = memory
         self.disk = disk
-        self.states = states if states else {0: state.inactive}
+        self.states = states if states else {0: State.inactive}
         self.jobs = jobs if jobs else []
         self.failures = failures if failures else []
 
     def __str__(self):
-        return f"{self.kind} {self.sid}"
+        return "{} {}".format(self.kind, self.sid)
 
     def get_server_at(self, t: int) -> "Server":
         jobs = list(filter(lambda j: j.is_running_at(t), self.jobs))
@@ -37,7 +37,7 @@ class Server:
 
         return Server(self.kind, self.sid, cores, memory, disk, states, jobs)
 
-    def get_state_at(self, t: int) -> state:
+    def get_state_at(self, t: int) -> State:
         best = None
         diff = sys.maxsize
 
@@ -57,7 +57,7 @@ class Server:
         for time in sorted(self.states):
             if time > t:
                 break
-            if self.states[time] == state.unavailable:
+            if self.states[time] == State.unavailable:
                 res += 1
         return res
 
@@ -70,19 +70,19 @@ class Server:
         failed_jobs = list(filter(lambda j: j.is_failed_at(t), self.jobs))
 
         return (
-            f"{self.kind} {self.sid}: {cur.states[0].name},  "
-            f"cores: {cur.cores} ({self.cores}),  "
-            f"memory: {cur.memory} ({self.memory}),\n"
-            f"disk: {cur.disk} ({self.disk}),  "
-            f"running jobs: {len(cur.jobs)},  "
-            f"queued jobs: {len(queued_jobs)},\n"
-            f"completed jobs: {len(completed_jobs)},  "
-            f"failed jobs: {len(failed_jobs)},  "
-            f"server failures: {self.count_failures_at(t)}"
+                "{} {}: {},  ".format(self.kind, self.sid, cur.states[0].name) +
+                "cores: {} ({}),  ".format(cur.cores, self.cores) +
+                "memory: {} ({}),\n".format(cur.memory, self.memory) +
+                "disk: {} ({}),  ".format(cur.disk, self.disk) +
+                "running jobs: {},  ".format(len(cur.jobs)) +
+                "queued jobs: {},\n".format(len(queued_jobs)) +
+                "completed jobs: {},  ".format(len(completed_jobs)) +
+                "failed jobs: {},  ".format(len(failed_jobs)) +
+                "server failures: {}".format(self.count_failures_at(t))
         )
 
     def get_server_states(self, log: str) -> None:
-        states = {0: state.inactive}
+        states = {0: State.inactive}
 
         with open(log, "r") as f:
             while True:
@@ -101,18 +101,18 @@ class Server:
 
                     if kind == self.kind and sid == self.sid:
                         if "(booting)" in msg:
-                            states[time] = state.booting
-                        elif "RUNNING" in msg and states[max(states)] is not state.active:
-                            states[time] = state.active
+                            states[time] = State.booting
+                        elif "RUNNING" in msg and states[max(states)] is not State.active:
+                            states[time] = State.active
                         elif "COMPLETED" in msg and time != Server.last_time and len(
                                 list(filter(lambda j: j.is_running_at(time + 1), self.jobs))) == 0:
-                            states[time + 1] = state.idle
+                            states[time + 1] = State.idle
 
         for f in self.failures:
-            states[f.fail] = state.unavailable
+            states[f.fail] = State.unavailable
 
             if f.recover != Server.last_time:
-                states[f.recover] = state.inactive
+                states[f.recover] = State.inactive
 
         self.states = states
 
@@ -212,11 +212,11 @@ def get_last_time(log: str, system: str) -> int:
 def print_servers_at(servers: List[Server], t: int) -> str:
     curs = [s.get_server_at(t) for s in servers]
 
-    s_inactive = list(filter(lambda s: s.states[0] == state.inactive, curs))
-    s_booting = list(filter(lambda s: s.states[0] == state.booting, curs))
-    s_idle = list(filter(lambda s: s.states[0] == state.idle, curs))
-    s_active = list(filter(lambda s: s.states[0] == state.active, curs))
-    s_unavailable = list(filter(lambda s: s.states[0] == state.unavailable, curs))
+    s_inactive = list(filter(lambda s: s.states[0] == State.inactive, curs))
+    s_booting = list(filter(lambda s: s.states[0] == State.booting, curs))
+    s_idle = list(filter(lambda s: s.states[0] == State.idle, curs))
+    s_active = list(filter(lambda s: s.states[0] == State.active, curs))
+    s_unavailable = list(filter(lambda s: s.states[0] == State.unavailable, curs))
     s_failures = sum(s.count_failures_at(t) for s in servers)
 
     j_running = [j for s in curs for j in s.jobs]
@@ -225,15 +225,15 @@ def print_servers_at(servers: List[Server], t: int) -> str:
     j_failed = list(chain.from_iterable(filter(lambda job: job.is_failed_at(t), s.jobs) for s in servers))
 
     return (
-        f"SERVERS: inactive: {len(s_inactive)},  "
-        f"booting: {len(s_booting)},  "
-        f"idle: {len(s_idle)},  "
-        f"active: {len(s_active)},\n"
-        f"  unavailable: {len(s_unavailable)} ({s_failures})\n"
-        f"JOBS: running: {len(j_running)},  "
-        f"queued: {len(j_queued)},  "
-        f"completed: {len(j_completed)},  "
-        f"failed: {len(j_failed)}"
+            "SERVERS: inactive: {},  ".format(len(s_inactive)) +
+            "booting: {},  ".format(len(s_booting)) +
+            "idle: {},  ".format(len(s_idle)) +
+            "active: {},\n".format(len(s_active)) +
+            "  unavailable: {} ({})\n".format(len(s_unavailable), s_failures) +
+            "JOBS: running: {},  ".format(len(j_running)) +
+            "queued: {},  ".format(len(j_queued)) +
+            "completed: {},  ".format(len(j_completed)) +
+            "failed: {}".format(len(j_failed))
     )
 
 

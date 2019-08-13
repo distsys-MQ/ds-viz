@@ -95,7 +95,7 @@ def get_results(folder: str) -> Dict[str, Dict[str, Dict[int, Result]]]:
         if algo not in result_d[model]:
             result_d[model][algo] = {}
 
-        result_d[model][algo][size] = make_result(f"./{folder}/{filename}")
+        result_d[model][algo][size] = make_result("./{}/{}".format(folder, filename))
 
     return result_d
 

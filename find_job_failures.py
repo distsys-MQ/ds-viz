@@ -35,7 +35,7 @@ def get_jobs(log: str) -> Dict[int, Job]:
 
 def print_failures(jobs: Dict[int, Job]):
     for i, j in jobs.items():
-        print(f"Job {i:4}: {j.failures} failures")
+        print("Job {:4}: {} failures".format(i, j.failures))
 
 
 result = get_jobs(sys.argv[1])
@@ -62,7 +62,7 @@ for i in range(1, max(recurrence_counts.keys())):
 
 def print_dict(d):
     for count, frequency in sorted(d.items()):
-        print(f"{count}, {frequency}")
+        print("{}, {}".format(count, frequency))
 
 
 print_dict(recurrence_counts)
