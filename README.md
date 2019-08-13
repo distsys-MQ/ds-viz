@@ -1,5 +1,6 @@
 - Python 3.6 (or above) is required to run this program.
 - Ensure that pip3 is installed with `sudo apt install python3-pip`
+- Ensure that tkinter is installed with `sudo apt install python3-tk`
 - Install required packages with `pip3 install -r ./requirements.txt`
 - Start visualisation by running `python3 ./sim_viz.py CONFIG RESOURCE_FAILURES LOG`
     - For example: `python3 ./sim_viz.py ./configs/config100.xml ./failures/g5k06-config100.xml-resource-failures.txt ./logs/g5k06-bf-config100.xml.log`
