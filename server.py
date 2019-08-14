@@ -94,17 +94,11 @@ class Server:
                 msg = line.split()
 
                 if msg[0] == "t:":
-                    hash_index = [i for i, s in enumerate(msg) if '#' in s][0]
                     time = int(msg[1])
 
-                    if msg[hash_index] == '#':
-                        lat = msg[hash_index + 1:]
-                        sid = int(lat[0])
-                        kind = lat[3]
-                    else:
-                        lat = msg[hash_index:]
-                        sid = int(lat[0][1:])
-                        kind = lat[3]
+                    s_info = line.split('#')[1].split()  # Make everything left of '#' into a list
+                    sid = int(s_info[0])
+                    kind = s_info[3]
 
                     if kind == self.kind and sid == self.sid:
                         if "(booting)" in msg:
