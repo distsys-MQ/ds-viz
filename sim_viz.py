@@ -76,10 +76,10 @@ right_tabs = pSG.TabGroup(
       ]]
 )
 
-btn_width = 10
+btn_width = 8
 btn_font = (fnt_f, fnt_s + 3)
 slider_settings = {
-    "size": (89, 5),
+    "size": (105, 5),
     "orientation": "h",
     "enable_events": True
 }
@@ -89,7 +89,7 @@ layout = [
     [left_tabs, right_tabs],
     [pSG.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"), key="show_job"),
      pSG.T("Visualising: {}".format(os.path.basename(args.log)),
-           size=(104, 1), font=(fnt_f, fnt_s, "underline"), justification="center"),
+           size=(99, 1), font=(fnt_f, fnt_s, "underline"), justification="center"),
      pSG.T("Scale: {} ({} max cores)".format(base_scale, 2 ** base_scale),
            size=(30, 1), justification="right", key="scale"),
      pSG.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
@@ -244,8 +244,10 @@ def change_selected_job(jid: int):
 def change_scaling(scale: int):
     graph.Erase()
     draw(scale)
-    change_job_colour(prev_jid, "yellow")
     scale_output.Update("Scale: {} ({} max cores)".format(scale, 2 ** scale))
+    
+    if show_job:
+    	change_job_colour(prev_jid, "yellow")
 
 
 show_job = False
