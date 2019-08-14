@@ -12,6 +12,10 @@ from server import Server, get_servers_from_system, server_list_to_dict, get_res
 from server_failure import ServerFailure
 
 
+# TODO Separate argument parsing from main program (i.e. 'sim-viz.py' and 'draw_ui.py')
+#  Also need to improve argument checking (e.g. positive ints)
+#  Could sub-class argparse https://stackoverflow.com/a/18700817/8031185
+
 # https://stackoverflow.com/a/11541450/8031185
 def is_valid_file(psr: ArgumentParser, arg: str) -> str:
     if not os.path.isfile(arg):
