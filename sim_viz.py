@@ -76,10 +76,7 @@ right_tabs = pSG.TabGroup(
       ]]
 )
 
-t_slider_width = 89
 btn_width = 10
-slider_height = 5
-s_slider_height = max(len(servers) / (c_height * 3), 5)
 btn_font = (fnt_f, fnt_s + 3)
 slider_settings = {
     "size": (89, 5),
