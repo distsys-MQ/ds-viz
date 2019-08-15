@@ -8,7 +8,7 @@ class ServerFailure:
 
 
 # noinspection PyUnresolvedReferences
-def get_failures_from_resources(resource_failures: str, servers: Dict[str, Dict[int, "Server"]]) -> None:
+def get_failures_from_resources(resource_failures: str, servers: "OrderedDict[str, OrderedDict[int, Server]]") -> None:
     with open(resource_failures) as f:
         next(f)  # Skip first line
 
@@ -23,7 +23,9 @@ def get_failures_from_resources(resource_failures: str, servers: Dict[str, Dict[
             servers[kind][sid].failures.append(failure)
 
 
-def get_failures(log: str, servers, last_time: int) -> List[ServerFailure]:
+# noinspection PyUnresolvedReferences
+def get_failures(log: str, servers: "OrderedDict[str, OrderedDict[int, Server]]", last_time: int) \
+        -> List[ServerFailure]:
     failures = []
 
     with open(log, "rb") as f:
@@ -44,7 +46,7 @@ def get_failures(log: str, servers, last_time: int) -> List[ServerFailure]:
 
 
 # noinspection PyUnresolvedReferences
-def make_failure(log: str, pos: int, servers: Dict[str, Dict[int, "Server"]]) -> ServerFailure:
+def make_failure(log: str, pos: int, servers: "OrderedDict[str, OrderedDict[int, Server]]") -> ServerFailure:
     with open(log, "rb") as f:
         f.seek(pos, 0)
 

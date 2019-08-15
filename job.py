@@ -1,4 +1,5 @@
 import sys
+from collections import OrderedDict
 from typing import Dict, List, BinaryIO
 
 
@@ -111,7 +112,7 @@ class Job:
 
 
 # noinspection PyUnresolvedReferences
-def get_jobs(log: str, servers: Dict[str, Dict[int, "Server"]]) -> None:
+def get_jobs(log: str, servers: "OrderedDict[str, OrderedDict[int, Server]]") -> None:
     job_failures = {}
 
     with open(log, "rb") as f:
@@ -127,7 +128,7 @@ def get_jobs(log: str, servers: Dict[str, Dict[int, "Server"]]) -> None:
 
 
 # noinspection PyUnresolvedReferences
-def make_job(f: BinaryIO, servers: Dict[str, Dict[int, "Server"]], job_failures: Dict[int, int]) -> Job:
+def make_job(f: BinaryIO, servers: "OrderedDict[str, OrderedDict[int, Server]]", job_failures: Dict[int, int]) -> Job:
     msg = f.readline().decode("utf-8").split()
 
     schd = int(msg[2])
@@ -183,5 +184,5 @@ def get_job_at(jobs: List[Job], t: int) -> Job:
     return best
 
 
-def job_list_to_dict(jobs: List[Job]) -> Dict[int, Job]:
-    return {j.jid: j for j in jobs}
+def job_list_to_dict(jobs: List[Job]) -> "OrderedDict[int, Job]":
+    return OrderedDict((j.jid, j) for j in jobs)

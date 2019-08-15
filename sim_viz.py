@@ -38,8 +38,9 @@ servers = get_servers_from_system(args.log, args.config, args.failures)
 s_dict = server_list_to_dict(servers)
 
 unique_jids = sorted({j.jid for s in servers for j in s.jobs})
-j_dict = {  # type: Dict[int, List[Job]]
-    jid: sorted([j for s in servers for j in s.jobs if j.jid == jid], key=attrgetter("schd")) for jid in unique_jids}
+j_dict = {
+    jid: sorted([j for s in servers for j in s.jobs if j.jid == jid], key=attrgetter("schd")) for jid in unique_jids
+}  # type: Dict[int, List[Job]]
 j_graph_ids = {jid: [] for jid in unique_jids}  # type: Dict[int, List[Tuple[int, str]]]
 
 left_margin = 30

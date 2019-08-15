@@ -1,4 +1,5 @@
 import sys
+from collections import OrderedDict
 from itertools import chain
 from typing import List, Dict, BinaryIO
 from xml.etree.ElementTree import parse
@@ -238,12 +239,12 @@ def print_servers_at(servers: List[Server], t: int) -> str:
     )
 
 
-def server_list_to_dict(servers: List[Server]) -> Dict[str, Dict[int, Server]]:
-    s_dict = {}
+def server_list_to_dict(servers: List[Server]) -> "OrderedDict[str, OrderedDict[int, Server]]":
+    s_dict = OrderedDict()
 
     for s in servers:
         if s.kind not in s_dict:
-            s_dict[s.kind] = {}
+            s_dict[s.kind] = OrderedDict()
 
         s_dict[s.kind][s.sid] = s
 
