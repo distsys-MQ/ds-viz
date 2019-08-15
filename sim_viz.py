@@ -6,6 +6,7 @@ from typing import List, Dict, Tuple
 
 import numpy as np
 import PySimpleGUI as pSG
+from screeninfo import get_monitors
 
 from job import Job, get_job_at
 from server import Server, get_servers_from_system, server_list_to_dict, get_results, print_servers_at
@@ -60,6 +61,9 @@ menu_offset = 50
 s_factor = 2 ** base_scale
 height = sum(min(s.cores, s_factor) for s in servers) * c_height + menu_offset
 
+mon_height = get_monitors()[0].height
+w_height = int(mon_height * 0.8)
+
 pSG.SetOptions(font=(fnt_f, fnt_s), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
 graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, height), graph_top_right=(width, 0),
@@ -103,11 +107,12 @@ layout = [
      pSG.Slider((unique_jids[0], unique_jids[-1]), default_value=unique_jids[0], key="job_slider", **slider_settings)],
     [pSG.T("Time", size=slider_label_size),
      pSG.Slider((0, Server.last_time), default_value=0, key="time_slider", **slider_settings)],
-    [pSG.Column(graph_column, size=(width, height + menu_offset), scrollable=True, vertical_scroll_only=True,
+    [pSG.Column(graph_column, size=(width, w_height), scrollable=True, vertical_scroll_only=True,
                 key="column")]
 ]
 
-window = pSG.Window("sim-viz", layout, resizable=True, return_keyboard_events=True)
+window = pSG.Window("sim-viz", layout, size=(width + left_margin, w_height), resizable=True,
+                    return_keyboard_events=True)
 window.Finalize()
 graph = window.Element("graph")
 current_server = window.Element("current_server")

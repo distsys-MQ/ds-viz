@@ -10,5 +10,6 @@ file-read-backwards = "*"
 numpy = "*"
 PySimpleGUI = "*"
 natsort = "*"
+screeninfo = "*"
 
 [requires]
