@@ -6,7 +6,6 @@ from typing import List, Dict, Tuple
 
 import numpy as np
 import PySimpleGUI as pSG
-from screeninfo import get_monitors
 
 from job import Job, get_job_at
 from server import Server, get_servers_from_system, server_list_to_dict, get_results, print_servers_at
@@ -61,7 +60,7 @@ menu_offset = 50
 s_factor = 2 ** base_scale
 height = sum(min(s.cores, s_factor) for s in servers) * c_height + menu_offset
 
-mon_height = get_monitors()[0].height
+mon_height = 1000
 w_height = int(mon_height * 0.9)
 
 pSG.SetOptions(font=(fnt_f, fnt_s), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
