@@ -55,7 +55,9 @@ fnt_f = "Courier New"
 fnt_s = -13
 
 width = 1200
-height = sum(s.cores for s in servers) * c_height  # Adjust for paging
+menu_offset = 50
+s_factor = 2 ** base_scale
+height = sum(min(s.cores, s_factor) for s in servers) * c_height + menu_offset
 
 pSG.SetOptions(font=(fnt_f, fnt_s), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
@@ -100,7 +102,8 @@ layout = [
      pSG.Slider((unique_jids[0], unique_jids[-1]), default_value=unique_jids[0], key="job_slider", **slider_settings)],
     [pSG.T("Time", size=slider_label_size),
      pSG.Slider((0, Server.last_time), default_value=0, key="time_slider", **slider_settings)],
-    [pSG.Column(graph_column, size=(width, height * 1.1), scrollable=True, vertical_scroll_only=True, key="column")]
+    [pSG.Column(graph_column, size=(width, height + menu_offset), scrollable=True, vertical_scroll_only=True,
+                key="column")]
 ]
 
 window = pSG.Window("sim-viz", layout, resizable=True, return_keyboard_events=True)
@@ -111,6 +114,7 @@ current_job = window.Element("current_job")
 current_results = window.Element("current_results")
 t_slider = window.Element("time_slider")
 scale_output = window.Element("scale")
+column = window.Element("column")
 
 
 def norm_jobs(jobs: List[Job]) -> List[Job]:
@@ -158,7 +162,7 @@ def draw(scale: int = base_scale) -> None:
     tick = 3
     graph.DrawLine((axis, 0), (axis, height))  # y-axis
     s_height = None
-    s_factor = 2 ** scale
+    s_fac = 2 ** scale
     s_ticks = []
 
     for kind in list(s_dict):
@@ -169,7 +173,7 @@ def draw(scale: int = base_scale) -> None:
         graph.DrawLine((axis - tick * 3, kind_y), (axis, kind_y))  # Server type tick mark
 
         for i, s in enumerate(s_dict[kind].values()):
-            s_scale = min(s.cores, s_factor)
+            s_scale = min(s.cores, s_fac)
             s_height = s_scale * c_height
 
             sid_y = kind_y + s_height * i
@@ -182,7 +186,7 @@ def draw(scale: int = base_scale) -> None:
 
             jobs = norm_jobs(s.jobs)
             for jb in jobs:
-                j_scale = min(jb.cores, s_factor)
+                j_scale = min(jb.cores, s_fac)
                 overlap = list(filter(lambda j: j.is_overlapping(jb), jobs[:jobs.index(jb)]))
 
                 for k in range(j_scale):
@@ -242,7 +246,14 @@ def change_selected_job(jid: int):
 
 
 def change_scaling(scale: int):
+    global height
     graph.Erase()
+
+    fac = 2 ** scale
+    height = sum(min(s.cores, fac) for s in servers) * c_height + menu_offset
+    column.Widget.config(height=height)
+    graph.Widget.config(height=height)
+
     draw(scale)
     scale_output.Update("Scale: {} ({} max cores)".format(scale, 2 ** scale))
 
