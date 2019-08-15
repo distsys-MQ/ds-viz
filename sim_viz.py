@@ -68,7 +68,7 @@ w_height = int(mon_height * 0.9)
 pSG.SetOptions(font=(fnt_f, fnt_s), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
 graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, height), graph_top_right=(width, 0),
-                           key="graph", change_submits=True, drag_submits=False)]]
+                           key="graph", change_submits=True, drag_submits=False, background_color="whitesmoke")]]
 left_tabs = pSG.TabGroup(
     [[pSG.Tab("Current Server",
               [[pSG.T("", size=tab_size, key="current_server")]]),
