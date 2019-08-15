@@ -2,7 +2,7 @@ import PySimpleGUI as pSG
 
 width = 1200
 height = 600
-tab_size = (75, 3)
+tab_size = (74, 3)
 btn_width = 10
 btn_font = ("Courier New", -10)
 slider_settings = {"range": (0, 100), "size": (89, 5),
@@ -18,23 +18,26 @@ graph_column = [[
               key="graph")]]
 
 left_tabs = pSG.TabGroup(
-    [[pSG.Tab("T1", [[pSG.T("", size=tab_size)]]),
-      pSG.Tab("T2", [[pSG.T("", size=tab_size)]])]])
+    [[pSG.Tab("T1", [[pSG.T("Test1", size=tab_size)]]),
+      pSG.Tab("T2", [[pSG.T("Test2", size=tab_size)]])]])
 right_tabs = pSG.TabGroup(
-    [[pSG.Tab("T3", [[pSG.T("", size=tab_size)]]),
-      pSG.Tab("T4", [[pSG.T("", size=tab_size)]])]])
+    [[pSG.Tab("T3", [[pSG.T("Test3", size=tab_size)]]),
+      pSG.Tab("T4", [[pSG.T("Test4", size=tab_size)]])]])
 
+col_width = width + 28
 layout = [
-    [left_tabs, right_tabs],
-    [pSG.Button("Press", size=(btn_width, 1), font=btn_font),
-     pSG.T("Title", size=(104, 1), justification="center"),
-     pSG.T("Info", size=(30, 1), justification="right"),
-     pSG.Btn('-', size=(int(btn_width / 2), 1), font=btn_font),
-     pSG.Btn('+', size=(int(btn_width / 2), 1), font=btn_font)],
-    [pSG.T("S1", size=slider_label_size), pSG.Slider(**slider_settings)],
-    [pSG.T("S2", size=slider_label_size), pSG.Slider(**slider_settings)],
-    [pSG.T("S3", size=slider_label_size), pSG.Slider(**slider_settings)],
-    [pSG.Column(graph_column)]
+    [pSG.Column([[left_tabs, right_tabs]], size=(col_width, 85))],
+    [pSG.Column([[
+        pSG.Button("Press", size=(btn_width, 1), font=btn_font),
+        pSG.T("Title", size=(104, 1), justification="center"),
+        pSG.T("Info", size=(30, 1), justification="right"),
+        pSG.Btn('-', size=(int(btn_width / 2), 1), font=btn_font),
+        pSG.Btn('+', size=(int(btn_width / 2), 1), font=btn_font)]], size=(col_width, 30))],
+    [pSG.Column([
+        [pSG.T("S1", size=slider_label_size), pSG.Slider(**slider_settings)],
+        [pSG.T("S2", size=slider_label_size), pSG.Slider(**slider_settings)],
+        [pSG.T("S3", size=slider_label_size), pSG.Slider(**slider_settings)]], size=(col_width, 90))],
+    [pSG.Column(graph_column, size=(col_width, height))],
 ]
 
 window = pSG.Window("test", layout)

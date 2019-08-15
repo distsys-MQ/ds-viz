@@ -245,9 +245,9 @@ def change_scaling(scale: int):
     graph.Erase()
     draw(scale)
     scale_output.Update("Scale: {} ({} max cores)".format(scale, 2 ** scale))
-    
+
     if show_job:
-    	change_job_colour(prev_jid, "yellow")
+        change_job_colour(prev_jid, "yellow")
 
 
 show_job = False
