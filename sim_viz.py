@@ -60,7 +60,9 @@ menu_offset = 50
 s_factor = 2 ** base_scale
 height = sum(min(s.cores, s_factor) for s in servers) * c_height + menu_offset
 
-mon_height = 1000
+dum_win = pSG.Window("dummy", [[]]).Finalize()
+mon_height = dum_win.GetScreenDimensions()[1]
+dum_win.Close()
 w_height = int(mon_height * 0.9)
 
 pSG.SetOptions(font=(fnt_f, fnt_s), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
@@ -203,7 +205,7 @@ def draw(scale: int = base_scale) -> None:
                     job_offset = used_cores if used_cores < s_scale else 0
                     job_y = sid_y + job_offset * c_height
 
-                    base_col = 200
+                    base_col = 180
                     fail_col = max(base_col - jb.fails, 0)  # Can't be darker than black (0, 0, 0)
                     col = "green" if not jb.failed else "#{0:02X}{0:02X}{0:02X}".format(fail_col)
 
