@@ -62,7 +62,7 @@ s_factor = 2 ** base_scale
 height = sum(min(s.cores, s_factor) for s in servers) * c_height + menu_offset
 
 mon_height = get_monitors()[0].height
-w_height = int(mon_height * 0.8)
+w_height = int(mon_height * 0.9)
 
 pSG.SetOptions(font=(fnt_f, fnt_s), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
@@ -199,14 +199,14 @@ def draw(scale: int = base_scale) -> None:
                     # job_y = sid_y + k * c_height
 
                     # Offset by number of job's cores + number of concurrent jobs
-                    # If offset would exceed server height, reset to the bottom
+                    # If offset would exceed server height, reset to the top
                     used_cores = k + len(overlap)
                     job_offset = used_cores if used_cores < s_scale else 0
                     job_y = sid_y + job_offset * c_height
 
-                    # Need to improve, maybe normalise against most-failed job
-                    # Should distinguish jobs that never fail, maybe colour them green
-                    col = "green" if not jb.failed else "#{:06X}".format(jb.fails * 3)
+                    base_col = 200
+                    fail_col = max(base_col - jb.fails, 0)  # Can't be darker than black (0, 0, 0)
+                    col = "green" if not jb.failed else "#{0:02X}{0:02X}{0:02X}".format(fail_col)
 
                     job_y_adj = job_y + c_height * 0.5
                     j_graph_ids[jb.jid].append(
