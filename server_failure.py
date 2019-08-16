@@ -16,11 +16,11 @@ def get_failures_from_resources(resource_failures: str, servers: "OrderedDict[st
             msg = line.split()
             fail = int(msg[0])
             recover = int(msg[1])
-            kind = msg[2]
+            type_ = msg[2]
             sid = int(msg[3])
 
             failure = ServerFailure(fail, recover)
-            servers[kind][sid].failures.append(failure)
+            servers[type_][sid].failures.append(failure)
 
 
 # noinspection PyUnresolvedReferences
@@ -51,7 +51,7 @@ def make_failure(log: str, pos: int, servers: "OrderedDict[str, OrderedDict[int,
         f.seek(pos, 0)
 
         msg = f.readline().decode("utf-8").split()
-        kind = msg[2]
+        type_ = msg[2]
         sid = int(msg[3])
         f_time = int(msg[4])
 
@@ -61,16 +61,16 @@ def make_failure(log: str, pos: int, servers: "OrderedDict[str, OrderedDict[int,
             if b"RESR" in line:
                 msg = line.decode("utf-8").split()
 
-                if msg[2] == kind and int(msg[3]) == sid:
+                if msg[2] == type_ and int(msg[3]) == sid:
                     failure = ServerFailure(f_time, int(msg[4]))
-                    server = servers[kind][sid]
+                    server = servers[type_][sid]
                     server.failures.append(failure)
 
                     return failure
 
             if not line:
                 failure = ServerFailure(f_time)
-                server = servers[kind][sid]
+                server = servers[type_][sid]
                 server.failures.append(failure)
 
                 return failure

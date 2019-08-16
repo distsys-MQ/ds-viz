@@ -14,10 +14,10 @@ from server_state import ServerState as State
 class Server:
     last_time = None  # type: int
 
-    def __init__(self, kind: str, sid: int, cores: int, memory: int, disk: int,
+    def __init__(self, type_: str, sid: int, cores: int, memory: int, disk: int,
                  states: Dict[int, State] = None, jobs: List[Job] = None,
                  failures: List[ServerFailure] = None):
-        self.kind = kind
+        self.type_ = type_
         self.sid = sid
         self.cores = cores
         self.memory = memory
@@ -27,7 +27,7 @@ class Server:
         self.failures = failures if failures else []
 
     def __str__(self):
-        return "{} {}".format(self.kind, self.sid)
+        return "{} {}".format(self.type_, self.sid)
 
     def get_server_at(self, t: int) -> "Server":
         jobs = list(filter(lambda j: j.is_running_at(t), self.jobs))
@@ -36,7 +36,7 @@ class Server:
         disk = self.disk - sum(j.disk for j in jobs)
         states = {0: self.get_state_at(t)}
 
-        return Server(self.kind, self.sid, cores, memory, disk, states, jobs)
+        return Server(self.type_, self.sid, cores, memory, disk, states, jobs)
 
     def get_state_at(self, t: int) -> State:
         best = None
@@ -71,7 +71,7 @@ class Server:
         failed_jobs = list(filter(lambda j: j.is_failed_at(t), self.jobs))
 
         return (
-                "{} {}: {},  ".format(self.kind, self.sid, cur.states[0].name) +
+                "{} {}: {},  ".format(self.type_, self.sid, cur.states[0].name) +
                 "cores: {} ({}),  ".format(cur.cores, self.cores) +
                 "memory: {} ({}),\n".format(cur.memory, self.memory) +
                 "disk: {} ({}),  ".format(cur.disk, self.disk) +
@@ -99,9 +99,9 @@ class Server:
 
                     s_info = line.split('#')[1].split()  # Make everything left of '#' into a list
                     sid = int(s_info[0])
-                    kind = s_info[3]
+                    type_ = s_info[3]
 
-                    if kind == self.kind and sid == self.sid:
+                    if type_ == self.type_ and sid == self.sid:
                         if "(booting)" in msg:
                             states[time] = State.booting
                         elif "RUNNING" in msg and states[max(states)] is not State.active:
@@ -243,9 +243,9 @@ def server_list_to_dict(servers: List[Server]) -> "OrderedDict[str, OrderedDict[
     s_dict = OrderedDict()
 
     for s in servers:
-        if s.kind not in s_dict:
-            s_dict[s.kind] = OrderedDict()
+        if s.type_ not in s_dict:
+            s_dict[s.type_] = OrderedDict()
 
-        s_dict[s.kind][s.sid] = s
+        s_dict[s.type_][s.sid] = s
 
     return s_dict

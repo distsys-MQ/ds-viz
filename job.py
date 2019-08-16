@@ -73,7 +73,7 @@ class Job:
                 "end: {},  ".format(self.end) +
                 "failed: {},  ".format(self.failed) +
                 "fails: {},\n".format(self.fails) +
-                "On server: {} {}".format(self.server.kind, self.server.sid)
+                "On server: {} {}".format(self.server.type_, self.server.sid)
         )
 
     def set_job_times(self, log: str, pos: int, job_failures: Dict[int, int]) -> None:
@@ -151,9 +151,9 @@ def make_job(f: BinaryIO, servers: "OrderedDict[str, OrderedDict[int, Server]]",
 
         if b"SCHD" in line:
             msg = line.decode("utf-8").split()
-            s_kind = msg[3]
+            s_type = msg[3]
             sid = int(msg[4])
-            server = servers[s_kind][sid]
+            server = servers[s_type][sid]
 
             job = Job(jid, cores, memory, disk, schd, failed=failed, fails=fails, server=server)
             job.set_job_times(f.name, f.tell(), job_failures)

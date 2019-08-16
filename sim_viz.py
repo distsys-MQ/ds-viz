@@ -172,18 +172,18 @@ def draw(scale: int = base_scale) -> None:
     s_fac = 2 ** scale
     s_ticks = []
 
-    for kind in list(s_dict):
-        kind_y = last
-        s_kind = kind if len(kind) <= max_s_length else kind[:5] + ".."
+    for type_ in list(s_dict):
+        type_y = last
+        s_type = type_ if len(type_) <= max_s_length else type_[:5] + ".."
 
-        graph.DrawText(s_kind, (left_margin, kind_y), font=font)
-        graph.DrawLine((axis - tick * 3, kind_y), (axis, kind_y))  # Server type tick mark
+        graph.DrawText(s_type, (left_margin, type_y), font=font)
+        graph.DrawLine((axis - tick * 3, type_y), (axis, type_y))  # Server type tick mark
 
-        for i, s in enumerate(s_dict[kind].values()):
+        for i, s in enumerate(s_dict[type_].values()):
             s_scale = min(s.cores, s_fac)
             s_height = s_scale * c_height
 
-            sid_y = kind_y + s_height * i
+            sid_y = type_y + s_height * i
             graph.DrawLine((axis - tick * 2, sid_y), (axis, sid_y))  # Server ID tick mark
             s_ticks.append(sid_y)
 
@@ -218,7 +218,7 @@ def draw(scale: int = base_scale) -> None:
                 fail_y2 = sid_y + s_height - 1
                 graph.DrawRectangle((fail.fail, fail_y1), (fail.recover, fail_y2), fill_color="red", line_color="red")
 
-        last = kind_y + s_height * len(s_dict[kind])
+        last = type_y + s_height * len(s_dict[type_])
 
     # Need to redraw these for them to persist after 'erase' call
     timeline = graph.DrawLine((norm_time, 0), (norm_time, height), color="grey")
