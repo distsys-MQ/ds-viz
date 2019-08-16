@@ -119,21 +119,25 @@ class Server:
         self.states = states
 
 
-def get_servers_from_system(log: str, system: str, resource_failures: str) -> List[Server]:
+def get_servers_from_system(log: str, system: str, resource_failures: str) -> \
+        "OrderedDict[str, OrderedDict[int, Server]]":
     Server.last_time = get_last_time(log, system)
-    servers = []
+    servers = OrderedDict()
 
     for s in parse(system).iter("server"):
+        type_ = s.attrib["type"]
+        servers[type_] = OrderedDict()
+
         for i in range(int(s.attrib["limit"])):
-            servers.append(Server(
-                s.attrib["type"], i, int(s.attrib["coreCount"]), int(s.attrib["memory"]), int(s.attrib["disk"])))
+            servers[type_][i] = Server(
+                type_, i, int(s.attrib["coreCount"]), int(s.attrib["memory"]), int(s.attrib["disk"]))
 
-    s_dict = server_list_to_dict(servers)
-    get_jobs(log, s_dict)
-    get_failures_from_resources(resource_failures, s_dict)
+    get_jobs(log, servers)
+    get_failures_from_resources(resource_failures, servers)
 
-    for s in servers:
-        s.get_server_states(log)
+    for s_types in servers.values():
+        for s in s_types.values():
+            s.get_server_states(log)
 
     return servers
 

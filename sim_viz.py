@@ -8,7 +8,7 @@ import numpy as np
 import PySimpleGUI as pSG
 
 from job import Job, get_job_at
-from server import Server, get_servers_from_system, server_list_to_dict, get_results, print_servers_at
+from server import Server, get_servers_from_system, get_results, print_servers_at
 from server_failure import ServerFailure
 
 
@@ -34,12 +34,12 @@ parser.add_argument("-c", "--core_height", type=int, default=4, help="set core h
 parser.add_argument("-s", "--scale", type=int, default=0, help="set scaling factor of visualisation")
 args = parser.parse_args()
 
-servers = get_servers_from_system(args.log, args.config, args.failures)
-s_dict = server_list_to_dict(servers)
+s_dict = get_servers_from_system(args.log, args.config, args.failures)
+s_list = [s for type_ in s_dict.values() for s in type_.values()]
 
-unique_jids = sorted({j.jid for s in servers for j in s.jobs})
+unique_jids = sorted({j.jid for s in s_list for j in s.jobs})
 j_dict = {
-    jid: sorted([j for s in servers for j in s.jobs if j.jid == jid], key=attrgetter("schd")) for jid in unique_jids
+    jid: sorted([j for s in s_list for j in s.jobs if j.jid == jid], key=attrgetter("schd")) for jid in unique_jids
 }  # type: Dict[int, List[Job]]
 j_graph_ids = {jid: [] for jid in unique_jids}  # type: Dict[int, List[Tuple[int, str]]]
 
@@ -50,7 +50,7 @@ tab_size = (75, 3)
 c_height = args.core_height
 base_scale = args.scale
 last_time = Server.last_time
-max_scale = int(math.log(max(s.cores for s in servers), 2))
+max_scale = int(math.log(max(s.cores for s in s_list), 2))
 
 fnt_f = "Courier New"
 fnt_s = -13
@@ -58,7 +58,7 @@ fnt_s = -13
 width = 1200
 menu_offset = 50
 s_factor = 2 ** base_scale
-height = sum(min(s.cores, s_factor) for s in servers) * c_height + menu_offset
+height = sum(min(s.cores, s_factor) for s in s_list) * c_height + menu_offset
 
 dum_win = pSG.Window("dummy", [[]]).Finalize()
 mon_height = dum_win.GetScreenDimensions()[1]
@@ -103,7 +103,7 @@ layout = [
      pSG.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
      pSG.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")],
     [pSG.T("Server", size=slider_label_size),
-     pSG.Slider((0, len(servers) - 1), default_value=servers[0].sid, key="server_slider", **slider_settings)],
+     pSG.Slider((0, len(s_list) - 1), default_value=s_list[0].sid, key="server_slider", **slider_settings)],
     [pSG.T("Job", size=slider_label_size),
      pSG.Slider((unique_jids[0], unique_jids[-1]), default_value=unique_jids[0], key="job_slider", **slider_settings)],
     [pSG.T("Time", size=slider_label_size),
@@ -231,7 +231,7 @@ prev_jid = unique_jids[0]
 def update_output(t: int):
     current_server.Update(server.print_server_at(t))
     current_job.Update(job.print_job(t))
-    current_results.Update(print_servers_at(servers, t))
+    current_results.Update(print_servers_at(s_list, t))
 
 
 def change_job_colour(jid: int, col: str):
@@ -257,7 +257,7 @@ def change_scaling(scale: int):
     graph.Erase()
 
     fac = 2 ** scale
-    height = sum(min(s.cores, fac) for s in servers) * c_height + menu_offset
+    height = sum(min(s.cores, fac) for s in s_list) * c_height + menu_offset
     column.Widget.config(height=height)
     graph.Widget.config(height=height)
 
@@ -271,7 +271,7 @@ def change_scaling(scale: int):
 show_job = False
 cur_scale = base_scale
 draw(base_scale)
-server = servers[0]
+server = s_list[0]
 job = j_dict[unique_jids[0]][0]
 time = 0
 update_output(time)
@@ -304,7 +304,7 @@ while True:
     # Handle server slider movement
     if event == "server_slider":
         s_index = int(values["server_slider"])
-        server = servers[s_index]
+        server = s_list[s_index]
         graph.RelocateFigure(s_highlight, highlight_x1, s_ticks[s_index])
         update_output(time)
 
