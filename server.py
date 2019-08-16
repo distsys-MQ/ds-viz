@@ -1,7 +1,7 @@
 import sys
 from collections import OrderedDict
 from itertools import chain
-from typing import List, Dict, BinaryIO
+from typing import List, Dict, BinaryIO, Union
 from xml.etree.ElementTree import parse
 
 from file_read_backwards import FileReadBackwards
@@ -135,9 +135,8 @@ def get_servers_from_system(log: str, system: str, resource_failures: str) -> \
     get_jobs(log, servers)
     get_failures_from_resources(resource_failures, servers)
 
-    for s_types in servers.values():
-        for s in s_types.values():
-            s.get_server_states(log)
+    for s in traverse_servers(servers):
+        s.get_server_states(log)
 
     return servers
 
@@ -253,3 +252,14 @@ def server_list_to_dict(servers: List[Server]) -> "OrderedDict[str, OrderedDict[
         s_dict[s.type_][s.sid] = s
 
     return s_dict
+
+
+# https://stackoverflow.com/a/17014386/8031185
+def traverse_servers(item: Union["OrderedDict[str, OrderedDict[int, Server]]", "OrderedDict[int, Server]", Server]) \
+        -> Union["OrderedDict[str, OrderedDict[int, Server]]", "OrderedDict[int, Server]", Server]:
+    try:
+        for i in item:
+            for k in traverse_servers(item[i]):
+                yield k
+    except TypeError:
+        yield item

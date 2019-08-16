@@ -8,7 +8,7 @@ import numpy as np
 import PySimpleGUI as pSG
 
 from job import Job, get_job_at
-from server import Server, get_servers_from_system, get_results, print_servers_at
+from server import Server, get_servers_from_system, get_results, print_servers_at, traverse_servers
 from server_failure import ServerFailure
 
 
@@ -35,7 +35,7 @@ parser.add_argument("-s", "--scale", type=int, default=0, help="set scaling fact
 args = parser.parse_args()
 
 s_dict = get_servers_from_system(args.log, args.config, args.failures)
-s_list = [s for type_ in s_dict.values() for s in type_.values()]
+s_list = [s for s in traverse_servers(s_dict)]
 
 unique_jids = sorted({j.jid for s in s_list for j in s.jobs})
 j_dict = {
@@ -47,10 +47,11 @@ left_margin = 30
 right_margin = 15
 x_offset = left_margin * 2
 tab_size = (75, 3)
-c_height = args.core_height
-base_scale = args.scale
 last_time = Server.last_time
+
+c_height = args.core_height
 max_scale = int(math.log(max(s.cores for s in s_list), 2))
+base_scale = min(args.scale, max_scale)
 
 fnt_f = "Courier New"
 fnt_s = -13
