@@ -255,8 +255,8 @@ def server_list_to_dict(servers: List[Server]) -> "OrderedDict[str, OrderedDict[
 
 
 # https://stackoverflow.com/a/17014386/8031185
-def traverse_servers(item: Union["OrderedDict[str, OrderedDict[int, Server]]", "OrderedDict[int, Server]", Server]) \
-        -> Union["OrderedDict[str, OrderedDict[int, Server]]", "OrderedDict[int, Server]", Server]:
+def traverse_servers(item: "Union[OrderedDict[str, OrderedDict[int, Server]], OrderedDict[int, Server], Server]") \
+        -> "Union[OrderedDict[str, OrderedDict[int, Server]], OrderedDict[int, Server], Server]":
     try:
         for i in item:
             for k in traverse_servers(item[i]):
