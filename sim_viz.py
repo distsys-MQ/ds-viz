@@ -5,7 +5,7 @@ from operator import attrgetter
 from typing import List, Dict, Tuple
 
 import numpy as np
-import PySimpleGUI as pSG
+import PySimpleGUI as sg
 
 from job import Job, get_job_at
 from server import Server, get_servers_from_system, get_results, print_servers_at, traverse_servers
@@ -61,27 +61,27 @@ menu_offset = 50
 s_factor = 2 ** base_scale
 height = sum(min(s.cores, s_factor) for s in s_list) * c_height + menu_offset
 
-dum_win = pSG.Window("dummy", [[]]).Finalize()
+dum_win = sg.Window("dummy", [[]]).Finalize()
 mon_height = dum_win.GetScreenDimensions()[1]
 dum_win.Close()
 w_height = int(mon_height * 0.9)
 
-pSG.SetOptions(font=(fnt_f, fnt_s), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
+sg.SetOptions(font=(fnt_f, fnt_s), background_color="whitesmoke", element_padding=(0, 0), margins=(1, 1))
 
-graph_column = [[pSG.Graph(canvas_size=(width, height), graph_bottom_left=(0, height), graph_top_right=(width, 0),
-                           key="graph", change_submits=True, drag_submits=False, background_color="whitesmoke")]]
-left_tabs = pSG.TabGroup(
-    [[pSG.Tab("Current Server",
-              [[pSG.T("", size=tab_size, key="current_server")]]),
-      pSG.Tab("Current Job",
-              [[pSG.T("", size=tab_size, key="current_job")]])
+graph_column = [[sg.Graph(canvas_size=(width, height), graph_bottom_left=(0, height), graph_top_right=(width, 0),
+                          key="graph", change_submits=True, drag_submits=False, background_color="whitesmoke")]]
+left_tabs = sg.TabGroup(
+    [[sg.Tab("Current Server",
+             [[sg.T("", size=tab_size, key="current_server")]]),
+      sg.Tab("Current Job",
+             [[sg.T("", size=tab_size, key="current_job")]])
       ]]
 )
-right_tabs = pSG.TabGroup(
-    [[pSG.Tab("Current Results",
-              [[pSG.T("", size=tab_size, key="current_results")]]),
-      pSG.Tab("Final Results",
-              [[pSG.Multiline(get_results(args.log), font=(fnt_f, fnt_s + 2), size=tab_size, disabled=True)]])
+right_tabs = sg.TabGroup(
+    [[sg.Tab("Current Results",
+             [[sg.T("", size=tab_size, key="current_results")]]),
+      sg.Tab("Final Results",
+             [[sg.Multiline(get_results(args.log), font=(fnt_f, fnt_s + 2), size=tab_size, disabled=True)]])
       ]]
 )
 
@@ -96,25 +96,25 @@ slider_label_size = (6, 1)
 
 layout = [
     [left_tabs, right_tabs],
-    [pSG.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"), key="show_job"),
-     pSG.T("Visualising: {}".format(os.path.basename(args.log)),
-           size=(99, 1), font=(fnt_f, fnt_s, "underline"), justification="center"),
-     pSG.T("Scale: {} ({} max cores)".format(base_scale, 2 ** base_scale),
-           size=(30, 1), justification="right", key="scale"),
-     pSG.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
-     pSG.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")],
-    [pSG.T("Server", size=slider_label_size),
-     pSG.Slider((0, len(s_list) - 1), default_value=s_list[0].sid, key="server_slider", **slider_settings)],
-    [pSG.T("Job", size=slider_label_size),
-     pSG.Slider((unique_jids[0], unique_jids[-1]), default_value=unique_jids[0], key="job_slider", **slider_settings)],
-    [pSG.T("Time", size=slider_label_size),
-     pSG.Slider((0, Server.last_time), default_value=0, key="time_slider", **slider_settings)],
-    [pSG.Column(graph_column, size=(width, w_height), scrollable=True, vertical_scroll_only=True,
-                key="column")]
+    [sg.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"), key="show_job"),
+     sg.T("Visualising: {}".format(os.path.basename(args.log)),
+          size=(99, 1), font=(fnt_f, fnt_s, "underline"), justification="center"),
+     sg.T("Scale: {} ({} max cores)".format(base_scale, 2 ** base_scale),
+          size=(30, 1), justification="right", key="scale"),
+     sg.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
+     sg.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")],
+    [sg.T("Server", size=slider_label_size),
+     sg.Slider((0, len(s_list) - 1), default_value=s_list[0].sid, key="server_slider", **slider_settings)],
+    [sg.T("Job", size=slider_label_size),
+     sg.Slider((unique_jids[0], unique_jids[-1]), default_value=unique_jids[0], key="job_slider", **slider_settings)],
+    [sg.T("Time", size=slider_label_size),
+     sg.Slider((0, Server.last_time), default_value=0, key="time_slider", **slider_settings)],
+    [sg.Column(graph_column, size=(width, w_height), scrollable=True, vertical_scroll_only=True,
+               key="column")]
 ]
 
-window = pSG.Window("sim-viz", layout, size=(width + left_margin, w_height), resizable=True,
-                    return_keyboard_events=True)
+window = sg.Window("sim-viz", layout, size=(width + left_margin, w_height), resizable=True,
+                   return_keyboard_events=True)
 window.Finalize()
 graph = window.Element("graph")
 current_server = window.Element("current_server")
