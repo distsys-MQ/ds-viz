@@ -150,21 +150,20 @@ def norm_server_failures(failures: List[ServerFailure]) -> List[ServerFailure]:
     return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
 
-axis = x_offset - 1
 norm_time = x_offset
 timeline = None
 s_index = 0
 s_ticks = []
 
-start = int(right_margin / 2)
-highlight_x1 = axis - 9
+highlight_x1 = x_offset - 10
 s_highlight = None
 
 
 def draw(scale: int = base_scale) -> None:
     global timeline, s_highlight, s_ticks
 
-    last = start
+    axis = x_offset - 1
+    last = int(right_margin / 2)
     font = (fnt_f, fnt_s + 4)
     max_s_length = 8
     tick = 3
