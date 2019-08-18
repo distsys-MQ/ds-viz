@@ -76,7 +76,7 @@ class Job:
                 "On server: {} {}".format(self.server.type_, self.server.sid)
         )
 
-    def set_job_times(self, log: str, pos: int, job_failures: Dict[int, int]) -> None:
+    def set_job_times(self, log: str, pos: int) -> None:
         with open(log, "rb") as f:
             f.seek(pos, 0)
 
@@ -154,7 +154,7 @@ def make_job(f: BinaryIO, servers: "OrderedDict[str, OrderedDict[int, Server]]",
             server = servers[s_type][sid]
 
             job = Job(jid, cores, memory, disk, schd, fails=fails, server=server)
-            job.set_job_times(f.name, f.tell(), job_failures)
+            job.set_job_times(f.name, f.tell())
             server.jobs.append(job)
 
             return job
