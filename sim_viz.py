@@ -207,7 +207,7 @@ def draw(scale: int = base_scale) -> None:
 
                     base_col = 180
                     fail_col = max(base_col - jb.fails, 0)  # Can't be darker than black (0, 0, 0)
-                    col = "green" if not jb.failed else "#{0:02X}{0:02X}{0:02X}".format(fail_col)
+                    col = "green" if not jb.will_fail and jb.fails == 0 else "#{0:02X}{0:02X}{0:02X}".format(fail_col)
 
                     job_y_adj = job_y + c_height * 0.5
                     j_graph_ids[jb.jid].append(

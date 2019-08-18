@@ -6,7 +6,7 @@ from typing import Dict, List, BinaryIO
 class Job:
     # noinspection PyUnresolvedReferences
     def __init__(self, jid: int, cores: int, memory, disk, schd: int = None, start: int = None,
-                 end: int = None, failed: bool = False, fails: int = 0, server: "Server" = None):
+                 end: int = None, will_fail: bool = False, fails: int = 0, server: "Server" = None):
         self.jid = jid
         self.cores = cores
         self.memory = memory
@@ -14,12 +14,12 @@ class Job:
         self.schd = schd
         self.start = start
         self.end = end
-        self.failed = failed
+        self.will_fail = will_fail
         self.fails = fails
         self.server = server
 
     def __str__(self) -> str:
-        return "j{} {}:{}:{} f{}".format(self.jid, self.schd, self.start, self.start, self.fails)
+        return "j{} {}:{}:{} f{}".format(self.jid, self.schd, self.start, self.end, self.fails)
 
     def is_overlapping(self, job: "Job") -> bool:
         if self.start <= job.start and self.end >= job.end:  # self's runtime envelops job's runtime
@@ -38,17 +38,17 @@ class Job:
         return self.schd <= t < self.start
 
     def is_completed_at(self, t: int) -> bool:
-        return not self.failed and self.end <= t
+        return not self.will_fail and self.end <= t
 
     def is_failed_at(self, t: int) -> bool:
-        return self.failed and self.end <= t
+        return self.will_fail and self.end <= t
 
     def is_unscheduled_at(self, t: int) -> bool:
         return self.schd > t
 
     def copy(self) -> "Job":
         return Job(self.jid, self.cores, self.memory, self.disk, self.schd,
-                   self.start, self.end, self.failed, self.fails, self.server)
+                   self.start, self.end, self.will_fail, self.fails, self.server)
 
     def current_status(self, t: int) -> str:
         if self.is_running_at(t):
@@ -71,7 +71,7 @@ class Job:
                 "schd: {},  ".format(self.schd) +
                 "start: {},  ".format(self.start) +
                 "end: {},  ".format(self.end) +
-                "failed: {},  ".format(self.failed) +
+                "will fail: {},  ".format(self.will_fail) +
                 "fails: {},\n".format(self.fails) +
                 "On server: {} {}".format(self.server.type_, self.server.sid)
         )
@@ -89,9 +89,8 @@ class Job:
                 msg = line.split()
 
                 if msg[1] == "JOBF" and int(msg[3]) == self.jid:
-                    self.failed = True
-                    self.fails += 1
-                    job_failures[self.jid] = self.fails
+                    time = int(msg[2])
+                    self.will_fail = True
                     self.end = time
 
                     if self.start is None:
@@ -137,14 +136,13 @@ def make_job(f: BinaryIO, servers: "OrderedDict[str, OrderedDict[int, Server]]",
     memory = int(msg[6])
     disk = int(msg[7])
     fails = 0
-    failed = False
 
     if jid not in job_failures:
         job_failures[jid] = 0
 
     if msg[1] == "JOBF":
+        job_failures[jid] += 1
         fails = job_failures[jid]
-        failed = True
 
     while True:
         line = f.readline()
@@ -155,7 +153,7 @@ def make_job(f: BinaryIO, servers: "OrderedDict[str, OrderedDict[int, Server]]",
             sid = int(msg[4])
             server = servers[s_type][sid]
 
-            job = Job(jid, cores, memory, disk, schd, failed=failed, fails=fails, server=server)
+            job = Job(jid, cores, memory, disk, schd, fails=fails, server=server)
             job.set_job_times(f.name, f.tell(), job_failures)
             server.jobs.append(job)
 
@@ -166,7 +164,7 @@ def make_job(f: BinaryIO, servers: "OrderedDict[str, OrderedDict[int, Server]]",
 
 
 def get_job_at(jobs: List[Job], t: int) -> Job:
-    # Make sure jobs is sorted by schd
+    # Make sure jobs are sorted by schd
     if t <= jobs[0].schd:
         return jobs[0]
 
