@@ -59,7 +59,7 @@ class Visualisation:
               ]]
         )
 
-        dum_win = sg.Window("dummy", [[]]).Finalize()
+        dum_win = sg.Window("dummy", [[]], finalize=True)
         mon_height = dum_win.GetScreenDimensions()[1]
         dum_win.Close()
         w_height = int(mon_height * 0.9)
@@ -98,16 +98,8 @@ class Visualisation:
         self.right_margin = 15
 
         self.window = sg.Window("sim-viz", layout, size=(self.width + self.left_margin, w_height), resizable=True,
-                                return_keyboard_events=True)
-        self.window.Finalize()
-
-        self.graph = self.window.Elem("graph")
-        self.current_server = self.window.Elem("current_server")
-        self.current_job = self.window.Elem("current_job")
-        self.current_results = self.window.Elem("current_results")
-        self.t_slider = self.window.Elem("time_slider")
-        self.scale_output = self.window.Elem("scale")
-        self.column = self.window.Elem("column")
+                                return_keyboard_events=True, finalize=True)
+        self.graph = self.window["graph"]
 
         # Not necessary for creating window, but needed for drawing visualisation in graph and handling user input
         # Could create other classes to handle these
@@ -229,9 +221,9 @@ class Visualisation:
             width=highlight_width, color="green")
 
     def update_output(self, t: int, server: Server, job: Job):
-        self.current_server.Update(server.print_server_at(t))
-        self.current_job.Update(job.print_job(t))
-        self.current_results.Update(print_servers_at(self.s_list, t))
+        self.window["current_server"].Update(server.print_server_at(t))
+        self.window["current_job"].Update(job.print_job(t))
+        self.window["current_results"].Update(print_servers_at(self.s_list, t))
 
     def change_job_colour(self, jid: int, col: str):
         for j_graph_id, _ in self.j_graph_ids[jid]:
@@ -250,11 +242,11 @@ class Visualisation:
 
         s_fact = 2 ** scale
         self.height = self.calc_height(s_fact)
-        self.column.Widget.config(height=self.height)
+        self.window["column"].Widget.config(height=self.height)
         self.graph.Widget.config(height=self.height)
 
         self.draw(scale)
-        self.scale_output.Update("Scale: {} ({} max cores)".format(scale, 2 ** scale))
+        self.window["scale"].Update("Scale: {} ({} max cores)".format(scale, 2 ** scale))
 
         if show_job:
             self.change_job_colour(prev_jid, "yellow")
@@ -315,21 +307,21 @@ class Visualisation:
                 jid = int(values["job_slider"])
 
                 if show_job:
-                    self.window.Elem("show_job").Update(button_color=("white", "green"))
+                    self.window["show_job"].Update(button_color=("white", "green"))
                     self.change_job_colour(jid, "yellow")
                 else:
-                    self.window.Elem("show_job").Update(button_color=("white", "red"))
+                    self.window["show_job"].Update(button_color=("white", "red"))
                     self.reset_job_colour(jid)
 
             # Handle pressing left/right arrow keys
             # Replace with this once PSG has been updated https://github.com/PySimpleGUI/PySimpleGUI/issues/1756
             elif "Left" in event:
                 time = time - 1 if time > 1 else 0
-                self.t_slider.Update(time)
+                self.window["time_slider"].Update(time)
                 self.update_output(time, cur_server, cur_job)
             elif "Right" in event:
                 time = time + 1 if time < Server.last_time else Server.last_time
-                self.t_slider.Update(time)
+                self.window["time_slider"].Update(time)
                 self.update_output(time, cur_server, cur_job)
 
             # Handle clicking on scale buttons
