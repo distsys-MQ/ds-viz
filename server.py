@@ -187,8 +187,8 @@ def get_results(log: str) -> str:
             results.append(line[2:])  # Remove '#'s
 
             if line.startswith("t:", 0, 2):
-                results.pop(2)  # Remove "[ Overall ]" line
-                return ''.join(reversed(results[:-2]))
+                # Remove last three lines and reverse the list
+                return ''.join(reversed(results[:-3]))
 
 
 def get_end_time(system: str) -> int:
