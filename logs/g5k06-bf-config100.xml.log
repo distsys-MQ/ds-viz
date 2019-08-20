@@ -1,4 +1,4 @@
-# ds-sim server 8Aug, 2019 @ MQ
+# ds-sim server 12-Aug, 2019 @ MQ
 # Server-side simulator started with './ds-server -n -v brief -c configs/testing/day1/config100.xml -f g5k06'
 # Waiting for connection to port 49152 of IP address 127.0.0.1
 RCVD HELO
@@ -40999,10 +40999,10 @@ t:     101935 job  2508 on # 8 of server large COMPLETED
 t:     105423 job   615 on # 0 of server xlarge COMPLETED
 SENT QUIT
 # ---------------------------------------------------------------------------
-# 10 tiny servers used with a utilisation of 18.71 at the cost of $197.29
-# 10 small servers used with a utilisation of 29.52 at the cost of $248.74
-# 10 medium servers used with a utilisation of 13.62 at the cost of $1653.36
-# 10 large servers used with a utilisation of 25.22 at the cost of $2817.92
+# 10 tiny servers used with a utilisation of 20.58 at the cost of $194.93
+# 10 small servers used with a utilisation of 31.98 at the cost of $244.30
+# 10 medium servers used with a utilisation of 14.51 at the cost of $1647.24
+# 10 large servers used with a utilisation of 26.79 at the cost of $2810.66
 # 10 xlarge servers used with a utilisation of 30.96 at the cost of $1663.81
 # 9 2xlarge servers used with a utilisation of 2.62 at the cost of $13514.74
 # 3 3xlarge servers used with a utilisation of 1.76 at the cost of $9253.86
@@ -41010,5 +41010,6 @@ SENT QUIT
 # 0 5xlarge servers used with a utilisation of 0.00 at the cost of $0.00
 # 0 6xlarge servers used with a utilisation of 0.00 at the cost of $0.00
 # =============================== [ Overall ] ===============================
-# total #servers used: 62, avg utilisation: 19.50 and total cost: $29349.73
+# actual simulation end time: 105423
+# total #servers used: 62, avg utilisation: 20.60 and total cost: $29329.55
 # avg waiting time: 970, avg exec time: 1055 and avg turnaround time: 2025
