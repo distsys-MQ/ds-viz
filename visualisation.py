@@ -89,7 +89,7 @@ class Visualisation:
              sg.Slider((self.unique_jids[0], self.unique_jids[-1]), default_value=self.unique_jids[0], key="job_slider",
                        **slider_settings)],
             [sg.T("Time", size=slider_label_size),
-             sg.Slider((0, Server.last_time), default_value=0, key="time_slider", **slider_settings)],
+             sg.Slider((0, Server.last_time), default_value=Server.last_time, key="time_slider", **slider_settings)],
             [sg.Column(graph_column, size=(self.width, w_height), scrollable=True, vertical_scroll_only=True,
                        key="column")]
         ]
@@ -98,13 +98,14 @@ class Visualisation:
         self.right_margin = 15
 
         self.window = sg.Window("sim-viz", layout, size=(self.width + self.left_margin, w_height), resizable=True,
-                                return_keyboard_events=True, finalize=True)
+                                return_keyboard_events=True, finalize=True, location=(0, 0), keep_on_top=True)
         self.graph = self.window["graph"]
 
         # Not necessary for creating window, but needed for drawing visualisation in graph and handling user input
         # Could create other classes to handle these
         self.x_offset = self.left_margin * 2
-        self.norm_time = self.x_offset
+        self.norm_time = int(np.interp(np.array([Server.last_time]), (self.left_margin, Server.last_time),
+                                       (self.x_offset, self.width - self.right_margin))[0])
         self.timeline = None
         self.s_index = 0
         self.s_ticks = []
@@ -257,7 +258,7 @@ class Visualisation:
         cur_scale = self.base_scale
         cur_server = self.s_list[0]
         cur_job = self.jobs[self.unique_jids[0]][0]
-        time = 0
+        time = Server.last_time
 
         self.draw(cur_scale)
         self.update_output(time, cur_server, cur_job)
