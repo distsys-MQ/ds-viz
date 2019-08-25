@@ -1,0 +1,523 @@
+# ds-sim server 12-Aug, 2019 @ MQ
+# Server-side simulator started with './ds-server -n -v brief -c configs/scheduling/personal-config8.xml -f g5k06'
+# Waiting for connection to port 49152 of IP address 127.0.0.1
+RCVD HELO
+SENT OK
+RCVD AUTH jak0723
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+SENT OK
+RCVD REDY
+SENT JOBN 84 0 37232 4 1100 1200
+RCVD SCHD 0 medium 0
+t:         84 job     0 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        144 job     0 on # 0 of server medium RUNNING
+SENT JOBN 292 1 899 1 400 1200
+RCVD SCHD 1 tiny 0
+t:        292 job     1 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBN 339 2 129 4 4200 5700
+RCVD SCHD 2 medium 1
+t:        339 job     2 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        352 job     1 on # 0 of server tiny RUNNING
+t:        399 job     2 on # 1 of server medium RUNNING
+SENT JOBN 447 3 282 2 500 1100
+RCVD SCHD 3 small 0
+t:        447 job     3 (waiting) on # 0 of server small (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        507 job     3 on # 0 of server small RUNNING
+SENT JOBN 733 4 1431 4 4000 7700
+RCVD SCHD 4 medium 2
+t:        733 job     4 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        749 job     3 on # 0 of server small COMPLETED
+t:        793 job     4 on # 2 of server medium RUNNING
+SENT JOBN 873 5 604 1 800 1400
+RCVD SCHD 5 tiny 1
+t:        873 job     5 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBN 877 6 709 1 900 200
+RCVD SCHD 6 tiny 2
+t:        877 job     6 (waiting) on # 2 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        933 job     5 on # 1 of server tiny RUNNING
+SENT JOBF 1047 6 709 1 900 200
+RCVD SCHD 6 small 0
+t:       1047 job     6 (running) on # 0 of server small (active) SCHEDULED
+t:       1047 job     6 on # 0 of server small RUNNING
+SENT OK
+RCVD REDY
+SENT JOBN 1142 7 26259 1 1000 900
+RCVD SCHD 7 small 0
+t:       1142 job     7 (running) on # 0 of server small (active) SCHEDULED
+t:       1142 job     7 on # 0 of server small RUNNING
+SENT OK
+RCVD REDY
+t:       1251 job     1 on # 0 of server tiny COMPLETED
+SENT JOBF 1275 6 709 1 900 200
+RCVD SCHD 6 tiny 0
+t:       1275 job     6 (running) on # 0 of server tiny (active) SCHEDULED
+t:       1275 job     6 on # 0 of server tiny RUNNING
+SENT OK
+RCVD REDY
+SENT JOBF 1275 7 26259 1 1000 900
+RCVD SCHD 7 small 1
+t:       1275 job     7 (waiting) on # 1 of server small (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:       1335 job     7 on # 1 of server small RUNNING
+t:       1344 job     2 on # 1 of server medium COMPLETED
+SENT JOBN 1351 8 477 1 800 1700
+RCVD SCHD 8 small 1
+t:       1351 job     8 (running) on # 1 of server small (active) SCHEDULED
+t:       1351 job     8 on # 1 of server small RUNNING
+SENT OK
+RCVD REDY
+t:       1537 job     5 on # 1 of server tiny COMPLETED
+t:       1673 job     6 on # 0 of server tiny COMPLETED
+SENT JOBN 1674 9 47267 4 3100 2000
+RCVD SCHD 9 medium 1
+t:       1674 job     9 (running) on # 1 of server medium (active) SCHEDULED
+t:       1674 job     9 on # 1 of server medium RUNNING
+SENT OK
+RCVD REDY
+t:       1711 job     8 on # 1 of server small COMPLETED
+SENT JOBF 2484 9 47267 4 3100 2000
+RCVD SCHD 9 medium 0
+t:       2484 job     9 (waiting) on # 0 of server medium (active) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 3038 4 1431 4 4000 7700
+RCVD SCHD 4 medium 1
+t:       3038 job     4 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 3190 4 1431 4 4000 7700
+RCVD SCHD 4 medium 0
+t:       3190 job     4 (waiting) on # 0 of server medium (active) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 4637 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:       4637 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:       4697 job     7 on # 0 of server tiny RUNNING
+SENT JOBF 4911 0 37232 4 1100 1200
+RCVD SCHD 0 medium 1
+t:       4911 job     0 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 4911 9 47267 4 3100 2000
+RCVD SCHD 9 medium 1
+t:       4911 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 4911 4 1431 4 4000 7700
+RCVD SCHD 4 medium 1
+t:       4911 job     4 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 8160 0 37232 4 1100 1200
+RCVD SCHD 0 medium 0
+t:       8160 job     0 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 8160 9 47267 4 3100 2000
+RCVD SCHD 9 medium 2
+t:       8160 job     9 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 8160 4 1431 4 4000 7700
+RCVD SCHD 4 medium 0
+t:       8160 job     4 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:       8220 job     0 on # 0 of server medium RUNNING
+t:       8220 job     9 on # 2 of server medium RUNNING
+SENT JOBF 10247 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:      10247 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      10307 job     7 on # 1 of server tiny RUNNING
+SENT JOBF 10594 9 47267 4 3100 2000
+RCVD SCHD 9 medium 1
+t:      10594 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 10620 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:      10620 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      10654 job     9 on # 1 of server medium RUNNING
+t:      10680 job     7 on # 0 of server tiny RUNNING
+SENT JOBF 12310 0 37232 4 1100 1200
+RCVD SCHD 0 medium 2
+t:      12310 job     0 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 12310 4 1431 4 4000 7700
+RCVD SCHD 4 medium 1
+t:      12310 job     4 (waiting) on # 1 of server medium (active) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 12340 0 37232 4 1100 1200
+RCVD SCHD 0 medium 1
+t:      12340 job     0 (waiting) on # 1 of server medium (active) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 14275 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:      14275 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 14613 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:      14613 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      14673 job     7 on # 0 of server tiny RUNNING
+SENT JOBF 19651 9 47267 4 3100 2000
+RCVD SCHD 9 medium 0
+t:      19651 job     9 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 19651 4 1431 4 4000 7700
+RCVD SCHD 4 medium 2
+t:      19651 job     4 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 19651 0 37232 4 1100 1200
+RCVD SCHD 0 medium 0
+t:      19651 job     0 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      19711 job     9 on # 0 of server medium RUNNING
+SENT JOBF 25016 4 1431 4 4000 7700
+RCVD SCHD 4 medium 1
+t:      25016 job     4 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 25056 9 47267 4 3100 2000
+RCVD SCHD 9 medium 1
+t:      25056 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 25056 0 37232 4 1100 1200
+RCVD SCHD 0 medium 1
+t:      25056 job     0 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 26819 4 1431 4 4000 7700
+RCVD SCHD 4 medium 0
+t:      26819 job     4 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 26819 9 47267 4 3100 2000
+RCVD SCHD 9 medium 2
+t:      26819 job     9 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 26819 0 37232 4 1100 1200
+RCVD SCHD 0 medium 0
+t:      26819 job     0 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      26879 job     4 on # 0 of server medium RUNNING
+SENT JOBF 27934 9 47267 4 3100 2000
+RCVD SCHD 9 medium 1
+t:      27934 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 29457 9 47267 4 3100 2000
+RCVD SCHD 9 medium 2
+t:      29457 job     9 (waiting) on # 2 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      29517 job     9 on # 2 of server medium RUNNING
+SENT JOBF 29734 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:      29734 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      29794 job     7 on # 1 of server tiny RUNNING
+SENT JOBF 30393 4 1431 4 4000 7700
+RCVD SCHD 4 medium 1
+t:      30393 job     4 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 30393 0 37232 4 1100 1200
+RCVD SCHD 0 medium 1
+t:      30393 job     0 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 30421 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:      30421 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 30446 9 47267 4 3100 2000
+RCVD SCHD 9 medium 1
+t:      30446 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      30481 job     7 on # 0 of server tiny RUNNING
+SENT JOBF 30567 4 1431 4 4000 7700
+RCVD SCHD 4 medium 0
+t:      30567 job     4 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 30567 0 37232 4 1100 1200
+RCVD SCHD 0 medium 0
+t:      30567 job     0 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 30567 9 47267 4 3100 2000
+RCVD SCHD 9 medium 0
+t:      30567 job     9 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      30627 job     4 on # 0 of server medium RUNNING
+SENT JOBF 30998 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:      30998 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 33827 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:      33827 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      35204 job     4 on # 0 of server medium COMPLETED
+t:      35204 job     0 on # 0 of server medium RUNNING
+SENT JOBF 41095 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:      41095 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 43774 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:      43774 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 52312 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:      52312 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      54527 job     0 on # 0 of server medium COMPLETED
+t:      54527 job     9 on # 0 of server medium RUNNING
+SENT JOBF 54931 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:      54931 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      54991 job     7 on # 0 of server tiny RUNNING
+SENT JOBF 61887 9 47267 4 3100 2000
+RCVD SCHD 9 medium 1
+t:      61887 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 61904 7 26259 1 1000 900
+RCVD SCHD 7 tiny 2
+t:      61904 job     7 (waiting) on # 2 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      61947 job     9 on # 1 of server medium RUNNING
+SENT JOBF 62130 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:      62130 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      62190 job     7 on # 0 of server tiny RUNNING
+SENT JOBF 62833 9 47267 4 3100 2000
+RCVD SCHD 9 medium 0
+t:      62833 job     9 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 64479 9 47267 4 3100 2000
+RCVD SCHD 9 medium 1
+t:      64479 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      64539 job     9 on # 1 of server medium RUNNING
+SENT JOBF 66691 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:      66691 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      66751 job     7 on # 1 of server tiny RUNNING
+SENT JOBF 67497 9 47267 4 3100 2000
+RCVD SCHD 9 medium 0
+t:      67497 job     9 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      67557 job     9 on # 0 of server medium RUNNING
+SENT JOBF 69193 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:      69193 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 78154 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:      78154 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 81440 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:      81440 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 85036 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:      85036 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 86337 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:      86337 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:      86397 job     7 on # 0 of server tiny RUNNING
+SENT JOBF 89374 9 47267 4 3100 2000
+RCVD SCHD 9 medium 1
+t:      89374 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 92333 9 47267 4 3100 2000
+RCVD SCHD 9 medium 0
+t:      92333 job     9 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 100639 9 47267 4 3100 2000
+RCVD SCHD 9 medium 1
+t:     100639 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 102166 9 47267 4 3100 2000
+RCVD SCHD 9 medium 0
+t:     102166 job     9 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:     102226 job     9 on # 0 of server medium RUNNING
+SENT JOBF 104817 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:     104817 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 105119 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:     105119 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 105469 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:     105469 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 105792 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:     105792 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 106114 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:     106114 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 108710 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:     108710 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 110954 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:     110954 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 112315 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:     112315 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 115913 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:     115913 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 118317 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:     118317 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:     118377 job     7 on # 0 of server tiny RUNNING
+SENT JOBF 120208 9 47267 4 3100 2000
+RCVD SCHD 9 medium 1
+t:     120208 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:     120268 job     9 on # 1 of server medium RUNNING
+SENT JOBF 120560 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:     120560 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:     120620 job     7 on # 1 of server tiny RUNNING
+SENT JOBF 121632 9 47267 4 3100 2000
+RCVD SCHD 9 medium 0
+t:     121632 job     9 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:     121692 job     9 on # 0 of server medium RUNNING
+SENT JOBF 121773 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:     121773 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:     121833 job     7 on # 0 of server tiny RUNNING
+SENT JOBF 123879 9 47267 4 3100 2000
+RCVD SCHD 9 medium 1
+t:     123879 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 128029 9 47267 4 3100 2000
+RCVD SCHD 9 medium 0
+t:     128029 job     9 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:     128089 job     9 on # 0 of server medium RUNNING
+SENT JOBF 128714 7 26259 1 1000 900
+RCVD SCHD 7 tiny 1
+t:     128714 job     7 (waiting) on # 1 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBF 129069 7 26259 1 1000 900
+RCVD SCHD 7 tiny 0
+t:     129069 job     7 (waiting) on # 0 of server tiny (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT NONE
+RCVD QUIT
+t:     129129 job     7 on # 0 of server tiny RUNNING
+t:     200973 job     7 on # 0 of server tiny COMPLETED
+t:     208646 job     9 on # 0 of server medium COMPLETED
+SENT QUIT
+# ---------------------------------------------------------------------------
+# 2 tiny servers used with a utilisation of 6.75 at the cost of $244.32
+# 2 small servers used with a utilisation of 0.01 at the cost of $652.38
+# 2 medium servers used with a utilisation of 9.80 at the cost of $404.06
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 208646
+# total #servers used: 6, avg utilisation: 5.52 and total cost: $1300.75
+# avg waiting time: 32005, avg exec time: 17974 and avg turnaround time: 49980
