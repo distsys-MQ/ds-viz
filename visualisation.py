@@ -170,6 +170,8 @@ class Visualisation:
                 self.graph.DrawLine((axis - tick * 2, sid_y), (axis, sid_y))  # Server ID tick mark
                 self.s_ticks.append(sid_y)
 
+                # self.graph.DrawLine((axis, sid_y), (self.width - self.right_margin, sid_y))  # Server border
+
                 for k in range(s_scale):
                     core_y = sid_y + self.c_height * k
                     self.graph.DrawLine((axis - tick, core_y), (axis, core_y))  # Server core tick mark
@@ -177,16 +179,17 @@ class Visualisation:
                 jobs = self.norm_jobs(s.jobs)
                 for jb in jobs:
                     j_scale = min(jb.cores, s_fact)
+
+                    # Only check if previous jobs are overlapping, later jobs should be stacked on previous jobs
                     overlap = list(filter(lambda j: j.is_overlapping(jb), jobs[:jobs.index(jb)]))
+                    used_cores = sum(j.cores for j in overlap)
 
+                    # Draw a job bar for every core used by the job, up to the scaling factor
                     for k in range(j_scale):
-                        # job_y = sid_y + k * c_height
-
-                        # Offset by number of job's cores + number of concurrent jobs
+                        # Offset by number of job's cores + sum of cores used by concurrent jobs
                         # If offset would exceed server height, reset to the top
-                        used_cores = k + len(overlap)
-                        job_offset = used_cores if used_cores < s_scale else 0
-                        job_y = sid_y + job_offset * self.c_height
+                        job_core = (used_cores + k) % s_scale
+                        job_y = sid_y + job_core * self.c_height
 
                         base_col = 180
                         fail_col = max(base_col - jb.fails, 0)  # Can't be darker than black (0, 0, 0)
