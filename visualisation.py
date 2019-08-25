@@ -188,19 +188,20 @@ class Visualisation:
                     for k in range(j_scale):
                         # Offset by number of job's cores + sum of cores used by concurrent jobs
                         # If offset would exceed server height, reset to the top
+                        # Also need to adjust y position by half c_height to align job bar edge with server ticks
                         job_core = (used_cores + k) % s_scale
-                        job_y = sid_y + job_core * self.c_height
+                        job_y = sid_y + job_core * self.c_height + self.c_height * 0.5
 
-                        base_col = 180
-                        fail_col = max(base_col - jb.fails, 0)  # Can't be darker than black (0, 0, 0)
-                        col = "green" if not jb.will_fail and jb.fails == 0 else "#{0:02X}{0:02X}{0:02X}".format(
-                            fail_col)
+                        if not jb.will_fail and jb.fails == 0:
+                            col = "green"
+                        else:
+                            base_col = 180
+                            fail_col = max(base_col - jb.fails, 0)  # Can't be darker than black (0, 0, 0)
+                            col = "#{0:02X}{0:02X}{0:02X}".format(fail_col)
 
-                        job_y_adj = job_y + self.c_height * 0.5
                         self.j_graph_ids[jb.jid].append(
-                            (self.graph.DrawLine(
-                                (jb.start, job_y_adj), (jb.end, job_y_adj),
-                                width=self.c_height, color=col),
+                            (self.graph.DrawLine((jb.start, job_y), (jb.end, job_y),
+                                                 width=self.c_height, color=col),
                              col)
                         )
 
