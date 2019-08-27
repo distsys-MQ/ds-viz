@@ -17,6 +17,7 @@ def is_valid_file(psr: ArgumentParser, arg: str) -> str:
 
 parser = ArgumentParser(description="Visualises DS simulations")
 parser.add_argument("config", type=lambda f: is_valid_file(parser, f), help="configuration file used in simulation")
+# TODO Work out how to make failures optional while maintaining argument order
 parser.add_argument("failures", type=lambda f: is_valid_file(parser, f), help="resource-failures file from simulation")
 parser.add_argument("log", type=lambda f: is_valid_file(parser, f), help="simulation log file to visualise")
 parser.add_argument("-c", "--core_height", type=int, default=4, help="set core height")

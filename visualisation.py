@@ -167,7 +167,7 @@ class Visualisation:
                 s_height = s_scale * self.c_height
 
                 sid_y = type_y + s_height * i
-                self.graph.DrawLine((axis - tick * 2, sid_y), (axis, sid_y))  # Server ID tick mark
+                self.graph.DrawLine((axis - tick * 2.5, sid_y), (axis, sid_y))  # Server ID tick mark
                 self.s_ticks.append(sid_y)
 
                 # self.graph.DrawLine((axis, sid_y), (self.width - self.right_margin, sid_y))  # Server border
@@ -180,6 +180,11 @@ class Visualisation:
                 for jb in jobs:
                     j_scale = min(jb.cores, s_fact)
 
+                    # test_jobs = [8, 10, 13]
+                    # test_server = "medium", 1
+                    # if (jb.jid in test_jobs) and (s.type_ == test_server[0] and s.sid == test_server[1]):
+                    #     print()
+
                     # Only check if previous jobs are overlapping, later jobs should be stacked on previous jobs
                     overlap = list(filter(lambda j: j.is_overlapping(jb), jobs[:jobs.index(jb)]))
                     used_cores = sum(j.cores for j in overlap)
@@ -191,6 +196,9 @@ class Visualisation:
                         # Also need to adjust y position by half c_height to align job bar edge with server ticks
                         job_core = (used_cores + k) % s_scale
                         job_y = sid_y + job_core * self.c_height + self.c_height * 0.5
+
+                        # if (jb.jid in test_jobs) and (s.type_ == test_server[0] and s.sid == test_server[1]):
+                        #     print("{}: {}".format(jb.jid, job_core))
 
                         if not jb.will_fail and jb.fails == 0:
                             col = "green"

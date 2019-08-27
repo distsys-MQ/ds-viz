@@ -22,6 +22,8 @@ class Job:
         return "j{} {}:{}:{} f{}".format(self.jid, self.schd, self.start, self.end, self.fails)
 
     def is_overlapping(self, job: "Job") -> bool:
+        if self.jid == job.jid:  # Job can't overlap itself
+            return False
         if self.start <= job.start and self.end >= job.end:  # self's runtime envelops job's runtime
             return True
         elif job.start <= self.start <= job.end:  # self starts during job's runtime
