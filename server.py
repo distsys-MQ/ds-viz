@@ -121,7 +121,7 @@ class Server:
 
 def get_servers_from_system(log: str, system: str, resource_failures: str) -> \
         "OrderedDict[str, OrderedDict[int, Server]]":
-    Server.last_time = get_last_time(log, system)
+    Server.last_time = get_last_job_time(log)
     servers = OrderedDict()
 
     for s in parse(system).iter("server"):
