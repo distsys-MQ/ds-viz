@@ -121,7 +121,7 @@ class Server:
 
 def get_servers_from_system(log: str, system: str, resource_failures: str) -> \
         "OrderedDict[str, OrderedDict[int, Server]]":
-    Server.last_time = get_last_job_time(log)
+    Server.last_time = simulation_end_time(log)
     servers = OrderedDict()
 
     for s in parse(system).iter("server"):
@@ -212,6 +212,13 @@ def get_last_time(log: str, system: str) -> int:
 
     last_time = max(end_time, last_job_time)
     return last_time
+
+
+def simulation_end_time(log: str) -> int:
+    with FileReadBackwards(log, encoding="utf-8") as f:
+        for _ in range(3):  # "actual simulation end time" is on the third-last line
+            line = f.readline()
+        return int(line.split()[-1])
 
 
 def print_servers_at(servers: List[Server], t: int) -> str:
