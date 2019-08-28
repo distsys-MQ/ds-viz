@@ -1,0 +1,1 @@
+#base_trace: teragrid, config_file: configs/scheduling/personal-config16.xml, total_servers: 6, total_time: 86400, time_dist_mean: 0.688000, time_dist_stdev: 0.531000, node_dist_mean: -1.408000, node_dist_stdev: 1.907000

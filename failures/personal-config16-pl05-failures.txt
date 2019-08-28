@@ -1,0 +1,10 @@
+#base_trace: pl05, config_file: configs/scheduling/personal-config16.xml, total_servers: 6, total_time: 86400, time_dist_mean: 2.590000, time_dist_stdev: 0.450000, node_dist_mean: 1.800000, node_dist_stdev: 1.750000
+0 98 small 1
+209 350 medium 0
+441 591 tiny 1
+518 773 small 1
+1070 1179 small 1
+1507 1596 medium 1
+1606 1795 small 1
+1637 1762 medium 0
+2122 2219 tiny 1

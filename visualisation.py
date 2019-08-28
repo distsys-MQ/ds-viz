@@ -168,8 +168,10 @@ class Visualisation:
                 s_height = s_scale * self.c_height
 
                 sid_y = type_y + s_height * i
-                self.graph.DrawLine((axis - tick * 2, sid_y), (axis, sid_y))  # Server ID tick mark
+                self.graph.DrawLine((axis - tick * 2.5, sid_y), (axis, sid_y))  # Server ID tick mark
                 self.s_ticks.append(sid_y)
+
+                # self.graph.DrawLine((axis, sid_y), (self.width - self.right_margin, sid_y))  # Server border
 
                 for k in range(s_scale):
                     core_y = sid_y + self.c_height * k
@@ -178,27 +180,37 @@ class Visualisation:
                 jobs = self.norm_jobs(s.jobs)
                 for jb in jobs:
                     j_scale = min(jb.cores, s_fact)
+
+                    # test_jobs = [8, 10, 13]
+                    # test_server = "medium", 1
+                    # if (jb.jid in test_jobs) and (s.type_ == test_server[0] and s.sid == test_server[1]):
+                    #     print()
+
+                    # Only check if previous jobs are overlapping, later jobs should be stacked on previous jobs
                     overlap = list(filter(lambda j: j.is_overlapping(jb), jobs[:jobs.index(jb)]))
+                    used_cores = sum(j.cores for j in overlap)
 
+                    # Draw a job bar for every core used by the job, up to the scaling factor
                     for k in range(j_scale):
-                        # job_y = sid_y + k * c_height
-
-                        # Offset by number of job's cores + number of concurrent jobs
+                        # Offset by number of job's cores + sum of cores used by concurrent jobs
                         # If offset would exceed server height, reset to the top
-                        used_cores = k + len(overlap)
-                        job_offset = used_cores if used_cores < s_scale else 0
-                        job_y = sid_y + job_offset * self.c_height
+                        # Also need to adjust y position by half c_height to align job bar edge with server ticks
+                        job_core = (used_cores + k) % s_scale
+                        job_y = sid_y + job_core * self.c_height + self.c_height * 0.5
 
-                        base_col = 180
-                        fail_col = max(base_col - jb.fails, 0)  # Can't be darker than black (0, 0, 0)
-                        col = "green" if not jb.will_fail and jb.fails == 0 else "#{0:02X}{0:02X}{0:02X}".format(
-                            fail_col)
+                        # if (jb.jid in test_jobs) and (s.type_ == test_server[0] and s.sid == test_server[1]):
+                        #     print("{}: {}".format(jb.jid, job_core))
 
-                        job_y_adj = job_y + self.c_height * 0.5
+                        if not jb.will_fail and jb.fails == 0:
+                            col = "green"
+                        else:
+                            base_col = 180
+                            fail_col = max(base_col - jb.fails, 0)  # Can't be darker than black (0, 0, 0)
+                            col = "#{0:02X}{0:02X}{0:02X}".format(fail_col)
+
                         self.j_graph_ids[jb.jid].append(
-                            (self.graph.DrawLine(
-                                (jb.start, job_y_adj), (jb.end, job_y_adj),
-                                width=self.c_height, color=col),
+                            (self.graph.DrawLine((jb.start, job_y), (jb.end, job_y),
+                                                 width=self.c_height, color=col),
                              col)
                         )
 
