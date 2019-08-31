@@ -1,45 +1,59 @@
 import PySimpleGUI as sg
 
-width = 1200
-height = 100
-tab_size = (75, 3)
-btn_width = 10
-btn_font = ("Courier New", -10)
-slider_settings = {"range": (0, 100), "size": (89, 5),
-                   "orientation": "h", "enable_events": True}
-slider_label_size = (6, 1)
-
-sg.SetOptions(font=("Courier New", -13), background_color="whitesmoke",
+font = ("Courier New", -13)
+sg.SetOptions(font=font, background_color="whitesmoke",
               element_padding=(0, 0), margins=(1, 1))
+
+dum_win = sg.Window("dummy", [[]], finalize=True)
+base_px = sg.tkinter.font.Font().measure('A')  # ("Courier New", 16)
+f_px = sg.tkinter.font.Font(font=font).measure('A')
+print(base_px)
+print(f_px)
+dum_win.Close()
+
+length = 100
+width = base_px * length
+print(width)
+height = 100
 
 graph_column = [[
     sg.Graph(canvas_size=(width, height), graph_bottom_left=(0, height),
              graph_top_right=(width, 0), background_color="white",
              key="graph")]]
 
+tab_width = width / 2
+tab_height = base_px * 3.7
 left_tabs = sg.TabGroup(
-    [[sg.Tab("T1", [[sg.T("", size=tab_size)]]),
-      sg.Tab("T2", [[sg.T("", size=tab_size)]])]])
+    [[sg.Tab("T1", [[sg.Sizer(tab_width, tab_height)]]),
+      sg.Tab("T2", [[sg.Sizer(tab_width, tab_height)]])]])
 right_tabs = sg.TabGroup(
-    [[sg.Tab("T3", [[sg.T("", size=tab_size)]]),
-      sg.Tab("T4", [[sg.T("", size=tab_size)]])]])
+    [[sg.Tab("T3", [[sg.Sizer(tab_width, tab_height)]]),
+      sg.Tab("T4", [[sg.Sizer(tab_width, tab_height)]])]])
+
+slider_settings = {"range": (0, 100), "size": (95, 5),
+                   "orientation": "h", "enable_events": True}
+
+t_width = (base_px / f_px) * length
+btn_width = int(t_width / 15)
+btn_font = ("Courier New", -10)
+slider_label_size = (6, 1)
 
 layout = [
     [left_tabs, right_tabs],
     [sg.Button("Press", size=(btn_width, 1), font=btn_font, key="press"),
-     sg.T("Title", size=(104, 1), justification="center"),
-     sg.T("Info", size=(30, 1), justification="right"),
+     sg.T("Title", size=(int(t_width / 1.5), 1), justification="center"),
+     sg.T("Info", size=(int(t_width / 4.4), 1), justification="right"),
      sg.Btn('-', size=(int(btn_width / 2), 1), font=btn_font),
      sg.Btn('+', size=(int(btn_width / 2), 1), font=btn_font)],
+    [sg.Column([[sg.Sizer(width, base_px * 4)]], background_color="blue")],
     [sg.T("S1", size=slider_label_size), sg.Slider(**slider_settings)],
     [sg.T("S2", size=slider_label_size), sg.Slider(**slider_settings)],
     [sg.T("S3", size=slider_label_size), sg.Slider(**slider_settings)],
     [sg.Column(graph_column)]
 ]
 
-window = sg.Window("test", layout)
-# window = sg.Window("test", layout, size=(width + 35, height + 200))
-graph = window.Finalize().Element("graph")
+window = sg.Window("test", layout, finalize=True)
+graph = window["graph"]
 
 g_font = ("Courier New", -20)
 pos = 10
