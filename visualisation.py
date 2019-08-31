@@ -1,5 +1,6 @@
 import math
 import os
+import sys
 from operator import attrgetter
 from typing import Dict, List, Tuple
 
@@ -31,9 +32,14 @@ class Visualisation:
         self.base_scale = min(scale, self.max_scale)
         self.s_factor = 2 ** self.base_scale
 
+        dum_win = sg.Window("dummy", [[]], finalize=True)
+        resolution = dum_win.GetScreenDimensions()
+        dum_win.Close()
+
         self.c_height = c_height
         self.height = self.calc_height(self.s_factor)
-        self.width = 1200
+        self.margin = 30
+        self.width = int(resolution[0]) - self.margin
 
         # The following variables are just used to create the window
         tab_size = (75, 3)
@@ -58,11 +64,6 @@ class Visualisation:
                                     font=(self.fnt_f, self.fnt_s + 2))]])
               ]]
         )
-
-        dum_win = sg.Window("dummy", [[]], finalize=True)
-        mon_height = dum_win.GetScreenDimensions()[1]
-        dum_win.Close()
-        w_height = int(mon_height * 0.9)
 
         btn_width = 8
         btn_font = (self.fnt_f, self.fnt_s + 3)
@@ -90,20 +91,21 @@ class Visualisation:
                        **slider_settings)],
             [sg.T("Time", size=slider_label_size),
              sg.Slider((0, Server.last_time), default_value=0, key="time_slider", **slider_settings)],
-            [sg.Column(graph_column, size=(self.width, w_height), scrollable=True, vertical_scroll_only=True,
-                       key="column")]
+            [sg.Column(graph_column, size=(int(resolution[0]), int(resolution[1])), scrollable=True, key="column")]
         ]
 
-        self.left_margin = 30
-        self.right_margin = 15
+        self.window = sg.Window("sim-viz", layout, resizable=True, return_keyboard_events=True,
+                                finalize=True, element_justification='c')
+        if sys.platform == 'linux':
+            self.window.TKroot.attributes("-zoomed", True)
+        else:
+            self.window.Maximize()
 
-        self.window = sg.Window("sim-viz", layout, size=(self.width + self.left_margin, w_height), resizable=True,
-                                return_keyboard_events=True, finalize=True)
         self.graph = self.window["graph"]
 
         # Not necessary for creating window, but needed for drawing visualisation in graph and handling user input
         # Could create other classes to handle these
-        self.x_offset = self.left_margin * 2
+        self.x_offset = self.margin * 2
         self.norm_time = self.x_offset
         self.timeline = None
         self.s_index = 0
@@ -120,7 +122,7 @@ class Visualisation:
             return []
 
         arr = np.array([(j.start, j.end) for j in jobs])
-        arr = np.interp(arr, (self.left_margin, Server.last_time), (self.x_offset, self.width - self.right_margin))
+        arr = np.interp(arr, (self.margin, Server.last_time), (self.x_offset, self.width))
         res = [j.copy() for j in jobs]
 
         for (begin, end), j in zip(arr, res):
@@ -134,7 +136,7 @@ class Visualisation:
             return []
 
         arr = np.array([(f.fail, f.recover) for f in failures])
-        arr = np.interp(arr, (self.left_margin, Server.last_time), (self.x_offset, self.width - self.right_margin))
+        arr = np.interp(arr, (self.margin, Server.last_time), (self.x_offset, self.width))
 
         return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
@@ -142,7 +144,7 @@ class Visualisation:
         if scale is None:
             scale = self.base_scale
 
-        last = int(self.right_margin / 2)
+        last = int(self.margin / 4)
         axis = self.x_offset - 1
         tick = 3
         s_fact = 2 ** scale
@@ -159,7 +161,7 @@ class Visualisation:
             type_y = last
             s_type = type_ if len(type_) <= max_s_length else type_[:5] + ".."
 
-            self.graph.DrawText(s_type, (self.left_margin, type_y), font=font)
+            self.graph.DrawText(s_type, (self.margin, type_y), font=font)
             self.graph.DrawLine((axis - tick * 3, type_y), (axis, type_y))  # Server type tick mark
 
             for i, s in enumerate(self.servers[type_].values()):
@@ -288,8 +290,8 @@ class Visualisation:
                 self.norm_time = int(
                     np.interp(
                         np.array([time]),
-                        (self.left_margin, Server.last_time),
-                        (self.x_offset, self.width - self.right_margin)
+                        (self.margin, Server.last_time),
+                        (self.x_offset, self.width)
                     )[0]
                 )
                 self.graph.RelocateFigure(self.timeline, self.norm_time, 0)
