@@ -15,7 +15,7 @@ from server_failure import ServerFailure
 class Visualisation:
     def __init__(self, config: str, failures: str, log: str, c_height: int = 4, scale: int = 0):
         self.fnt_f = "Courier New"
-        self.fnt_s = -13
+        self.fnt_s = 10
         sg.SetOptions(font=(self.fnt_f, self.fnt_s), background_color="whitesmoke", element_padding=(0, 0),
                       margins=(1, 1))
 
@@ -32,8 +32,11 @@ class Visualisation:
         self.base_scale = min(scale, self.max_scale)
         self.s_factor = 2 ** self.base_scale
 
+        # Tk needs an active window to detect resolution
         dum_win = sg.Window("dummy", [[]], finalize=True)
         resolution = dum_win.GetScreenDimensions()
+        base_px = sg.tkinter.font.Font().measure('A')  # ("Courier New", 16)
+        f_px = sg.tkinter.font.Font(font=(self.fnt_f, self.fnt_s)).measure('A')
         dum_win.Close()
 
         self.c_height = c_height
@@ -42,7 +45,10 @@ class Visualisation:
         self.width = int(resolution[0]) - self.margin
 
         # The following variables are just used to create the window
-        tab_size = (75, 3)
+        f_ratio = base_px / f_px
+        base_f_width = self.width / base_px
+        f_width = base_f_width * f_ratio
+        tab_size = (int(f_width / 2), 3)
 
         graph_column = [
             [sg.Graph(canvas_size=(self.width, self.height), graph_bottom_left=(0, self.height),
@@ -61,26 +67,28 @@ class Visualisation:
                      [[sg.T("", size=tab_size, key="current_results")]]),
               sg.Tab("Final Results",
                      [[sg.Multiline(get_results(log), size=tab_size, disabled=True,
-                                    font=(self.fnt_f, self.fnt_s + 2))]])
+                                    font=(self.fnt_f, self.fnt_s - 2))]])
               ]]
         )
 
         btn_width = 8
-        btn_font = (self.fnt_f, self.fnt_s + 3)
+        btn_font = (self.fnt_f, self.fnt_s - 3)
+        slider_label_size = (6, 1)
         slider_settings = {
-            "size": (105, 5),
+            "size": (base_f_width, 5),
             "orientation": "h",
             "enable_events": True
         }
-        slider_label_size = (6, 1)
+        scale_width = 30
+        title_length = int(f_width - scale_width - btn_width * 2.3)
 
         layout = [
             [left_tabs, right_tabs],
             [sg.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"), key="show_job"),
              sg.T("Visualising: {}".format(os.path.basename(log)),
-                  size=(99, 1), font=(self.fnt_f, self.fnt_s, "underline"), justification="center"),
+                  size=(title_length, 1), font=(self.fnt_f, self.fnt_s, "underline"), justification="center"),
              sg.T("Scale: {} ({} max cores)".format(self.base_scale, 2 ** self.base_scale),
-                  size=(30, 1), justification="right", key="scale"),
+                  size=(scale_width, 1), justification="right", key="scale"),
              sg.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
              sg.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")],
             [sg.T("Server", size=slider_label_size),
@@ -95,7 +103,7 @@ class Visualisation:
         ]
 
         self.window = sg.Window("sim-viz", layout, resizable=True, return_keyboard_events=True,
-                                finalize=True, element_justification='c')
+                                finalize=True, element_justification='c', background_color="#f0f0f0")
         if sys.platform == 'linux':
             self.window.TKroot.attributes("-zoomed", True)
         else:
@@ -150,7 +158,7 @@ class Visualisation:
         s_fact = 2 ** scale
 
         max_s_length = 8
-        font = (self.fnt_f, self.fnt_s + 4)
+        font = (self.fnt_f, self.fnt_s - 3)
 
         s_height = None
         self.s_ticks = []  # type: List[int]
