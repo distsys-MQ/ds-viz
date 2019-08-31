@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 
-font = ("Courier New", -16)
+font = ("Courier New", 13)
 sg.set_options(font=font, element_padding=(0, 0), margins=(0, 0))
 
 dum_win = sg.Window("dummy", [[]], finalize=True)
@@ -15,7 +15,7 @@ col = [[
 ]]
 
 width = len(text[0]) * f_px + f_px
-height = num * f_px * 2
+height = num * f_px * 2.1
 layout = [
     [sg.Column(col, size=(width, height))]
 ]
