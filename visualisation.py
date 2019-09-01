@@ -17,9 +17,9 @@ class Visualisation:
         self.fnt_f = "Courier New"
         self.fnt_s = 10
         b_colour = "whitesmoke"
-        sg.SetOptions(font=(self.fnt_f, self.fnt_s), element_padding=(0, 0), margins=(1, 1),
-                      background_color=b_colour, text_element_background_color=b_colour,
-                      element_background_color=b_colour, input_elements_background_color=b_colour)
+        sg.set_options(font=(self.fnt_f, self.fnt_s), element_padding=(0, 0), margins=(1, 1),
+                       background_color=b_colour, text_element_background_color=b_colour,
+                       element_background_color=b_colour, input_elements_background_color=b_colour)
 
         self.servers = get_servers_from_system(log, config, failures)
         self.s_list = [s for s in traverse_servers(self.servers)]  # TODO Replace with calls to traverse_servers
@@ -36,10 +36,10 @@ class Visualisation:
 
         # Tk needs an active window to detect resolution
         dum_win = sg.Window("dummy", [[]], finalize=True)
-        resolution = dum_win.GetScreenDimensions()
+        resolution = dum_win.get_screen_dimensions()
         base_px = sg.tkinter.font.Font().measure('A')  # ("Courier New", 16)
         f_px = sg.tkinter.font.Font(font=(self.fnt_f, self.fnt_s)).measure('A')
-        dum_win.Close()
+        dum_win.close()
 
         self.c_height = c_height
         self.height = self.calc_height(self.s_factor)
@@ -109,9 +109,9 @@ class Visualisation:
         if sys.platform == "linux":
             self.window.TKroot.attributes("-zoomed", True)
         else:
-            self.window.Maximize()
+            self.window.maximize()
 
-        self.graph = self.window["graph"]
+        self.graph = self.window["graph"]  # type: sg.Graph
 
         # Not necessary for creating window, but needed for drawing visualisation in graph and handling user input
         # Could create other classes to handle these
@@ -165,28 +165,28 @@ class Visualisation:
         s_height = None
         self.s_ticks = []  # type: List[int]
 
-        self.graph.DrawLine((axis, 0), (axis, self.height))  # y-axis
+        self.graph.draw_line((axis, 0), (axis, self.height))  # y-axis
 
         for type_ in list(self.servers):
             type_y = last
             s_type = type_ if len(type_) <= max_s_length else type_[:5] + ".."
 
-            self.graph.DrawText(s_type, (self.margin, type_y), font=font)
-            self.graph.DrawLine((axis - tick * 3, type_y), (axis, type_y))  # Server type tick mark
+            self.graph.draw_text(s_type, (self.margin, type_y), font=font)
+            self.graph.draw_line((axis - tick * 3, type_y), (axis, type_y))  # Server type tick mark
 
             for i, s in enumerate(self.servers[type_].values()):
                 s_scale = min(s.cores, s_fact)
                 s_height = s_scale * self.c_height
 
                 sid_y = type_y + s_height * i
-                self.graph.DrawLine((axis - tick * 2.5, sid_y), (axis, sid_y))  # Server ID tick mark
+                self.graph.draw_line((axis - tick * 2.5, sid_y), (axis, sid_y))  # Server ID tick mark
                 self.s_ticks.append(sid_y)
 
-                # self.graph.DrawLine((axis, sid_y), (self.width - self.right_margin, sid_y))  # Server border
+                # self.graph.draw_line((axis, sid_y), (self.width - self.right_margin, sid_y))  # Server border
 
                 for k in range(s_scale):
                     core_y = sid_y + self.c_height * k
-                    self.graph.DrawLine((axis - tick, core_y), (axis, core_y))  # Server core tick mark
+                    self.graph.draw_line((axis - tick, core_y), (axis, core_y))  # Server core tick mark
 
                 jobs = self.norm_jobs(s.jobs)
                 for jb in jobs:
@@ -220,34 +220,34 @@ class Visualisation:
                             col = "#{0:02X}{0:02X}{0:02X}".format(fail_col)
 
                         self.j_graph_ids[jb.jid].append(
-                            (self.graph.DrawLine((jb.start, job_y), (jb.end, job_y),
-                                                 width=self.c_height, color=col),
+                            (self.graph.draw_line((jb.start, job_y), (jb.end, job_y),
+                                                  width=self.c_height, color=col),
                              col)
                         )
 
                 for fail in self.norm_server_failures(s.failures):
                     fail_y1 = sid_y
                     fail_y2 = sid_y + s_height - 1
-                    self.graph.DrawRectangle(
+                    self.graph.draw_rectangle(
                         (fail.fail, fail_y1), (fail.recover, fail_y2),
                         fill_color="red", line_color="red")
 
             last = type_y + s_height * len(self.servers[type_])
 
         # Need to redraw these for them to persist after 'erase' call
-        self.timeline = self.graph.DrawLine(
+        self.timeline = self.graph.draw_line(
             (self.norm_time, 0), (self.norm_time, self.height),
             color="grey")
 
         highlight_width = 5
-        self.s_highlight = self.graph.DrawLine(
+        self.s_highlight = self.graph.draw_line(
             (self.highlight_x1, self.s_ticks[self.s_index]), (axis, self.s_ticks[self.s_index]),
             width=highlight_width, color="green")
 
     def update_output(self, t: int, server: Server, job: Job):
-        self.window["current_server"].Update(server.print_server_at(t))
-        self.window["current_job"].Update(job.print_job(t))
-        self.window["current_results"].Update(print_servers_at(self.s_list, t))
+        self.window["current_server"].update(server.print_server_at(t))
+        self.window["current_job"].update(job.print_job(t))
+        self.window["current_results"].update(print_servers_at(self.s_list, t))
 
     def change_job_colour(self, jid: int, col: str):
         for j_graph_id, _ in self.j_graph_ids[jid]:
@@ -262,7 +262,7 @@ class Visualisation:
         self.change_job_colour(jid, "yellow")
 
     def change_scaling(self, scale: int, show_job: bool, prev_jid: int):
-        self.graph.Erase()
+        self.graph.erase()
 
         s_fact = 2 ** scale
         self.height = self.calc_height(s_fact)
@@ -270,7 +270,7 @@ class Visualisation:
         self.graph.Widget.config(height=self.height)
 
         self.draw(scale)
-        self.window["scale"].Update("Scale: {} ({} max cores)".format(scale, 2 ** scale))
+        self.window["scale"].update("Scale: {} ({} max cores)".format(scale, 2 ** scale))
 
         if show_job:
             self.change_job_colour(prev_jid, "yellow")
@@ -287,7 +287,7 @@ class Visualisation:
         self.update_output(time, cur_server, cur_job)
 
         while True:
-            event, values = self.window.Read()
+            event, values = self.window.read()
 
             # Handle closing the window
             if event is None or event == 'Exit':
@@ -304,7 +304,7 @@ class Visualisation:
                         (self.x_offset, self.width)
                     )[0]
                 )
-                self.graph.RelocateFigure(self.timeline, self.norm_time, 0)
+                self.graph.relocate_figure(self.timeline, self.norm_time, 0)
 
                 self.update_output(time, cur_server, cur_job)
 
@@ -322,7 +322,7 @@ class Visualisation:
             if event == "server_slider":
                 self.s_index = int(values["server_slider"])
                 cur_server = self.s_list[self.s_index]
-                self.graph.RelocateFigure(self.s_highlight, self.highlight_x1, self.s_ticks[self.s_index])
+                self.graph.relocate_figure(self.s_highlight, self.highlight_x1, self.s_ticks[self.s_index])
                 self.update_output(time, cur_server, cur_job)
 
             # Handle clicking "show job" button
@@ -331,21 +331,21 @@ class Visualisation:
                 jid = int(values["job_slider"])
 
                 if show_job:
-                    self.window["show_job"].Update(button_color=("white", "green"))
+                    self.window["show_job"].update(button_color=("white", "green"))
                     self.change_job_colour(jid, "yellow")
                 else:
-                    self.window["show_job"].Update(button_color=("white", "red"))
+                    self.window["show_job"].update(button_color=("white", "red"))
                     self.reset_job_colour(jid)
 
             # Handle pressing left/right arrow keys
             # Replace with this once PSG has been updated https://github.com/PySimpleGUI/PySimpleGUI/issues/1756
             elif "Left" in event:
                 time = time - 1 if time > 1 else 0
-                self.window["time_slider"].Update(time)
+                self.window["time_slider"].update(time)
                 self.update_output(time, cur_server, cur_job)
             elif "Right" in event:
                 time = time + 1 if time < Server.last_time else Server.last_time
-                self.window["time_slider"].Update(time)
+                self.window["time_slider"].update(time)
                 self.update_output(time, cur_server, cur_job)
 
             # Handle clicking on scale buttons
@@ -356,4 +356,4 @@ class Visualisation:
                 cur_scale = cur_scale + 1 if cur_scale < self.max_scale else self.max_scale
                 self.change_scaling(cur_scale, show_job, prev_jid)
 
-        self.window.Close()
+        self.window.close()
