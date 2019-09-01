@@ -16,7 +16,8 @@ class Visualisation:
     def __init__(self, config: str, failures: str, log: str, c_height: int = 4, scale: int = 0):
         self.fnt_f = "Courier New"
         self.fnt_s = 10
-        sg.SetOptions(font=(self.fnt_f, self.fnt_s), background_color="whitesmoke", element_padding=(0, 0),
+        b_colour = "whitesmoke"
+        sg.SetOptions(font=(self.fnt_f, self.fnt_s), background_color=b_colour, element_padding=(0, 0),
                       margins=(1, 1))
 
         self.servers = get_servers_from_system(log, config, failures)
@@ -53,22 +54,24 @@ class Visualisation:
         graph_column = [
             [sg.Graph(canvas_size=(self.width, self.height), graph_bottom_left=(0, self.height),
                       graph_top_right=(self.width, 0), change_submits=True, drag_submits=False,
-                      background_color="whitesmoke", key="graph")]
+                      background_color="white", key="graph")]
         ]
         left_tabs = sg.TabGroup(
             [[sg.Tab("Current Server",
-                     [[sg.T("", size=tab_size, key="current_server")]]),
+                     [[sg.T("", size=tab_size, background_color=b_colour, key="current_server")]]),
               sg.Tab("Current Job",
-                     [[sg.T("", size=tab_size, key="current_job")]])
-              ]]
+                     [[sg.T("", size=tab_size, background_color=b_colour, key="current_job")]])
+              ]],
+            background_color=b_colour
         )
         right_tabs = sg.TabGroup(
             [[sg.Tab("Current Results",
-                     [[sg.T("", size=tab_size, key="current_results")]]),
+                     [[sg.T("", size=tab_size, background_color=b_colour, key="current_results")]]),
               sg.Tab("Final Results",
                      [[sg.Multiline(get_results(log), size=tab_size, disabled=True,
                                     font=(self.fnt_f, self.fnt_s - 2))]])
-              ]]
+              ]],
+            background_color=b_colour
         )
 
         btn_width = 8
@@ -77,7 +80,8 @@ class Visualisation:
         slider_settings = {
             "size": (base_f_width, 5),
             "orientation": "h",
-            "enable_events": True
+            "enable_events": True,
+            "background_color": b_colour
         }
         scale_width = 30
         title_length = int(f_width - scale_width - btn_width * 2.3)
@@ -86,24 +90,25 @@ class Visualisation:
             [left_tabs, right_tabs],
             [sg.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"), key="show_job"),
              sg.T("Visualising: {}".format(os.path.basename(log)),
-                  size=(title_length, 1), font=(self.fnt_f, self.fnt_s, "underline"), justification="center"),
+                  size=(title_length, 1), font=(self.fnt_f, self.fnt_s, "underline"),
+                  background_color=b_colour, justification="center"),
              sg.T("Scale: {} ({} max cores)".format(self.base_scale, 2 ** self.base_scale),
-                  size=(scale_width, 1), justification="right", key="scale"),
+                  size=(scale_width, 1), background_color=b_colour, justification="right", key="scale"),
              sg.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
              sg.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")],
-            [sg.T("Server", size=slider_label_size),
+            [sg.T("Server", size=slider_label_size, background_color=b_colour),
              sg.Slider((0, len(self.s_list) - 1), default_value=self.s_list[0].sid, key="server_slider",
                        **slider_settings)],
-            [sg.T("Job", size=slider_label_size),
+            [sg.T("Job", size=slider_label_size, background_color=b_colour),
              sg.Slider((self.unique_jids[0], self.unique_jids[-1]), default_value=self.unique_jids[0], key="job_slider",
                        **slider_settings)],
-            [sg.T("Time", size=slider_label_size),
+            [sg.T("Time", size=slider_label_size, background_color=b_colour),
              sg.Slider((0, Server.last_time), default_value=0, key="time_slider", **slider_settings)],
             [sg.Column(graph_column, size=(int(resolution[0]), int(resolution[1])), scrollable=True, key="column")]
         ]
 
         self.window = sg.Window("sim-viz", layout, resizable=True, return_keyboard_events=True,
-                                finalize=True, element_justification='c', background_color="#f0f0f0")
+                                finalize=True, element_justification='c', background_color=b_colour)
         if sys.platform == 'linux':
             self.window.TKroot.attributes("-zoomed", True)
         else:
