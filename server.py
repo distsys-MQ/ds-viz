@@ -119,7 +119,7 @@ class Server:
         self.states = states
 
 
-def get_servers_from_system(log: str, system: str, resource_failures: str) -> \
+def get_servers_from_system(log: str, system: str, resource_failures: str = None) -> \
         "OrderedDict[str, OrderedDict[int, Server]]":
     Server.last_time = simulation_end_time(log)
     servers = OrderedDict()
@@ -133,7 +133,9 @@ def get_servers_from_system(log: str, system: str, resource_failures: str) -> \
                 type_, i, int(s.attrib["coreCount"]), int(s.attrib["memory"]), int(s.attrib["disk"]))
 
     get_jobs(log, servers)
-    get_failures_from_resources(resource_failures, servers)
+
+    if resource_failures:
+        get_failures_from_resources(resource_failures, servers)
 
     for s in traverse_servers(servers):
         s.get_server_states(log)
