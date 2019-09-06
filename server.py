@@ -75,11 +75,24 @@ class Server:
                 "cores: {} ({}),  ".format(cur.cores, self.cores) +
                 "memory: {} ({}),\n".format(cur.memory, self.memory) +
                 "disk: {} ({}),  ".format(cur.disk, self.disk) +
-                "running jobs: {},  ".format(len(cur.jobs)) +
-                "queued jobs: {},\n".format(len(queued_jobs)) +
+                "server failures: {},  ".format(self.count_failures_at(t)) +
+                "running jobs: {} {},\n".format(len(cur.jobs), [j.jid for j in cur.jobs]) +
                 "completed jobs: {},  ".format(len(completed_jobs)) +
                 "failed jobs: {},  ".format(len(failed_jobs)) +
-                "server failures: {}".format(self.count_failures_at(t))
+                "queued jobs: {} {}".format(len(queued_jobs), [j.jid for j in queued_jobs])
+        )
+
+    def print_job_info(self, t: int) -> str:
+        running_jobs = [j.jid for j in self.get_server_at(t).jobs]
+        queued_jobs = [j.jid for j in filter(lambda j: j.is_queued_at(t), self.jobs)]
+        completed_jobs = [j.jid for j in filter(lambda j: j.is_completed_at(t), self.jobs)]
+        failed_jobs = [j.jid for j in filter(lambda j: j.is_failed_at(t), self.jobs)]
+
+        return (
+                "RUNNING: {}\n".format(running_jobs) +
+                "QUEUED: {}\n".format(queued_jobs) +
+                "COMPLETED: {}\n".format(completed_jobs) +
+                "FAILED: {}\n".format(failed_jobs)
         )
 
     def get_server_states(self, log: str) -> None:

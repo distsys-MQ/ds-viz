@@ -69,7 +69,10 @@ class Visualisation:
                      [[sg.T("", size=tab_size, key="current_results")]]),
               sg.Tab("Final Results",
                      [[sg.Multiline(get_results(log), size=tab_size, disabled=True,
-                                    font=(self.fnt_f, self.fnt_s - 2))]])
+                                    font=(self.fnt_f, self.fnt_s - 3))]]),
+              sg.Tab("Current Server Jobs",
+                     [[sg.Multiline("", size=tab_size, disabled=True,
+                                    font=(self.fnt_f, self.fnt_s - 3), key="server_jobs")]])
               ]]
         )
 
@@ -248,6 +251,7 @@ class Visualisation:
         self.window["current_server"].update(server.print_server_at(t))
         self.window["current_job"].update(job.print_job(t))
         self.window["current_results"].update(print_servers_at(self.s_list, t))
+        self.window["server_jobs"].update(server.print_job_info(t))
 
     def change_job_colour(self, jid: int, col: str):
         for j_graph_id, _ in self.j_graph_ids[jid]:
