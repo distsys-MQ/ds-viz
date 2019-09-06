@@ -75,11 +75,11 @@ class Server:
                 "cores: {} ({}),  ".format(cur.cores, self.cores) +
                 "memory: {} ({}),\n".format(cur.memory, self.memory) +
                 "disk: {} ({}),  ".format(cur.disk, self.disk) +
-                "server failures: {},  ".format(self.count_failures_at(t)) +
-                "running jobs: {} {},\n".format(len(cur.jobs), [j.jid for j in cur.jobs]) +
+                "running jobs: {},  ".format(len(cur.jobs)) +
+                "queued jobs: {},\n".format(len(queued_jobs)) +
                 "completed jobs: {},  ".format(len(completed_jobs)) +
                 "failed jobs: {},  ".format(len(failed_jobs)) +
-                "queued jobs: {} {}".format(len(queued_jobs), [j.jid for j in queued_jobs])
+                "server failures: {}".format(self.count_failures_at(t))
         )
 
     def print_job_info(self, t: int) -> str:
