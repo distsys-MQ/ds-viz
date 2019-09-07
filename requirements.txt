@@ -1,4 +1,4 @@
 file-read-backwards >=2.0.0
 natsort >=6.0.0
 numpy >=1.17.0
-PySimpleGUI >=4.3.2
+PySimpleGUI >=4.4.1

@@ -37,8 +37,9 @@ class Visualisation:
         # Tk needs an active window to detect resolution
         dum_win = sg.Window("dummy", [[]], finalize=True)
         resolution = dum_win.get_screen_dimensions()
-        base_px = sg.tkinter.font.Font().measure('A')  # ("Courier New", 16)
-        f_px = sg.tkinter.font.Font(font=(self.fnt_f, self.fnt_s)).measure('A')
+        base_px = sg.tkinter.font.Font().measure('A')  # ("Courier New", 16) on Windows
+        font_px_sizes = {i: sg.tkinter.font.Font(font=(self.fnt_f, i)).measure('A')
+                         for i in range(self.fnt_s - 3, self.fnt_s + 1)}
         dum_win.close()
 
         self.c_height = c_height
@@ -47,9 +48,9 @@ class Visualisation:
         self.width = int(resolution[0]) - self.margin
 
         # The following variables are just used to create the window
-        f_ratio = base_px / f_px
         base_f_width = self.width / base_px
-        f_width = base_f_width * f_ratio
+        f_ratio = base_px / font_px_sizes[self.fnt_s]
+        f_width = f_ratio * base_f_width
         tab_size = (int(f_width / 2), 3)
 
         graph_column = [
@@ -64,15 +65,19 @@ class Visualisation:
                      [[sg.T("", size=tab_size, key="current_job")]])
               ]]
         )
+        small_f_s = self.fnt_s - 3
+        small_f_ratio = base_px / font_px_sizes[small_f_s]
+        small_tab_size = (int((base_f_width / 2) * small_f_ratio), tab_size[1] + 1)
+
         right_tabs = sg.TabGroup(
             [[sg.Tab("Current Results",
                      [[sg.T("", size=tab_size, key="current_results")]]),
               sg.Tab("Final Results",
-                     [[sg.Multiline(get_results(log), size=tab_size, disabled=True,
-                                    font=(self.fnt_f, self.fnt_s - 3))]]),
+                     [[sg.Multiline(get_results(log), size=small_tab_size, disabled=True,
+                                    font=(self.fnt_f, small_f_s), key="final_results")]]),
               sg.Tab("Current Server Jobs",
-                     [[sg.Multiline("", size=tab_size, disabled=True,
-                                    font=(self.fnt_f, self.fnt_s - 3), key="server_jobs")]])
+                     [[sg.Multiline("", size=small_tab_size, disabled=True,
+                                    font=(self.fnt_f, small_f_s), key="server_jobs")]])
               ]]
         )
 
@@ -80,7 +85,7 @@ class Visualisation:
         btn_font = (self.fnt_f, self.fnt_s - 3)
         slider_label_size = (6, 1)
         slider_settings = {
-            "size": (base_f_width, 5),
+            "size": (base_f_width - (slider_label_size[0] / 2), 5),
             "orientation": "h",
             "enable_events": True
         }
@@ -104,7 +109,8 @@ class Visualisation:
                        **slider_settings)],
             [sg.T("Time", size=slider_label_size),
              sg.Slider((0, Server.last_time), default_value=0, key="time_slider", **slider_settings)],
-            [sg.Column(graph_column, size=(int(resolution[0]), int(resolution[1])), scrollable=True, key="column")]
+            [sg.Column(graph_column, size=(int(self.width + self.margin / 3), int(resolution[1])),
+                       scrollable=True, key="column")]
         ]
 
         self.window = sg.Window("sim-viz", layout, resizable=True, return_keyboard_events=True,
