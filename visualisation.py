@@ -244,9 +244,7 @@ class Visualisation:
             last = type_y + s_height * len(self.servers[type_])
 
         # Need to redraw these for them to persist after 'erase' call
-        self.timeline = self.graph.draw_line(
-            (self.norm_time, 0), (self.norm_time, self.height),
-            color="grey")
+        self.timeline = self.graph.draw_line((self.norm_time, 0), (self.norm_time, self.height))
 
         highlight_width = 5
         self.s_highlight = self.graph.draw_line(
