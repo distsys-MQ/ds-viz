@@ -2,7 +2,7 @@ import math
 import os
 import sys
 from operator import attrgetter
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 import PySimpleGUI as sg
 import numpy as np
@@ -84,7 +84,7 @@ class Visualisation:
         btn_width = 8
         btn_font = (self.fnt_f, self.fnt_s - 3)
         slider_label_size = (6, 1)
-        slider_settings = {
+        slider_settings = {  # TODO figure out if it's possible to change the number display to `s_type sid`
             "size": (base_f_width - (slider_label_size[0] / 2), 5),
             "orientation": "h",
             "enable_events": True
@@ -126,11 +126,12 @@ class Visualisation:
         # Could create other classes to handle these
         self.x_offset = self.margin * 2
         self.norm_time = self.x_offset
-        self.timeline = None
+        self.timeline = None  # type: Optional[int]
+        self.timeline_pointer = None  # type: Optional[int]
         self.s_index = 0
         self.s_ticks = []
-        self.highlight_x1 = self.x_offset - 10
-        self.s_highlight = None
+        self.s_pointer_x = self.x_offset - 7
+        self.s_pointer = None  # type: Optional[int]
 
     def calc_height(self, scale: int) -> int:
         menu_offset = 50
@@ -163,7 +164,7 @@ class Visualisation:
         if scale is None:
             scale = self.base_scale
 
-        last = int(self.margin / 4)
+        last = self.c_height
         axis = self.x_offset - 1
         tick = 3
         s_fact = 2 ** scale
@@ -244,12 +245,9 @@ class Visualisation:
             last = type_y + s_height * len(self.servers[type_])
 
         # Need to redraw these for them to persist after 'erase' call
-        self.timeline = self.graph.draw_line((self.norm_time, 0), (self.norm_time, self.height))
-
-        highlight_width = 5
-        self.s_highlight = self.graph.draw_line(
-            (self.highlight_x1, self.s_ticks[self.s_index]), (axis, self.s_ticks[self.s_index]),
-            width=highlight_width, color="green")
+        self.timeline = self.graph.draw_line((self.norm_time, self.c_height), (self.norm_time, self.height))
+        self.timeline_pointer = self.graph.draw_text('▼', (self.norm_time, self.c_height / 2))
+        self.s_pointer = self.graph.draw_text('▶', (self.s_pointer_x, self.s_ticks[self.s_index] - 1))
 
     def update_output(self, t: int, server: Server, job: Job):
         self.window["current_server"].update(server.print_server_at(t))
@@ -312,7 +310,8 @@ class Visualisation:
                         (self.x_offset, self.width)
                     )[0]
                 )
-                self.graph.relocate_figure(self.timeline, self.norm_time, 0)
+                self.graph.relocate_figure(self.timeline, self.norm_time, self.c_height)
+                self.graph.relocate_figure(self.timeline_pointer, self.norm_time, self.c_height / 2)
 
                 self.update_output(time, cur_server, cur_job)
 
@@ -330,7 +329,7 @@ class Visualisation:
             if event == "server_slider":
                 self.s_index = int(values["server_slider"])
                 cur_server = self.s_list[self.s_index]
-                self.graph.relocate_figure(self.s_highlight, self.highlight_x1, self.s_ticks[self.s_index])
+                self.graph.relocate_figure(self.s_pointer, self.s_pointer_x, self.s_ticks[self.s_index] - 1)
                 self.update_output(time, cur_server, cur_job)
 
             # Handle clicking "show job" button
