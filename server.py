@@ -82,6 +82,19 @@ class Server:
                 "server failures: {}".format(self.count_failures_at(t))
         )
 
+    def print_job_info(self, t: int) -> str:
+        running_jobs = [j.jid for j in self.get_server_at(t).jobs]
+        queued_jobs = [j.jid for j in filter(lambda j: j.is_queued_at(t), self.jobs)]
+        completed_jobs = [j.jid for j in filter(lambda j: j.is_completed_at(t), self.jobs)]
+        failed_jobs = [j.jid for j in filter(lambda j: j.is_failed_at(t), self.jobs)]
+
+        return (
+                "RUNNING: {}\n".format(running_jobs) +
+                "QUEUED: {}\n".format(queued_jobs) +
+                "COMPLETED: {}\n".format(completed_jobs) +
+                "FAILED: {}\n".format(failed_jobs)
+        )
+
     def get_server_states(self, log: str) -> None:
         states = {0: State.inactive}
 
@@ -119,9 +132,9 @@ class Server:
         self.states = states
 
 
-def get_servers_from_system(log: str, system: str, resource_failures: str) -> \
+def get_servers_from_system(log: str, system: str, resource_failures: str = None) -> \
         "OrderedDict[str, OrderedDict[int, Server]]":
-    Server.last_time = get_last_job_time(log)
+    Server.last_time = simulation_end_time(log)
     servers = OrderedDict()
 
     for s in parse(system).iter("server"):
@@ -133,7 +146,9 @@ def get_servers_from_system(log: str, system: str, resource_failures: str) -> \
                 type_, i, int(s.attrib["coreCount"]), int(s.attrib["memory"]), int(s.attrib["disk"]))
 
     get_jobs(log, servers)
-    get_failures_from_resources(resource_failures, servers)
+
+    if resource_failures:
+        get_failures_from_resources(resource_failures, servers)
 
     for s in traverse_servers(servers):
         s.get_server_states(log)
@@ -212,6 +227,13 @@ def get_last_time(log: str, system: str) -> int:
 
     last_time = max(end_time, last_job_time)
     return last_time
+
+
+def simulation_end_time(log: str) -> int:
+    with FileReadBackwards(log, encoding="utf-8") as f:
+        for _ in range(3):  # "actual simulation end time" is on the third-last line
+            line = f.readline()
+        return int(line.split()[-1])
 
 
 def print_servers_at(servers: List[Server], t: int) -> str:

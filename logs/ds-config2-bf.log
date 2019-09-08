@@ -57,9 +57,9 @@ RCVD REDY
 t:       2017 job     5 on # 0 of server small COMPLETED
 t:       2295 job     6 on # 1 of server small COMPLETED
 SENT JOBN 2611 8 477 1 800 1700
-RCVD SCHD 8 small 0
-t:       2611 job     8 (running) on # 0 of server small (active) SCHEDULED
-t:       2611 job     8 on # 0 of server small RUNNING
+RCVD SCHD 8 medium 1
+t:       2611 job     8 (running) on # 1 of server medium (active) SCHEDULED
+t:       2611 job     8 on # 1 of server medium RUNNING
 SENT OK
 RCVD REDY
 SENT JOBN 2874 9 47267 2 1500 1000
@@ -69,7 +69,7 @@ SENT OK
 RCVD REDY
 SENT NONE
 RCVD QUIT
-t:       2971 job     8 on # 0 of server small COMPLETED
+t:       2971 job     8 on # 1 of server medium COMPLETED
 t:      19467 job     0 on # 0 of server medium COMPLETED
 t:      19467 job     2 on # 0 of server medium RUNNING
 t:      20412 job     2 on # 0 of server medium COMPLETED
@@ -82,9 +82,9 @@ t:      73766 job     7 on # 1 of server medium COMPLETED
 t:     105788 job     9 on # 0 of server medium COMPLETED
 SENT QUIT
 # ---------------------------------------------------------------------------
-# 2 medium servers used with a utilisation of 84.50 at the cost of $23.45
-# 2 small servers used with a utilisation of 0.65 at the cost of $11.57
+# 2 medium servers used with a utilisation of 84.17 at the cost of $23.45
+# 2 small servers used with a utilisation of 0.48 at the cost of $11.57
 # =============================== [ Overall ] ===============================
 # actual simulation end time: 105788
-# total #servers used: 4, avg utilisation: 42.57 and total cost: $35.02
+# total #servers used: 4, avg utilisation: 42.33 and total cost: $35.02
 # avg waiting time: 8149, avg exec time: 17974 and avg turnaround time: 26124
