@@ -45,7 +45,7 @@ class Visualisation:
         self.c_height = c_height
         self.height = self.calc_height(self.s_factor)
         self.margin = 30
-        self.width = int(resolution[0]) - self.margin
+        self.width = 1200 - self.margin
 
         # The following variables are just used to create the window
         base_f_width = self.width / base_px
@@ -90,7 +90,7 @@ class Visualisation:
             "enable_events": True
         }
         scale_width = 30
-        title_length = int(f_width - scale_width - btn_width * 2.3)
+        title_length = 106
 
         layout = [
             [left_tabs, right_tabs],
@@ -109,17 +109,12 @@ class Visualisation:
                        **slider_settings)],
             [sg.T("Time", size=slider_label_size),
              sg.Slider((0, Server.last_time), default_value=0, key="time_slider", **slider_settings)],
-            [sg.Column(graph_column, size=(int(self.width + self.margin / 3), int(resolution[1])),
+            [sg.Column(graph_column, size=(int(self.width + self.margin / 3), 200),
                        scrollable=True, key="column")]
         ]
 
         self.window = sg.Window("sim-viz", layout, resizable=True, return_keyboard_events=True,
-                                finalize=True, element_justification="center")
-        if sys.platform == "linux":
-            self.window.TKroot.attributes("-zoomed", True)
-        else:
-            self.window.maximize()
-
+                                finalize=True, element_justification="left", keep_on_top=True)
         self.graph = self.window["graph"]  # type: sg.Graph
 
         # Not necessary for creating window, but needed for drawing visualisation in graph and handling user input
