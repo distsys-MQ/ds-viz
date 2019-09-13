@@ -138,12 +138,15 @@ class Visualisation:
         menu_offset = 50
         return sum(min(s.cores, scale) for s in self.s_list) * self.c_height + menu_offset
 
+    def norm_times(self, arr: np.ndarray) -> np.ndarray:
+        return np.interp(arr, (0, Server.last_time), (self.x_offset, self.width))
+
     def norm_jobs(self, jobs: List[Job]) -> List[Job]:
         if not jobs:
             return []
 
         arr = np.array([(j.start, j.end) for j in jobs])
-        arr = np.interp(arr, (0, Server.last_time), (self.x_offset, self.width))
+        arr = self.norm_times(arr)
         res = [j.copy() for j in jobs]
 
         for (begin, end), j in zip(arr, res):
@@ -157,7 +160,7 @@ class Visualisation:
             return []
 
         arr = np.array([(f.fail, f.recover) for f in failures])
-        arr = np.interp(arr, (0, Server.last_time), (self.x_offset, self.width))
+        arr = self.norm_times(arr)
 
         return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
@@ -296,13 +299,8 @@ class Visualisation:
             if event == "time_slider":
                 time = int(values[event])
                 cur_job = get_job_at(self.jobs[cur_job.jid], time)
-                self.norm_time = int(
-                    np.interp(
-                        np.array([time]),
-                        (0, Server.last_time),
-                        (self.x_offset, self.width)
-                    )[0]
-                )
+                self.norm_time = int(self.norm_times(np.array([time]))[0])
+
                 self.graph.relocate_figure(self.timeline, self.norm_time, self.c_height)
                 self.graph.relocate_figure(self.timeline_pointer, self.norm_time, self.c_height / 2)
 
