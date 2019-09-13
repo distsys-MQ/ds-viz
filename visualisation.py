@@ -121,6 +121,7 @@ class Visualisation:
             self.window.maximize()
 
         self.graph = self.window["graph"]  # type: sg.Graph
+        self.window["time_slider"].set_focus()
 
         # Not necessary for creating window, but needed for drawing visualisation in graph and handling user input
         # Could create other classes to handle these
@@ -293,7 +294,7 @@ class Visualisation:
 
             # Handle time slider movement
             if event == "time_slider":
-                time = int(values["time_slider"])
+                time = int(values[event])
                 cur_job = get_job_at(self.jobs[cur_job.jid], time)
                 self.norm_time = int(
                     np.interp(
@@ -306,12 +307,14 @@ class Visualisation:
                 self.graph.relocate_figure(self.timeline_pointer, self.norm_time, self.c_height / 2)
 
                 self.update_output(time, cur_server, cur_job)
+                self.window[event].set_focus()
 
             # Handle job slider movement
             if event == "job_slider":
-                jid = int(values["job_slider"])
+                jid = int(values[event])
                 cur_job = get_job_at(self.jobs[jid], time)
                 self.update_output(time, cur_server, cur_job)
+                self.window[event].set_focus()
 
                 if show_job:
                     self.change_selected_job(jid, prev_jid)
@@ -319,10 +322,11 @@ class Visualisation:
 
             # Handle server slider movement
             if event == "server_slider":
-                self.s_index = int(values["server_slider"])
+                self.s_index = int(values[event])
                 cur_server = self.s_list[self.s_index]
                 self.graph.relocate_figure(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index] - 1)
                 self.update_output(time, cur_server, cur_job)
+                self.window[event].set_focus()
 
             # Handle clicking "show job" button
             if event == "show_job":
@@ -330,10 +334,10 @@ class Visualisation:
                 jid = int(values["job_slider"])
 
                 if show_job:
-                    self.window["show_job"].update(button_color=("white", "green"))
+                    self.window[event].update(button_color=("white", "green"))
                     self.change_job_colour(jid, "yellow")
                 else:
-                    self.window["show_job"].update(button_color=("white", "red"))
+                    self.window[event].update(button_color=("white", "red"))
                     self.reset_job_colour(jid)
 
             # Handle clicking on scale buttons
