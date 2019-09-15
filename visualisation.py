@@ -133,6 +133,7 @@ class Visualisation:
         self.server_ys = []
         self.s_pointer_x = self.x_offset - 7
         self.s_pointer = None  # type: Optional[int]
+        self.highlight_colour = "yellow"
 
     def calc_height(self, scale: int) -> int:
         menu_offset = 50
@@ -261,7 +262,7 @@ class Visualisation:
 
     def change_selected_job(self, jid: int, prev_jid: int):
         self.reset_job_colour(prev_jid)
-        self.change_job_colour(jid, "yellow")
+        self.change_job_colour(jid, self.highlight_colour)
 
     def change_scaling(self, scale: int, show_job: bool, prev_jid: int):
         self.graph.erase()
@@ -275,7 +276,7 @@ class Visualisation:
         self.window["scale"].update("Scale: {} ({} max cores)".format(scale, 2 ** scale))
 
         if show_job:
-            self.change_job_colour(prev_jid, "yellow")
+            self.change_job_colour(prev_jid, self.highlight_colour)
 
     def run(self):
         prev_jid = self.unique_jids[0]
@@ -298,9 +299,7 @@ class Visualisation:
             # Handle time slider movement
             if event == "time_slider":
                 time = int(values[event])
-                cur_job = get_job_at(self.jobs[cur_job.jid], time)
                 self.norm_time = int(self.norm_times(np.array([time]))[0])
-
                 self.graph.relocate_figure(self.timeline, self.norm_time, self.c_height)
                 self.graph.relocate_figure(self.timeline_pointer, self.norm_time, self.c_height / 2)
 
@@ -333,7 +332,7 @@ class Visualisation:
 
                 if show_job:
                     self.window[event].update(button_color=("white", "green"))
-                    self.change_job_colour(jid, "yellow")
+                    self.change_job_colour(jid, self.highlight_colour)
                 else:
                     self.window[event].update(button_color=("white", "red"))
                     self.reset_job_colour(jid)
