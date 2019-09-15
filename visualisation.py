@@ -339,10 +339,16 @@ class Visualisation:
 
             # Handle clicking on scale buttons
             elif event == "decrease_scale":
-                cur_scale = cur_scale - 1 if cur_scale > 0 else 0
-                self.change_scaling(cur_scale, show_job, prev_jid)
+                if cur_scale <= 0:
+                    continue
+                else:
+                    cur_scale = cur_scale - 1
+                    self.change_scaling(cur_scale, show_job, prev_jid)
             elif event == "increase_scale":
-                cur_scale = cur_scale + 1 if cur_scale < self.max_scale else self.max_scale
-                self.change_scaling(cur_scale, show_job, prev_jid)
+                if cur_scale >= self.max_scale:
+                    continue
+                else:
+                    cur_scale = cur_scale + 1
+                    self.change_scaling(cur_scale, show_job, prev_jid)
 
         self.window.close()
