@@ -108,7 +108,7 @@ class Visualisation:
              sg.Slider((self.unique_jids[0], self.unique_jids[-1]), default_value=self.unique_jids[0], key="job_slider",
                        **slider_settings)],
             [sg.T("Time", size=slider_label_size),
-             sg.Slider((0, Server.last_time), default_value=0, key="time_slider", **slider_settings)],
+             sg.Slider((0, Server.end_time), default_value=0, key="time_slider", **slider_settings)],
             [sg.Column(graph_column, size=(int(self.width + self.margin / 3), int(resolution[1])),
                        scrollable=True, key="column")]
         ]
@@ -140,7 +140,7 @@ class Visualisation:
         return sum(min(s.cores, scale) for s in self.s_list) * self.c_height + menu_offset
 
     def norm_times(self, arr: np.ndarray) -> np.ndarray:
-        return np.interp(arr, (0, Server.last_time), (self.x_offset, self.width))
+        return np.interp(arr, (0, Server.end_time), (self.x_offset, self.width))
 
     def norm_jobs(self, jobs: List[Job]) -> List[Job]:
         if not jobs:

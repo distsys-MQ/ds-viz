@@ -24,7 +24,7 @@ def get_failures_from_resources(resource_failures: str, servers: "OrderedDict[st
 
 
 # noinspection PyUnresolvedReferences
-def get_failures(log: str, servers: "OrderedDict[str, OrderedDict[int, Server]]", last_time: int) \
+def get_failures(log: str, servers: "OrderedDict[str, OrderedDict[int, Server]]", end_time: int) \
         -> List[ServerFailure]:
     failures = []
 
@@ -40,7 +40,7 @@ def get_failures(log: str, servers: "OrderedDict[str, OrderedDict[int, Server]]"
 
     for f in failures:
         if f.recover is None:
-            f.recover = last_time
+            f.recover = end_time
 
     return failures
 
