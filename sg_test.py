@@ -1,30 +1,20 @@
 import PySimpleGUI as sg
 
-text = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit
-anim id est laborum."""
-
-font1 = ("Times", 12)
-font2 = ("Courier", 9)
-font3 = ("Helvetica", 11)
-font4 = ("Comic", 8)
-
-top_tabs = sg.TabGroup(
-    [[sg.Tab("Testing1", [[sg.T(text, font=font1)]], font=font1),
-      sg.Tab("Testing2", [[sg.T(text, font=font2)]], font=font2)]],
-    font=font1, title_color="blue", selected_title_color="red", background_color="green"
-)
-bottom_tabs = sg.TabGroup(
-    [[sg.Tab("Testing3", [[sg.T(text, font=font3)]], font=font3),
-      sg.Tab("Testing4", [[sg.T(text, font=font4)]], font=font4)]],
-    font=font2
-)
-
-layout = [[top_tabs], [bottom_tabs]]
+size = 400
+layout = [[sg.Graph((size, size), (0, size), (size, 0), key="graph")]]
 window = sg.Window("test", layout, finalize=True)
+
+graph = window["graph"]  # type: sg.Graph
+
+font = ("Symbol", 20)
+margin = 20
+mid = int(size / 2)
+
+graph.draw_text("{} {}".format(font[0], font[1]), (margin, margin), text_location=sg.TEXT_LOCATION_BOTTOM_LEFT)
+graph.draw_text("◀", (margin, mid), font=font)
+graph.draw_text("▲", (mid, margin), font=font)
+graph.draw_text("▶", (size - margin, mid), font=font)
+graph.draw_text("▼", (mid, size - margin), font=font)
 
 while True:
     event, values = window.Read()

@@ -131,7 +131,7 @@ class Visualisation:
         self.timeline_pointer = None  # type: Optional[int]
         self.s_index = 0
         self.server_ys = []
-        self.s_pointer_x = self.x_offset - 7
+        self.s_pointer_x = self.x_offset - 8
         self.s_pointer = None  # type: Optional[int]
         self.highlight_colour = "yellow"
 
@@ -243,8 +243,10 @@ class Visualisation:
 
         # Need to redraw these for them to persist after 'erase' call
         self.timeline = self.graph.draw_line((self.norm_time, self.c_height), (self.norm_time, self.height))
-        self.timeline_pointer = self.graph.draw_text('▼', (self.norm_time, self.c_height / 2))
-        self.s_pointer = self.graph.draw_text('▶', (self.s_pointer_x, self.server_ys[self.s_index] - 1))
+
+        p_font = ("Symbol", 8)
+        self.timeline_pointer = self.graph.draw_text('▼', (self.norm_time, self.c_height / 2), font=p_font)
+        self.s_pointer = self.graph.draw_text('▶', (self.s_pointer_x, self.server_ys[self.s_index] - 1), font=p_font)
 
     def update_output(self, t: int, server: Server, job: Job):
         self.window["current_server"].update(server.print_server_at(t))
