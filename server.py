@@ -63,7 +63,6 @@ class Server:
         return res
 
     def print_server_at(self, t: int) -> str:
-        # TODO Add more details
         cur = self.get_server_at(t)
 
         queued_jobs = list(filter(lambda j: j.is_queued_at(t), self.jobs))
@@ -96,7 +95,7 @@ class Server:
         )
 
     def get_server_states(self, log: str) -> None:
-        states = {0: State.inactive}
+        states = {0: State.inactive}  # type: Dict[int, State]
 
         with open(log, "r") as f:
             while True:
@@ -135,11 +134,11 @@ class Server:
 def get_servers_from_system(log: str, system: str, resource_failures: str = None) -> \
         "OrderedDict[str, OrderedDict[int, Server]]":
     Server.end_time = simulation_end_time(log)
-    servers = OrderedDict()
+    servers = OrderedDict()  # type: OrderedDict[str, OrderedDict[int, Server]]
 
     for s in parse(system).iter("server"):
         type_ = s.attrib["type"]
-        servers[type_] = OrderedDict()
+        servers[type_] = OrderedDict()  # type: OrderedDict[int, Server]
 
         for i in range(int(s.attrib["limit"])):
             servers[type_][i] = Server(
@@ -195,7 +194,7 @@ def make_servers(f: BinaryIO) -> List[Server]:
 
 def get_results(log: str) -> str:
     with FileReadBackwards(log, encoding="utf-8") as f:
-        results = []
+        results = []  # type: List[str]
 
         while True:
             line = f.readline().replace("\r\n", "\n")
