@@ -81,10 +81,12 @@ class Visualisation:
               ]]
         )
 
+        # TODO add to the right of every slider: a text box that displays the currently selected server/job/time and
+        #  allows the user to select a specific server/job/time
         btn_width = 8
         btn_font = (self.fnt_f, self.fnt_s - 3)
         slider_label_size = (6, 1)
-        slider_settings = {  # TODO figure out if it's possible to change the number display to `s_type sid`
+        slider_settings = {
             "size": (base_f_width - (slider_label_size[0] / 2), 5),
             "orientation": "h",
             "enable_events": True
