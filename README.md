@@ -2,8 +2,8 @@
 - Ensure that python3, pip3, and tkinter are installed with `sudo apt install python3 python3-tk python3-pip`
 - Install required packages with `python3 -m pip install --user -r requirements.txt`
 - Generate resource failure and log files with a particular configuration file
-- Usage instructions (also provided with `python3 ./sim-viz.py -h`):
-    - `python3 ./sim_viz.py config log` to visualise the contents of a simulation that used the
+- Usage instructions (also provided with `python3 ./ds_viz.py -h`):
+    - `python3 ./ds_viz.py config log` to visualise the contents of a simulation that used the
     config file `config` which had produced the log file named `log`.
     - `-f failures` to visualise failures from a resource failures file `failures`
     - `-c num` to specify the height of server cores to `num` pixels. Default is 4.
@@ -14,7 +14,7 @@
 the system information from `config100.xml` and the resource failure information from `g5k06-config100-fails.txt`.
 Each core will be `10` pixels tall and the initial scaling factor is set to `2` (maximum of 4 cores per server).
 
-        python3 ./sim_viz.py ./config100.xml -f ./g5k06-config100-fails.txt ./g5k06-config100.xml.log -c 10 -s 2
+        python3 ./ds_viz.py ./config100.xml -f ./g5k06-config100-fails.txt ./g5k06-config100.xml.log -c 10 -s 2
 
 - Runtime instructions:
     - Click on the tabs above the information windows to switch between `Current Server` and `Current Job` for

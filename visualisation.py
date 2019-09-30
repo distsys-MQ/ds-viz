@@ -115,7 +115,7 @@ class Visualisation:
                        scrollable=True, key="column")]
         ]
 
-        self.window = sg.Window("sim-viz", layout, resizable=True, return_keyboard_events=True,
+        self.window = sg.Window("ds-viz", layout, resizable=True, return_keyboard_events=True,
                                 finalize=True, element_justification="left", keep_on_top=True)
         self.graph = self.window["graph"]  # type: sg.Graph
         self.window["time_slider"].set_focus()

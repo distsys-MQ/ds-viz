@@ -6,7 +6,7 @@ from visualisation import Visualisation
 parser = ArgumentParser(description="Visualises DS simulations")
 
 # The order of arguments in descending order of file frequency is: config, failures, log.
-# This should be the preferable order when using sim-viz via command-line.
+# This should be the preferable order when using ds-viz via command-line.
 # However, failure-free simulations should also be supported, so the failure argument is optional
 parser.add_argument("config", action=IsFile,
                     help="configuration file used in simulation")

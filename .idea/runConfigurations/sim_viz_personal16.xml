@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="sim_viz personal16" type="PythonConfigurationType" factoryName="Python">
-    <module name="sim-viz" />
+    <module name="ds-viz" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
@@ -12,7 +12,7 @@
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/sim_viz.py" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ds_viz.py" />
     <option name="PARAMETERS" value=".\configs\personal-config16.xml -f .\failures\personal-config16-pl05-failures.txt .\logs\personal-config16-pl05-bf.log -s 3 -c 10" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
