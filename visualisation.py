@@ -115,7 +115,7 @@ class Visualisation:
                        scrollable=True, key="column")]
         ]
 
-        self.window = sg.Window("sim-viz", layout, resizable=True, return_keyboard_events=True,
+        self.window = sg.Window("ds-viz", layout, resizable=True, return_keyboard_events=True,
                                 finalize=True, element_justification="center")
         if sys.platform == "linux":
             self.window.TKroot.attributes("-zoomed", True)
