@@ -12,7 +12,7 @@ from server_state import ServerState as State
 
 
 class Server:
-    last_time = None  # type: int
+    end_time = None  # type: int
 
     def __init__(self, type_: str, sid: int, cores: int, memory: int, disk: int,
                  states: Dict[int, State] = None, jobs: List[Job] = None,
@@ -63,7 +63,6 @@ class Server:
         return res
 
     def print_server_at(self, t: int) -> str:
-        # TODO Add more details
         cur = self.get_server_at(t)
 
         queued_jobs = list(filter(lambda j: j.is_queued_at(t), self.jobs))
@@ -96,7 +95,7 @@ class Server:
         )
 
     def get_server_states(self, log: str) -> None:
-        states = {0: State.inactive}
+        states = {0: State.inactive}  # type: Dict[int, State]
 
         with open(log, "r") as f:
             while True:
@@ -119,14 +118,14 @@ class Server:
                             states[time] = State.booting
                         elif "RUNNING" in msg and states[max(states)] is not State.active:
                             states[time] = State.active
-                        elif "COMPLETED" in msg and time != Server.last_time and len(
+                        elif "COMPLETED" in msg and time != Server.end_time and len(
                                 list(filter(lambda j: j.is_running_at(time + 1), self.jobs))) == 0:
                             states[time + 1] = State.idle
 
         for f in self.failures:
             states[f.fail] = State.unavailable
 
-            if f.recover != Server.last_time:
+            if f.recover != Server.end_time:
                 states[f.recover] = State.inactive
 
         self.states = states
@@ -134,12 +133,12 @@ class Server:
 
 def get_servers_from_system(log: str, system: str, resource_failures: str = None) -> \
         "OrderedDict[str, OrderedDict[int, Server]]":
-    Server.last_time = simulation_end_time(log)
-    servers = OrderedDict()
+    Server.end_time = simulation_end_time(log)
+    servers = OrderedDict()  # type: OrderedDict[str, OrderedDict[int, Server]]
 
     for s in parse(system).iter("server"):
         type_ = s.attrib["type"]
-        servers[type_] = OrderedDict()
+        servers[type_] = OrderedDict()  # type: OrderedDict[int, Server]
 
         for i in range(int(s.attrib["limit"])):
             servers[type_][i] = Server(
@@ -165,7 +164,7 @@ def get_servers(log: str) -> List[Server]:
                 servers = make_servers(f)
                 s_dict = server_list_to_dict(servers)
                 get_jobs(log, s_dict)
-                get_failures(log, s_dict, Server.last_time)
+                get_failures(log, s_dict, Server.end_time)
 
                 return servers
 
@@ -195,7 +194,7 @@ def make_servers(f: BinaryIO) -> List[Server]:
 
 def get_results(log: str) -> str:
     with FileReadBackwards(log, encoding="utf-8") as f:
-        results = []
+        results = []  # type: List[str]
 
         while True:
             line = f.readline().replace("\r\n", "\n")

@@ -81,10 +81,12 @@ class Visualisation:
               ]]
         )
 
+        # TODO add to the right of every slider: a text box that displays the currently selected server/job/time and
+        #  allows the user to select a specific server/job/time
         btn_width = 8
         btn_font = (self.fnt_f, self.fnt_s - 3)
         slider_label_size = (6, 1)
-        slider_settings = {  # TODO figure out if it's possible to change the number display to `s_type sid`
+        slider_settings = {
             "size": (base_f_width - (slider_label_size[0] / 2), 5),
             "orientation": "h",
             "enable_events": True
@@ -108,7 +110,7 @@ class Visualisation:
              sg.Slider((self.unique_jids[0], self.unique_jids[-1]), default_value=self.unique_jids[0], key="job_slider",
                        **slider_settings)],
             [sg.T("Time", size=slider_label_size),
-             sg.Slider((0, Server.last_time), default_value=0, key="time_slider", **slider_settings)],
+             sg.Slider((0, Server.end_time), default_value=0, key="time_slider", **slider_settings)],
             [sg.Column(graph_column, size=(int(self.width + self.margin / 3), 200),
                        scrollable=True, key="column")]
         ]
@@ -116,6 +118,7 @@ class Visualisation:
         self.window = sg.Window("sim-viz", layout, resizable=True, return_keyboard_events=True,
                                 finalize=True, element_justification="left", keep_on_top=True)
         self.graph = self.window["graph"]  # type: sg.Graph
+        self.window["time_slider"].set_focus()
 
         # Not necessary for creating window, but needed for drawing visualisation in graph and handling user input
         # Could create other classes to handle these
@@ -124,20 +127,24 @@ class Visualisation:
         self.timeline = None  # type: Optional[int]
         self.timeline_pointer = None  # type: Optional[int]
         self.s_index = 0
-        self.s_ticks = []
-        self.s_pointer_x = self.x_offset - 7
+        self.server_ys = []
+        self.s_pointer_x = self.x_offset - 8
         self.s_pointer = None  # type: Optional[int]
+        self.highlight_colour = "yellow"
 
     def calc_height(self, scale: int) -> int:
         menu_offset = 50
         return sum(min(s.cores, scale) for s in self.s_list) * self.c_height + menu_offset
+
+    def norm_times(self, arr: np.ndarray) -> np.ndarray:
+        return np.interp(arr, (0, Server.end_time), (self.x_offset, self.width))
 
     def norm_jobs(self, jobs: List[Job]) -> List[Job]:
         if not jobs:
             return []
 
         arr = np.array([(j.start, j.end) for j in jobs])
-        arr = np.interp(arr, (self.margin, Server.last_time), (self.x_offset, self.width))
+        arr = self.norm_times(arr)
         res = [j.copy() for j in jobs]
 
         for (begin, end), j in zip(arr, res):
@@ -151,7 +158,7 @@ class Visualisation:
             return []
 
         arr = np.array([(f.fail, f.recover) for f in failures])
-        arr = np.interp(arr, (self.margin, Server.last_time), (self.x_offset, self.width))
+        arr = self.norm_times(arr)
 
         return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
@@ -168,7 +175,7 @@ class Visualisation:
         font = (self.fnt_f, self.fnt_s - 3)
 
         s_height = None
-        self.s_ticks = []  # type: List[int]
+        self.server_ys = []  # type: List[int]
 
         self.graph.draw_line((axis, 0), (axis, self.height))  # y-axis
 
@@ -183,24 +190,19 @@ class Visualisation:
                 s_scale = min(s.cores, s_fact)
                 s_height = s_scale * self.c_height
 
-                sid_y = type_y + s_height * i
-                self.graph.draw_line((axis - tick * 2.5, sid_y), (axis, sid_y))  # Server ID tick mark
-                self.s_ticks.append(sid_y)
+                server_y = type_y + s_height * i
+                self.graph.draw_line((axis - tick * 2.5, server_y), (axis, server_y))  # Server ID tick mark
+                self.server_ys.append(server_y)
 
-                # self.graph.draw_line((axis, sid_y), (self.width - self.right_margin, sid_y))  # Server border
+                # self.graph.draw_line((axis, server_y), (self.width - self.right_margin, server_y))  # Server border
 
                 for k in range(s_scale):
-                    core_y = sid_y + self.c_height * k
+                    core_y = server_y + self.c_height * k
                     self.graph.draw_line((axis - tick, core_y), (axis, core_y))  # Server core tick mark
 
                 jobs = self.norm_jobs(s.jobs)
                 for jb in jobs:
                     j_scale = min(jb.cores, s_fact)
-
-                    # test_jobs = [8, 10, 13]
-                    # test_server = "medium", 1
-                    # if (jb.jid in test_jobs) and (s.type_ == test_server[0] and s.sid == test_server[1]):
-                    #     print()
 
                     # Only check if previous jobs are overlapping, later jobs should be stacked on previous jobs
                     overlap = list(filter(lambda j: j.is_overlapping(jb), jobs[:jobs.index(jb)]))
@@ -212,10 +214,7 @@ class Visualisation:
                         # If offset would exceed server height, reset to the top
                         # Also need to adjust y position by half c_height to align job bar edge with server ticks
                         job_core = (used_cores + k) % s_scale
-                        job_y = sid_y + job_core * self.c_height + self.c_height * 0.5
-
-                        # if (jb.jid in test_jobs) and (s.type_ == test_server[0] and s.sid == test_server[1]):
-                        #     print("{}: {}".format(jb.jid, job_core))
+                        job_y = server_y + job_core * self.c_height + self.c_height * 0.5
 
                         if not jb.will_fail and jb.fails == 0:
                             col = "green"
@@ -231,8 +230,8 @@ class Visualisation:
                         )
 
                 for fail in self.norm_server_failures(s.failures):
-                    fail_y1 = sid_y
-                    fail_y2 = sid_y + s_height - 1
+                    fail_y1 = server_y
+                    fail_y2 = server_y + s_height - 1
                     self.graph.draw_rectangle(
                         (fail.fail, fail_y1), (fail.recover, fail_y2),
                         fill_color="red", line_color="red")
@@ -241,8 +240,10 @@ class Visualisation:
 
         # Need to redraw these for them to persist after 'erase' call
         self.timeline = self.graph.draw_line((self.norm_time, self.c_height), (self.norm_time, self.height))
-        self.timeline_pointer = self.graph.draw_text('▼', (self.norm_time, self.c_height / 2))
-        self.s_pointer = self.graph.draw_text('▶', (self.s_pointer_x, self.s_ticks[self.s_index] - 1))
+
+        p_font = ("Symbol", 8)
+        self.timeline_pointer = self.graph.draw_text('▼', (self.norm_time, self.c_height / 2), font=p_font)
+        self.s_pointer = self.graph.draw_text('▶', (self.s_pointer_x, self.server_ys[self.s_index] - 1), font=p_font)
 
     def update_output(self, t: int, server: Server, job: Job):
         self.window["current_server"].update(server.print_server_at(t))
@@ -260,7 +261,7 @@ class Visualisation:
 
     def change_selected_job(self, jid: int, prev_jid: int):
         self.reset_job_colour(prev_jid)
-        self.change_job_colour(jid, "yellow")
+        self.change_job_colour(jid, self.highlight_colour)
 
     def change_scaling(self, scale: int, show_job: bool, prev_jid: int):
         self.graph.erase()
@@ -274,7 +275,7 @@ class Visualisation:
         self.window["scale"].update("Scale: {} ({} max cores)".format(scale, 2 ** scale))
 
         if show_job:
-            self.change_job_colour(prev_jid, "yellow")
+            self.change_job_colour(prev_jid, self.highlight_colour)
 
     def run(self):
         prev_jid = self.unique_jids[0]
@@ -296,25 +297,20 @@ class Visualisation:
 
             # Handle time slider movement
             if event == "time_slider":
-                time = int(values["time_slider"])
-                cur_job = get_job_at(self.jobs[cur_job.jid], time)
-                self.norm_time = int(
-                    np.interp(
-                        np.array([time]),
-                        (self.margin, Server.last_time),
-                        (self.x_offset, self.width)
-                    )[0]
-                )
+                time = int(values[event])
+                self.norm_time = int(self.norm_times(np.array([time]))[0])
                 self.graph.relocate_figure(self.timeline, self.norm_time, self.c_height)
                 self.graph.relocate_figure(self.timeline_pointer, self.norm_time, self.c_height / 2)
 
                 self.update_output(time, cur_server, cur_job)
+                self.window[event].set_focus()
 
             # Handle job slider movement
             if event == "job_slider":
-                jid = int(values["job_slider"])
+                jid = int(values[event])
                 cur_job = get_job_at(self.jobs[jid], time)
                 self.update_output(time, cur_server, cur_job)
+                self.window[event].set_focus()
 
                 if show_job:
                     self.change_selected_job(jid, prev_jid)
@@ -322,10 +318,11 @@ class Visualisation:
 
             # Handle server slider movement
             if event == "server_slider":
-                self.s_index = int(values["server_slider"])
+                self.s_index = int(values[event])
                 cur_server = self.s_list[self.s_index]
-                self.graph.relocate_figure(self.s_pointer, self.s_pointer_x, self.s_ticks[self.s_index] - 1)
+                self.graph.relocate_figure(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index] - 1)
                 self.update_output(time, cur_server, cur_job)
+                self.window[event].set_focus()
 
             # Handle clicking "show job" button
             if event == "show_job":
@@ -333,29 +330,24 @@ class Visualisation:
                 jid = int(values["job_slider"])
 
                 if show_job:
-                    self.window["show_job"].update(button_color=("white", "green"))
-                    self.change_job_colour(jid, "yellow")
+                    self.window[event].update(button_color=("white", "green"))
+                    self.change_job_colour(jid, self.highlight_colour)
                 else:
-                    self.window["show_job"].update(button_color=("white", "red"))
+                    self.window[event].update(button_color=("white", "red"))
                     self.reset_job_colour(jid)
-
-            # Handle pressing left/right arrow keys
-            # Replace with this once PSG has been updated https://github.com/PySimpleGUI/PySimpleGUI/issues/1756
-            elif "Left" in event:
-                time = time - 1 if time > 1 else 0
-                self.window["time_slider"].update(time)
-                self.update_output(time, cur_server, cur_job)
-            elif "Right" in event:
-                time = time + 1 if time < Server.last_time else Server.last_time
-                self.window["time_slider"].update(time)
-                self.update_output(time, cur_server, cur_job)
 
             # Handle clicking on scale buttons
             elif event == "decrease_scale":
-                cur_scale = cur_scale - 1 if cur_scale > 0 else 0
-                self.change_scaling(cur_scale, show_job, prev_jid)
+                if cur_scale <= 0:
+                    continue
+                else:
+                    cur_scale = cur_scale - 1
+                    self.change_scaling(cur_scale, show_job, prev_jid)
             elif event == "increase_scale":
-                cur_scale = cur_scale + 1 if cur_scale < self.max_scale else self.max_scale
-                self.change_scaling(cur_scale, show_job, prev_jid)
+                if cur_scale >= self.max_scale:
+                    continue
+                else:
+                    cur_scale = cur_scale + 1
+                    self.change_scaling(cur_scale, show_job, prev_jid)
 
         self.window.close()

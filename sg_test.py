@@ -1,24 +1,23 @@
 import PySimpleGUI as sg
 
-num = 4
-text = '\n'.join(
-    ['.'.join(hex(k * num + i)[2:].zfill(2) for i in range(num)) for k in range(num)]
-)
+size = 400
+layout = [[sg.Graph((size, size), (0, size), (size, 0), key="graph")]]
+window = sg.Window("test", layout, finalize=True)
 
-mult_size = (num * 3 - 1, num)
-font_sizes = [10, 15, 20]
-layout = [
-    [sg.Multiline(text, size=mult_size, font=("Courier New", i), key=str(i))]
-    for i in font_sizes
-]
-layout.append([sg.B('test')])
-window = sg.Window("test", layout, margins=(0, 0), finalize=True)
+graph = window["graph"]  # type: sg.Graph
+
+font = ("Symbol", 20)
+margin = 20
+mid = int(size / 2)
+
+graph.draw_text("{} {}".format(font[0], font[1]), (margin, margin), text_location=sg.TEXT_LOCATION_BOTTOM_LEFT)
+graph.draw_text("◀", (margin, mid), font=font)
+graph.draw_text("▲", (mid, margin), font=font)
+graph.draw_text("▶", (size - margin, mid), font=font)
+graph.draw_text("▼", (mid, size - margin), font=font)
 
 while True:
-    event, values = window.read()
+    event, values = window.Read()
     if event is None or event == 'Exit':
         break
-    for i in font_sizes:
-        window[str(i)].Widget.config(width=8)
-
-window.close()
+window.Close()
