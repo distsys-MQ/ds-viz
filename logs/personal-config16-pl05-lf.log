@@ -1,0 +1,115 @@
+# ds-sim server 23-Sep, 2019 @ MQ
+# Server-side simulator started with './ds-server -n -v brief -c configs/scheduling/personal-config16.xml -f pl05'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+RCVD HELO
+SENT OK
+RCVD AUTH jak0723
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+SENT OK
+RCVD REDY
+SENT JOBN 84 0 586 1 200 300
+RCVD SCHD 0 medium 0
+t:         84 job     0 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        114 job     0 on # 0 of server medium RUNNING
+SENT JOBP 209 0 586 1 200 300
+RCVD SCHD 0 medium 1
+t:        209 job     0 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:        239 job     0 on # 1 of server medium RUNNING
+SENT JOBN 292 1 292 1 400 1200
+RCVD SCHD 1 medium 1
+t:        292 job     1 (running) on # 1 of server medium (active) SCHEDULED
+t:        292 job     1 on # 1 of server medium RUNNING
+SENT OK
+RCVD REDY
+SENT JOBN 339 2 96 2 2100 2800
+RCVD SCHD 2 medium 1
+t:        339 job     2 (running) on # 1 of server medium (active) SCHEDULED
+t:        339 job     2 on # 1 of server medium RUNNING
+SENT OK
+RCVD REDY
+t:        441 job     2 on # 1 of server medium COMPLETED
+SENT JOBN 447 3 282 2 500 1100
+RCVD SCHD 3 medium 1
+t:        447 job     3 (running) on # 1 of server medium (active) SCHEDULED
+t:        447 job     3 on # 1 of server medium RUNNING
+SENT OK
+RCVD REDY
+t:        607 job     1 on # 1 of server medium COMPLETED
+t:        689 job     3 on # 1 of server medium COMPLETED
+SENT JOBN 733 4 256 1 1000 1900
+RCVD SCHD 4 medium 1
+t:        733 job     4 (running) on # 1 of server medium (active) SCHEDULED
+t:        733 job     4 on # 1 of server medium RUNNING
+SENT OK
+RCVD REDY
+t:        793 job     0 on # 1 of server medium COMPLETED
+SENT JOBN 873 5 453 1 800 1400
+RCVD SCHD 5 medium 1
+t:        873 job     5 (running) on # 1 of server medium (active) SCHEDULED
+t:        873 job     5 on # 1 of server medium RUNNING
+SENT OK
+RCVD REDY
+SENT JOBN 877 6 65 1 900 200
+RCVD SCHD 6 medium 1
+t:        877 job     6 (running) on # 1 of server medium (active) SCHEDULED
+t:        877 job     6 on # 1 of server medium RUNNING
+SENT OK
+RCVD REDY
+t:        911 job     6 on # 1 of server medium COMPLETED
+SENT JOBN 962 7 57 1 1000 900
+RCVD SCHD 7 medium 1
+t:        962 job     7 (running) on # 1 of server medium (active) SCHEDULED
+t:        962 job     7 on # 1 of server medium RUNNING
+SENT OK
+RCVD REDY
+SENT JOBN 1051 8 441 1 800 1700
+RCVD SCHD 8 medium 1
+t:       1051 job     8 (running) on # 1 of server medium (active) SCHEDULED
+t:       1051 job     8 on # 1 of server medium RUNNING
+SENT OK
+RCVD REDY
+SENT JOBN 1194 9 82 2 1500 1000
+RCVD SCHD 9 medium 0
+t:       1194 job     9 (waiting) on # 0 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:       1224 job     9 on # 0 of server medium RUNNING
+t:       1348 job     7 on # 1 of server medium COMPLETED
+t:       1408 job     5 on # 1 of server medium COMPLETED
+t:       1487 job     8 on # 1 of server medium COMPLETED
+SENT JOBP 1507 4 256 1 1000 1900
+RCVD SCHD 4 medium 0
+t:       1507 job     4 (running) on # 0 of server medium (active) SCHEDULED
+t:       1507 job     4 on # 0 of server medium RUNNING
+SENT OK
+RCVD REDY
+SENT JOBP 1637 9 82 2 1500 1000
+RCVD SCHD 9 medium 1
+t:       1637 job     9 (waiting) on # 1 of server medium (booting) SCHEDULED
+SENT OK
+RCVD REDY
+SENT JOBP 1637 4 256 1 1000 1900
+RCVD SCHD 4 small 0
+t:       1637 job     4 (waiting) on # 0 of server small (booting) SCHEDULED
+SENT OK
+RCVD REDY
+t:       1667 job     4 on # 0 of server small RUNNING
+t:       1667 job     9 on # 1 of server medium RUNNING
+t:       2304 job     9 on # 1 of server medium COMPLETED
+t:       2512 job     4 on # 0 of server small COMPLETED
+SENT NONE
+RCVD QUIT
+SENT QUIT
+# ---------------------------------------------------------------------------
+# 0 tiny servers used with a utilisation of 0.00 at the cost of $0.00
+# 1 small servers used with a utilisation of -50.69 at the cost of $-0.19
+# 1 medium servers used with a utilisation of 0.04 at the cost of $824.68
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 2304
+# total #servers used: 2, avg utilisation: -25.32 and total cost: $824.49
+# avg waiting time: 156, avg exec time: 408 and avg turnaround time: 564

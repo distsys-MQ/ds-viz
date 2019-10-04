@@ -90,7 +90,7 @@ class Job:
 
                 msg = line.split()
 
-                if msg[1] == "JOBF" and int(msg[3]) == self.jid:
+                if msg[1] == "JOBP" and int(msg[3]) == self.jid:
                     time = int(msg[2])
                     self.will_fail = True
                     self.end = time
@@ -142,7 +142,7 @@ def make_job(f: BinaryIO, servers: "OrderedDict[str, OrderedDict[int, Server]]",
     if jid not in job_failures:
         job_failures[jid] = 0
 
-    if msg[1] == "JOBF":
+    if msg[1] == "JOBP":
         job_failures[jid] += 1
         fails = job_failures[jid]
 

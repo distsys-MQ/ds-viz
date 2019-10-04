@@ -24,7 +24,7 @@ def get_jobs(log: str) -> Dict[int, Job]:
 
                 if cmd == "JOBN":
                     jobs[jid] = Job(jid)
-                elif cmd == "JOBF":
+                elif cmd == "JOBP":
                     jobs[jid].failures += 1
 
             if not line:

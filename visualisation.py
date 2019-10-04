@@ -298,7 +298,9 @@ class Visualisation:
             # Handle time slider movement
             if event == "time_slider":
                 time = int(values[event])
+                cur_job = get_job_at(self.jobs[cur_job.jid], time)
                 self.norm_time = int(self.norm_times(np.array([time]))[0])
+
                 self.graph.relocate_figure(self.timeline, self.norm_time, self.c_height)
                 self.graph.relocate_figure(self.timeline_pointer, self.norm_time, self.c_height / 2)
 
