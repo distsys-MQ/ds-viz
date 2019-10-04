@@ -1,6 +1,6 @@
-# ds-sim server 12-Aug, 2019 @ MQ
-# Server-side simulator started with './ds-server -n -v brief -c configs/scheduling/personal-config16.xml -f ldns04'
-# Waiting for connection to port 49152 of IP address 127.0.0.1
+# ds-sim server 23-Sep, 2019 @ MQ
+# Server-side simulator started with './ds-server -n -v brief -c configs/scheduling/personal-config16.xml -f pl05'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
 RCVD HELO
 SENT OK
 RCVD AUTH jak0723
@@ -26,26 +26,37 @@ t:        339 job     2 (waiting) on # 0 of server small (booting) SCHEDULED
 SENT OK
 RCVD REDY
 t:        369 job     2 on # 0 of server small RUNNING
+SENT JOBP 441 1 292 1 400 1200
+RCVD SCHD 1 small 1
+t:        441 job     1 (waiting) on # 1 of server small (booting) SCHEDULED
+SENT OK
+RCVD REDY
 SENT JOBN 447 3 282 2 500 1100
-RCVD SCHD 3 small 1
-t:        447 job     3 (waiting) on # 1 of server small (booting) SCHEDULED
+RCVD SCHD 3 medium 0
+t:        447 job     3 (waiting) on # 0 of server medium (booting) SCHEDULED
 SENT OK
 RCVD REDY
 t:        471 job     2 on # 0 of server small COMPLETED
-t:        477 job     3 on # 1 of server small RUNNING
-t:        637 job     1 on # 1 of server tiny COMPLETED
+t:        471 job     1 on # 1 of server small RUNNING
+t:        477 job     3 on # 0 of server medium RUNNING
+SENT JOBP 518 1 292 1 400 1200
+RCVD SCHD 1 small 0
+t:        518 job     1 (running) on # 0 of server small (active) SCHEDULED
+t:        518 job     1 on # 0 of server small RUNNING
+SENT OK
+RCVD REDY
 t:        668 job     0 on # 0 of server tiny COMPLETED
-t:        719 job     3 on # 1 of server small COMPLETED
+t:        719 job     3 on # 0 of server medium COMPLETED
 SENT JOBN 733 4 256 1 1000 1900
 RCVD SCHD 4 tiny 0
 t:        733 job     4 (running) on # 0 of server tiny (active) SCHEDULED
 t:        733 job     4 on # 0 of server tiny RUNNING
 SENT OK
 RCVD REDY
+t:        833 job     1 on # 0 of server small COMPLETED
 SENT JOBN 873 5 453 1 800 1400
 RCVD SCHD 5 tiny 1
-t:        873 job     5 (running) on # 1 of server tiny (active) SCHEDULED
-t:        873 job     5 on # 1 of server tiny RUNNING
+t:        873 job     5 (waiting) on # 1 of server tiny (booting) SCHEDULED
 SENT OK
 RCVD REDY
 SENT JOBN 877 6 65 1 900 200
@@ -54,6 +65,7 @@ t:        877 job     6 (running) on # 0 of server small (active) SCHEDULED
 t:        877 job     6 on # 0 of server small RUNNING
 SENT OK
 RCVD REDY
+t:        903 job     5 on # 1 of server tiny RUNNING
 t:        911 job     6 on # 0 of server small COMPLETED
 SENT JOBN 962 7 57 1 1000 900
 RCVD SCHD 7 small 0
@@ -69,40 +81,29 @@ SENT OK
 RCVD REDY
 SENT JOBN 1194 9 82 2 1500 1000
 RCVD SCHD 9 small 1
-t:       1194 job     9 (running) on # 1 of server small (active) SCHEDULED
-t:       1194 job     9 on # 1 of server small RUNNING
+t:       1194 job     9 (waiting) on # 1 of server small (booting) SCHEDULED
 SENT OK
 RCVD REDY
+t:       1224 job     9 on # 1 of server small RUNNING
 t:       1348 job     7 on # 0 of server small COMPLETED
+t:       1438 job     5 on # 1 of server tiny COMPLETED
 t:       1487 job     8 on # 0 of server small COMPLETED
 t:       1578 job     4 on # 0 of server tiny COMPLETED
-t:       1831 job     9 on # 1 of server small COMPLETED
-SENT JOBF 3307 5 453 1 800 1400
-RCVD SCHD 5 tiny 0
-t:       3307 job     5 (running) on # 0 of server tiny (active) SCHEDULED
-t:       3307 job     5 on # 0 of server tiny RUNNING
+SENT JOBP 1606 9 82 2 1500 1000
+RCVD SCHD 9 small 0
+t:       1606 job     9 (running) on # 0 of server small (active) SCHEDULED
+t:       1606 job     9 on # 0 of server small RUNNING
 SENT OK
 RCVD REDY
-SENT JOBF 33516 5 453 1 800 1400
-RCVD SCHD 5 tiny 1
-t:      33516 job     5 (waiting) on # 1 of server tiny (booting) SCHEDULED
-SENT OK
-RCVD REDY
-SENT JOBF 41081 5 453 1 800 1400
-RCVD SCHD 5 tiny 0
-t:      41081 job     5 (waiting) on # 0 of server tiny (booting) SCHEDULED
-SENT OK
-RCVD REDY
+t:       2243 job     9 on # 0 of server small COMPLETED
 SENT NONE
 RCVD QUIT
-t:      41111 job     5 on # 0 of server tiny RUNNING
-t:      41646 job     5 on # 0 of server tiny COMPLETED
 SENT QUIT
 # ---------------------------------------------------------------------------
-# 2 tiny servers used with a utilisation of 1.32 at the cost of $87.17
-# 2 small servers used with a utilisation of 1.87 at the cost of $9.16
-# 0 medium servers used with a utilisation of 0.00 at the cost of $0.00
+# 2 tiny servers used with a utilisation of 0.11 at the cost of $369.93
+# 1 small servers used with a utilisation of 86.07 at the cost of $0.21
+# 1 medium servers used with a utilisation of 0.01 at the cost of $686.91
 # =============================== [ Overall ] ===============================
-# actual simulation end time: 41646
-# total #servers used: 4, avg utilisation: 1.59 and total cost: $96.33
-# avg waiting time: 4035, avg exec time: 408 and avg turnaround time: 4444
+# actual simulation end time: 2243
+# total #servers used: 4, avg utilisation: 21.57 and total cost: $1057.04
+# avg waiting time: 75, avg exec time: 408 and avg turnaround time: 484

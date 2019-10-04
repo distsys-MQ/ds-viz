@@ -55,8 +55,9 @@ SENT OK
 RCVD REDY
 t:        833 job     1 on # 0 of server small COMPLETED
 SENT JOBN 873 5 453 1 800 1400
-RCVD SCHD 5 tiny 1
-t:        873 job     5 (waiting) on # 1 of server tiny (booting) SCHEDULED
+RCVD SCHD 5 small 0
+t:        873 job     5 (running) on # 0 of server small (active) SCHEDULED
+t:        873 job     5 on # 0 of server small RUNNING
 SENT OK
 RCVD REDY
 SENT JOBN 877 6 65 1 900 200
@@ -65,7 +66,6 @@ t:        877 job     6 (running) on # 0 of server small (active) SCHEDULED
 t:        877 job     6 on # 0 of server small RUNNING
 SENT OK
 RCVD REDY
-t:        903 job     5 on # 1 of server tiny RUNNING
 t:        911 job     6 on # 0 of server small COMPLETED
 SENT JOBN 962 7 57 1 1000 900
 RCVD SCHD 7 small 0
@@ -74,36 +74,36 @@ t:        962 job     7 on # 0 of server small RUNNING
 SENT OK
 RCVD REDY
 SENT JOBN 1051 8 441 1 800 1700
-RCVD SCHD 8 small 0
-t:       1051 job     8 (running) on # 0 of server small (active) SCHEDULED
-t:       1051 job     8 on # 0 of server small RUNNING
+RCVD SCHD 8 medium 0
+t:       1051 job     8 (running) on # 0 of server medium (active) SCHEDULED
+t:       1051 job     8 on # 0 of server medium RUNNING
 SENT OK
 RCVD REDY
 SENT JOBN 1194 9 82 2 1500 1000
-RCVD SCHD 9 small 1
-t:       1194 job     9 (waiting) on # 1 of server small (booting) SCHEDULED
+RCVD SCHD 9 medium 0
+t:       1194 job     9 (running) on # 0 of server medium (active) SCHEDULED
+t:       1194 job     9 on # 0 of server medium RUNNING
 SENT OK
 RCVD REDY
-t:       1224 job     9 on # 1 of server small RUNNING
 t:       1348 job     7 on # 0 of server small COMPLETED
-t:       1438 job     5 on # 1 of server tiny COMPLETED
-t:       1487 job     8 on # 0 of server small COMPLETED
+t:       1408 job     5 on # 0 of server small COMPLETED
+t:       1487 job     8 on # 0 of server medium COMPLETED
 t:       1578 job     4 on # 0 of server tiny COMPLETED
-SENT JOBP 1606 9 82 2 1500 1000
+SENT JOBP 1637 9 82 2 1500 1000
 RCVD SCHD 9 small 0
-t:       1606 job     9 (running) on # 0 of server small (active) SCHEDULED
-t:       1606 job     9 on # 0 of server small RUNNING
+t:       1637 job     9 (running) on # 0 of server small (active) SCHEDULED
+t:       1637 job     9 on # 0 of server small RUNNING
 SENT OK
 RCVD REDY
-t:       2243 job     9 on # 0 of server small COMPLETED
+t:       2274 job     9 on # 0 of server small COMPLETED
 SENT NONE
 RCVD QUIT
 SENT QUIT
 # ---------------------------------------------------------------------------
-# 2 tiny servers used with a utilisation of 0.11 at the cost of $369.93
-# 1 small servers used with a utilisation of 86.07 at the cost of $0.21
-# 1 medium servers used with a utilisation of 0.01 at the cost of $686.91
+# 1 tiny servers used with a utilisation of 0.21 at the cost of $37.23
+# 1 small servers used with a utilisation of 80.52 at the cost of $0.21
+# 1 medium servers used with a utilisation of 0.02 at the cost of $686.91
 # =============================== [ Overall ] ===============================
-# actual simulation end time: 2243
-# total #servers used: 4, avg utilisation: 21.57 and total cost: $1057.04
+# actual simulation end time: 2274
+# total #servers used: 3, avg utilisation: 26.92 and total cost: $724.35
 # avg waiting time: 75, avg exec time: 408 and avg turnaround time: 484
