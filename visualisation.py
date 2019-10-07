@@ -12,6 +12,15 @@ from server import get_servers_from_system, traverse_servers, Server, get_result
 from server_failure import ServerFailure
 
 
+def truncate(text: str, length: int = 8) -> str:
+    return text if len(text) <= length else text[:5] + ".."
+
+
+# TODO figure out how to use a truncated server type as a key
+def truncate_server(server: Server) -> str:
+    return "{} {}".format(truncate(server.type_), server.sid)
+
+
 class Visualisation:
     def __init__(self, config: str, failures: str, log: str, c_height: int = 4, scale: int = 0):
         self.fnt_f = "Courier"
@@ -98,9 +107,9 @@ class Visualisation:
         ]
 
         slider_label_size = (6, 1)
-        slider_value_size = (10, 1)
+        slider_value_size = (12, 1)
         slider_settings = {
-            "size": (base_f_width - (slider_label_size[0] / 2) - (slider_value_size[0] / 2), 10),
+            "size": (base_f_width - (slider_label_size[0] / 2) - (slider_value_size[0] / 1.6), 10),
             "orientation": "h",
             "enable_events": True,
             "disable_number_display": True
@@ -110,14 +119,17 @@ class Visualisation:
             [sg.T("Server", size=slider_label_size),
              sg.Slider((0, len(self.s_list) - 1), default_value=self.s_list[0].sid, key="server_slider",
                        **slider_settings),
-             sg.In(size=slider_value_size, key="select_server")],
+             sg.Spin([str(s) for s in traverse_servers(self.servers)], str(self.s_list[0]), size=slider_value_size,
+                     enable_events=True, key="select_server")],
             [sg.T("Job", size=slider_label_size),
              sg.Slider((self.unique_jids[0], self.unique_jids[-1]), default_value=self.unique_jids[0], key="job_slider",
                        **slider_settings),
-             sg.In(size=slider_value_size, key="select_job")],
+             sg.Spin([j for j in self.unique_jids], self.unique_jids[0], size=slider_value_size,
+                     enable_events=True, key="select_job")],
             [sg.T("Time", size=slider_label_size),
              sg.Slider((0, Server.end_time), default_value=0, key="time_slider", **slider_settings),
-             sg.In(size=slider_value_size, key="select_time")]
+             sg.Spin([i for i in range(Server.end_time + 1)], 0, size=slider_value_size,
+                     enable_events=True, key="select_time")]
         ]
 
         timeline = sg.Column(graph_column, size=(int(self.width + self.margin / 3), int(resolution[1])),
@@ -190,8 +202,6 @@ class Visualisation:
         axis = self.x_offset - 1
         tick = 3
         s_fact = 2 ** scale
-
-        max_s_length = 8
         font = (self.fnt_f, self.fnt_s - 3)
 
         s_height = None
@@ -201,7 +211,7 @@ class Visualisation:
 
         for type_ in list(self.servers):
             type_y = last
-            s_type = type_ if len(type_) <= max_s_length else type_[:5] + ".."
+            s_type = truncate(type_)
 
             self.graph.draw_text(s_type, (self.margin, type_y), font=font)
             self.graph.draw_line((axis - tick * 3, type_y), (axis, type_y))  # Server type tick mark
@@ -349,7 +359,8 @@ class Visualisation:
                 self.update_output(time, cur_server, cur_job)
                 self.window[event].set_focus()
 
-            if event == "\r":
+            # Handle spinner changes
+            if event in ['\r', "select_server", "select_job", "select_time"]:
                 s_info = values["select_server"].split()
                 jid = int(values["select_job"])
                 time = int(values["select_time"])
