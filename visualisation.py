@@ -83,24 +83,28 @@ class Visualisation:
 
         btn_width = 8
         btn_font = (self.fnt_f, self.fnt_s - 3)
+        scale_width = 30
+        title_length = int(f_width - scale_width - btn_width * 2.3)
+
+        title = [
+            sg.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"),
+                      key="show_job"),
+            sg.T("Visualising: {}".format(os.path.basename(log)),
+                 size=(title_length, 1), font=(self.fnt_f, self.fnt_s, "underline"), justification="center"),
+            sg.T("Scale: {} ({} max cores)".format(self.base_scale, 2 ** self.base_scale),
+                 size=(scale_width, 1), justification="right", key="scale"),
+            sg.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
+            sg.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")
+        ]
+
         slider_label_size = (6, 1)
         slider_settings = {
             "size": (base_f_width - (slider_label_size[0] / 2), 5),
             "orientation": "h",
             "enable_events": True
         }
-        scale_width = 30
-        title_length = int(f_width - scale_width - btn_width * 2.3)
 
-        layout = [
-            [left_tabs, right_tabs],
-            [sg.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"), key="show_job"),
-             sg.T("Visualising: {}".format(os.path.basename(log)),
-                  size=(title_length, 1), font=(self.fnt_f, self.fnt_s, "underline"), justification="center"),
-             sg.T("Scale: {} ({} max cores)".format(self.base_scale, 2 ** self.base_scale),
-                  size=(scale_width, 1), justification="right", key="scale"),
-             sg.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
-             sg.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")],
+        sliders = [
             [sg.T("Server", size=slider_label_size),
              sg.Slider((0, len(self.s_list) - 1), default_value=self.s_list[0].sid, key="server_slider",
                        **slider_settings)],
@@ -109,9 +113,17 @@ class Visualisation:
                        **slider_settings)],
             [sg.T("Time", size=slider_label_size),
              sg.Slider((0, Server.end_time), default_value=0, key="time_slider", **slider_settings)],
-            [sg.In(key="select_server"), sg.In(key="select_job"), sg.In(key="select_time")],
-            [sg.Column(graph_column, size=(int(self.width + self.margin / 3), int(resolution[1])),
-                       scrollable=True, key="column")]
+            [sg.In(key="select_server"), sg.In(key="select_job"), sg.In(key="select_time")]
+        ]
+
+        timeline = sg.Column(graph_column, size=(int(self.width + self.margin / 3), int(resolution[1])),
+                             scrollable=True, key="column")
+
+        layout = [
+            [left_tabs, right_tabs],
+            title,
+            *sliders,
+            [timeline]
         ]
 
         self.window = sg.Window("ds-viz", layout, resizable=True, return_keyboard_events=True,
