@@ -362,17 +362,23 @@ class Visualisation:
             # Handle spinner changes
             if event in ['\r', "select_server", "select_job", "select_time"]:
                 s_info = values["select_server"].split()
-                jid = int(values["select_job"])
-                time = int(values["select_time"])
 
-                s_type = s_info[0]
-                sid = int(s_info[1])
-                cur_server = self.servers[s_type][sid]
-                cur_job = get_job_at(self.jobs[jid], time)
-
+                if len(s_info) == 2:
+                    s_type = s_info[0]
+                    if s_info[1].isdigit():
+                        sid = int(s_info[1])
+                        if s_type in self.servers and sid in self.servers[s_type]:
+                            cur_server = self.servers[s_type][sid]
+                if isinstance(values["select_job"], int):
+                    jid = values["select_job"]
+                else:
+                    jid = prev_jid
+                if isinstance(values["select_time"], int):
+                    time = values["select_time"]
                 if show_job:
                     self.change_selected_job(jid, prev_jid)
                     prev_jid = jid
+                cur_job = get_job_at(self.jobs[jid], time)
 
                 self.s_index = self.s_list.index(cur_server)
                 self.norm_time = int(self.norm_times(np.array([time]))[0])
@@ -391,6 +397,7 @@ class Visualisation:
             if event == "show_job":
                 show_job = not show_job
                 jid = int(values["job_slider"])
+                prev_jid = jid
 
                 if show_job:
                     self.window[event].update(button_color=("white", "green"))
