@@ -12,9 +12,18 @@ from server import get_servers_from_system, traverse_servers, Server, get_result
 from server_failure import ServerFailure
 
 
+def truncate(text: str, length: int = 8) -> str:
+    return text if len(text) <= length else text[:5] + ".."
+
+
+# TODO figure out how to use a truncated server type as a key
+def truncate_server(server: Server) -> str:
+    return "{} {}".format(truncate(server.type_), server.sid)
+
+
 class Visualisation:
     def __init__(self, config: str, failures: str, log: str, c_height: int = 4, scale: int = 0):
-        self.fnt_f = "Courier New"
+        self.fnt_f = "Courier"
         self.fnt_s = 10
         b_colour = "whitesmoke"
         sg.set_options(font=(self.fnt_f, self.fnt_s), element_padding=(0, 0), margins=(1, 1),
@@ -81,38 +90,56 @@ class Visualisation:
               ]]
         )
 
-        # TODO add to the right of every slider: a text box that displays the currently selected server/job/time and
-        #  allows the user to select a specific server/job/time
         btn_width = 8
         btn_font = (self.fnt_f, self.fnt_s - 3)
-        slider_label_size = (6, 1)
-        slider_settings = {
-            "size": (base_f_width - (slider_label_size[0] / 2), 5),
-            "orientation": "h",
-            "enable_events": True
-        }
         scale_width = 30
         title_length = 106
 
-        layout = [
-            [left_tabs, right_tabs],
-            [sg.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"), key="show_job"),
-             sg.T("Visualising: {}".format(os.path.basename(log)),
-                  size=(title_length, 1), font=(self.fnt_f, self.fnt_s, "underline"), justification="center"),
-             sg.T("Scale: {} ({} max cores)".format(self.base_scale, 2 ** self.base_scale),
-                  size=(scale_width, 1), justification="right", key="scale"),
-             sg.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
-             sg.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")],
+        title = [
+            sg.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"),
+                      key="show_job"),
+            sg.T("Visualising: {}".format(os.path.basename(log)),
+                 size=(title_length, 1), font=(self.fnt_f, self.fnt_s, "underline"), justification="center"),
+            sg.T("Scale: {} ({} max cores)".format(self.base_scale, 2 ** self.base_scale),
+                 size=(scale_width, 1), justification="right", key="scale"),
+            sg.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
+            sg.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")
+        ]
+
+        slider_label_size = (6, 1)
+        slider_value_size = (12, 1)
+        slider_settings = {
+            "size": (base_f_width - (slider_label_size[0] / 2) - (slider_value_size[0] / 1.6), 10),
+            "orientation": "h",
+            "enable_events": True,
+            "disable_number_display": True
+        }
+
+        sliders = [
             [sg.T("Server", size=slider_label_size),
              sg.Slider((0, len(self.s_list) - 1), default_value=self.s_list[0].sid, key="server_slider",
-                       **slider_settings)],
+                       **slider_settings),
+             sg.Spin([str(s) for s in traverse_servers(self.servers)], str(self.s_list[0]), size=slider_value_size,
+                     enable_events=True, key="select_server")],
             [sg.T("Job", size=slider_label_size),
              sg.Slider((self.unique_jids[0], self.unique_jids[-1]), default_value=self.unique_jids[0], key="job_slider",
-                       **slider_settings)],
+                       **slider_settings),
+             sg.Spin([j for j in self.unique_jids], self.unique_jids[0], size=slider_value_size,
+                     enable_events=True, key="select_job")],
             [sg.T("Time", size=slider_label_size),
-             sg.Slider((0, Server.end_time), default_value=0, key="time_slider", **slider_settings)],
-            [sg.Column(graph_column, size=(int(self.width + self.margin / 3), 200),
-                       scrollable=True, key="column")]
+             sg.Slider((0, Server.end_time), default_value=0, key="time_slider", **slider_settings),
+             sg.Spin([i for i in range(Server.end_time + 1)], 0, size=slider_value_size,
+                     enable_events=True, key="select_time")]
+        ]
+
+        timeline = sg.Column(graph_column, size=(int(self.width + self.margin / 3), 200),
+                             scrollable=True, key="column")
+
+        layout = [
+            [left_tabs, right_tabs],
+            title,
+            *sliders,
+            [timeline]
         ]
 
         self.window = sg.Window("ds-viz", layout, resizable=True, return_keyboard_events=True,
@@ -170,8 +197,6 @@ class Visualisation:
         axis = self.x_offset - 1
         tick = 3
         s_fact = 2 ** scale
-
-        max_s_length = 8
         font = (self.fnt_f, self.fnt_s - 3)
 
         s_height = None
@@ -181,7 +206,7 @@ class Visualisation:
 
         for type_ in list(self.servers):
             type_y = last
-            s_type = type_ if len(type_) <= max_s_length else type_[:5] + ".."
+            s_type = truncate(type_)
 
             self.graph.draw_text(s_type, (self.margin, type_y), font=font)
             self.graph.draw_line((axis - tick * 3, type_y), (axis, type_y))  # Server type tick mark
@@ -250,6 +275,9 @@ class Visualisation:
         self.window["current_job"].update(job.print_job(t))
         self.window["current_results"].update(print_servers_at(self.s_list, t))
         self.window["server_jobs"].update(server.print_job_info(t))
+        self.window["select_server"].update("{} {}".format(server.type_, server.sid))
+        self.window["select_job"].update(job.jid)
+        self.window["select_time"].update(t)
 
     def change_job_colour(self, jid: int, col: str):
         for j_graph_id, _ in self.j_graph_ids[jid]:
@@ -326,10 +354,45 @@ class Visualisation:
                 self.update_output(time, cur_server, cur_job)
                 self.window[event].set_focus()
 
+            # Handle spinner changes
+            if event in ['\r', "select_server", "select_job", "select_time"]:
+                s_info = values["select_server"].split()
+
+                if len(s_info) == 2:
+                    s_type = s_info[0]
+                    if s_info[1].isdigit():
+                        sid = int(s_info[1])
+                        if s_type in self.servers and sid in self.servers[s_type]:
+                            cur_server = self.servers[s_type][sid]
+                if isinstance(values["select_job"], int):
+                    jid = values["select_job"]
+                else:
+                    jid = prev_jid
+                if isinstance(values["select_time"], int):
+                    time = values["select_time"]
+                if show_job:
+                    self.change_selected_job(jid, prev_jid)
+                    prev_jid = jid
+                cur_job = get_job_at(self.jobs[jid], time)
+
+                self.s_index = self.s_list.index(cur_server)
+                self.norm_time = int(self.norm_times(np.array([time]))[0])
+
+                self.graph.relocate_figure(self.timeline, self.norm_time, self.c_height)
+                self.graph.relocate_figure(self.timeline_pointer, self.norm_time, self.c_height / 2)
+                self.graph.relocate_figure(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index] - 1)
+
+                self.window["server_slider"].update(self.s_index)
+                self.window["job_slider"].update(jid)
+                self.window["time_slider"].update(time)
+
+                self.update_output(time, cur_server, cur_job)
+
             # Handle clicking "show job" button
             if event == "show_job":
                 show_job = not show_job
                 jid = int(values["job_slider"])
+                prev_jid = jid
 
                 if show_job:
                     self.window[event].update(button_color=("white", "green"))

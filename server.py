@@ -200,9 +200,9 @@ def get_results(log: str) -> str:
             line = f.readline().replace("\r\n", "\n")
             results.append(line[2:])  # Remove '#'s
 
-            if line.startswith("t:", 0, 2):
-                # Remove last three lines and reverse the list
-                return ''.join(reversed(results[:-3]))
+            if line == "SENT QUIT\n":
+                # Remove last two lines and reverse the list
+                return ''.join(reversed(results[:-2]))
 
 
 def get_end_time(system: str) -> int:
