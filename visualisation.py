@@ -81,8 +81,6 @@ class Visualisation:
               ]]
         )
 
-        # TODO add to the right of every slider: a text box that displays the currently selected server/job/time and
-        #  allows the user to select a specific server/job/time
         btn_width = 8
         btn_font = (self.fnt_f, self.fnt_s - 3)
         slider_label_size = (6, 1)
@@ -111,6 +109,7 @@ class Visualisation:
                        **slider_settings)],
             [sg.T("Time", size=slider_label_size),
              sg.Slider((0, Server.end_time), default_value=0, key="time_slider", **slider_settings)],
+            [sg.In(key="select_server"), sg.In(key="select_job"), sg.In(key="select_time")],
             [sg.Column(graph_column, size=(int(self.width + self.margin / 3), int(resolution[1])),
                        scrollable=True, key="column")]
         ]
@@ -255,6 +254,9 @@ class Visualisation:
         self.window["current_job"].update(job.print_job(t))
         self.window["current_results"].update(print_servers_at(self.s_list, t))
         self.window["server_jobs"].update(server.print_job_info(t))
+        self.window["select_server"].update("{} {}".format(server.type_, server.sid))
+        self.window["select_job"].update(job.jid)
+        self.window["select_time"].update(t)
 
     def change_job_colour(self, jid: int, col: str):
         for j_graph_id, _ in self.j_graph_ids[jid]:
@@ -330,6 +332,21 @@ class Visualisation:
                 self.graph.relocate_figure(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index] - 1)
                 self.update_output(time, cur_server, cur_job)
                 self.window[event].set_focus()
+
+            if event == "\r":
+                time = int(values["select_time"])
+
+                s_info = values["select_server"].split()
+                s_type = s_info[0]
+                sid = int(s_info[1])
+                cur_server = self.servers[s_type][sid]
+
+                jid = int(values["select_job"])
+                cur_job = get_job_at(self.jobs[jid], time)
+
+                self.window["server_slider"].update(self.s_list.index(cur_server))
+                self.window["job_slider"].update(jid)
+                self.window["time_slider"].update(time)
 
             # Handle clicking "show job" button
             if event == "show_job":
