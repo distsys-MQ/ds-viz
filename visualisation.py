@@ -14,7 +14,7 @@ from server_failure import ServerFailure
 
 class Visualisation:
     def __init__(self, config: str, failures: str, log: str, c_height: int = 4, scale: int = 0):
-        self.fnt_f = "Courier New"
+        self.fnt_f = "Courier"
         self.fnt_s = 10
         b_colour = "whitesmoke"
         sg.set_options(font=(self.fnt_f, self.fnt_s), element_padding=(0, 0), margins=(1, 1),
@@ -98,22 +98,26 @@ class Visualisation:
         ]
 
         slider_label_size = (6, 1)
+        slider_value_size = (10, 1)
         slider_settings = {
-            "size": (base_f_width - (slider_label_size[0] / 2), 5),
+            "size": (base_f_width - (slider_label_size[0] / 2) - (slider_value_size[0] / 2), 10),
             "orientation": "h",
-            "enable_events": True
+            "enable_events": True,
+            "disable_number_display": True
         }
 
         sliders = [
             [sg.T("Server", size=slider_label_size),
              sg.Slider((0, len(self.s_list) - 1), default_value=self.s_list[0].sid, key="server_slider",
-                       **slider_settings)],
+                       **slider_settings),
+             sg.In(size=slider_value_size, key="select_server")],
             [sg.T("Job", size=slider_label_size),
              sg.Slider((self.unique_jids[0], self.unique_jids[-1]), default_value=self.unique_jids[0], key="job_slider",
-                       **slider_settings)],
+                       **slider_settings),
+             sg.In(size=slider_value_size, key="select_job")],
             [sg.T("Time", size=slider_label_size),
-             sg.Slider((0, Server.end_time), default_value=0, key="time_slider", **slider_settings)],
-            [sg.In(key="select_server"), sg.In(key="select_job"), sg.In(key="select_time")]
+             sg.Slider((0, Server.end_time), default_value=0, key="time_slider", **slider_settings),
+             sg.In(size=slider_value_size, key="select_time")]
         ]
 
         timeline = sg.Column(graph_column, size=(int(self.width + self.margin / 3), int(resolution[1])),
@@ -346,19 +350,31 @@ class Visualisation:
                 self.window[event].set_focus()
 
             if event == "\r":
+                s_info = values["select_server"].split()
+                jid = int(values["select_job"])
                 time = int(values["select_time"])
 
-                s_info = values["select_server"].split()
                 s_type = s_info[0]
                 sid = int(s_info[1])
                 cur_server = self.servers[s_type][sid]
-
-                jid = int(values["select_job"])
                 cur_job = get_job_at(self.jobs[jid], time)
 
-                self.window["server_slider"].update(self.s_list.index(cur_server))
+                if show_job:
+                    self.change_selected_job(jid, prev_jid)
+                    prev_jid = jid
+
+                self.s_index = self.s_list.index(cur_server)
+                self.norm_time = int(self.norm_times(np.array([time]))[0])
+
+                self.graph.relocate_figure(self.timeline, self.norm_time, self.c_height)
+                self.graph.relocate_figure(self.timeline_pointer, self.norm_time, self.c_height / 2)
+                self.graph.relocate_figure(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index] - 1)
+
+                self.window["server_slider"].update(self.s_index)
                 self.window["job_slider"].update(jid)
                 self.window["time_slider"].update(time)
+
+                self.update_output(time, cur_server, cur_job)
 
             # Handle clicking "show job" button
             if event == "show_job":
