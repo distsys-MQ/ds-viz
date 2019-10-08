@@ -151,6 +151,12 @@ def make_job(log: str, file_pos: int, msg: List[str],
         while True:
             line = f.readline()
 
+            if b"JOBP" in line:
+                fail_jid = int(line.decode("utf-8").split()[3])
+
+                if jid == fail_jid:
+                    break
+
             if b"SCHD" in line:
                 schedule = line.decode("utf-8").split()
                 s_type = schedule[3]
