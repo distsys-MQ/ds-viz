@@ -121,17 +121,16 @@ def get_jobs(log: str, servers: "OrderedDict[str, OrderedDict[int, Server]]") ->
             line = f.readline()
 
             if b"JOB" in line:
-                f.seek(-len(line), 1)
-                make_job(f, servers, job_failures)
+                job_line = line.decode("utf-8").split()
+                make_job(log, f.tell(), job_line, servers, job_failures)
 
             if not line:
                 break
 
 
 # noinspection PyUnresolvedReferences
-def make_job(f: BinaryIO, servers: "OrderedDict[str, OrderedDict[int, Server]]", job_failures: Dict[int, int]) -> Job:
-    msg = f.readline().decode("utf-8").split()
-
+def make_job(log: str, file_pos: int, msg: List[str],
+             servers: "OrderedDict[str, OrderedDict[int, Server]]", job_failures: Dict[int, int]) -> Job:
     schd = int(msg[2])
     jid = int(msg[3])
     cores = int(msg[5])
@@ -146,23 +145,26 @@ def make_job(f: BinaryIO, servers: "OrderedDict[str, OrderedDict[int, Server]]",
         job_failures[jid] += 1
         fails = job_failures[jid]
 
-    while True:
-        line = f.readline()
+    with open(log, "rb") as f:
+        f.seek(file_pos)
 
-        if b"SCHD" in line:
-            msg = line.decode("utf-8").split()
-            s_type = msg[3]
-            sid = int(msg[4])
-            server = servers[s_type][sid]
+        while True:
+            line = f.readline()
 
-            job = Job(jid, cores, memory, disk, schd, fails=fails, server=server)
-            job.set_job_times(f.name, f.tell())
-            server.jobs.append(job)
+            if b"SCHD" in line:
+                schedule = line.decode("utf-8").split()
+                s_type = schedule[3]
+                sid = int(schedule[4])
+                server = servers[s_type][sid]
 
-            return job
+                job = Job(jid, cores, memory, disk, schd, fails=fails, server=server)
+                job.set_job_times(f.name, f.tell())
+                server.jobs.append(job)
 
-        if not line:
-            break
+                return job
+
+            if not line:
+                break
 
 
 def get_job_at(jobs: List[Job], t: int) -> Job:
