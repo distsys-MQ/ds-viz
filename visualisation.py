@@ -21,12 +21,22 @@ def truncate_server(server: Server) -> str:
     return "{} {}".format(truncate(server.type_), server.sid)
 
 
-def get_resolution(window: sg.Window) -> Tuple[int, int]:
-    if sys.platform == "linux":
-        window.TKroot.attributes("-zoomed", True)
-    else:
-        window.maximize()
-    return window.Size
+def get_resolution() -> Tuple[int, int]:
+    # Tk needs an open window to detect resolution and measure fonts
+    window = sg.Window("resolution", [[]], alpha_channel=0, finalize=True)
+    resolution = window.get_screen_dimensions()
+    window.close()
+    return resolution
+
+
+def get_max_window_size():
+    window = sg.Window("window_size", [[sg.Sizer(*get_resolution())]], alpha_channel=0,
+                       resizable=True, margins=(0, 0), element_padding=(0, 0), finalize=True)
+    window.maximize()
+    size = window.Size
+    window.close()
+    # Actual size is slightly smaller than returned value, possibly due to window borders
+    return size[0] - 1, size[1] - 1
 
 
 def get_font_pixels(font: Tuple[str, int] = None) -> int:
@@ -56,17 +66,22 @@ class Visualisation:
         self.base_scale = min(scale, self.max_scale)
         self.s_factor = 2 ** self.base_scale
 
-        # Tk needs an active window to detect resolution and measure fonts
-        dum_win = sg.Window("dummy", [[]], alpha_channel=0, finalize=True)
-        resolution = get_resolution(dum_win)
+        dum_win = sg.Window("font", [[]], alpha_channel=0, finalize=True)
         base_px = get_font_pixels()  # ("Courier New", 16) on Windows
         font_px_sizes = {i: get_font_pixels((self.fnt_f, i)) for i in range(self.fnt_s - 3, self.fnt_s + 1)}
         dum_win.close()
 
+        win_size = get_max_window_size()
         self.c_height = c_height
         self.height = self.calc_height(self.s_factor)
         self.margin = 30
-        self.width = int(resolution[0]) - self.margin
+        self.width = int(win_size[0]) - self.margin
+
+        graph_column = [
+            [sg.Graph(canvas_size=(self.width, self.height), graph_bottom_left=(0, self.height),
+                      graph_top_right=(self.width, 0), change_submits=True, drag_submits=False,
+                      background_color="white", key="graph")]
+        ]
 
         # The following variables are just used to create the window
         base_f_width = self.width / base_px
@@ -74,11 +89,6 @@ class Visualisation:
         f_width = f_ratio * base_f_width
         tab_size = (int(f_width / 2), 3)
 
-        graph_column = [
-            [sg.Graph(canvas_size=(self.width, self.height), graph_bottom_left=(0, self.height),
-                      graph_top_right=(self.width, 0), change_submits=True, drag_submits=False,
-                      background_color="white", key="graph")]
-        ]
         left_tabs = sg.TabGroup(
             [[sg.Tab("Current Server",
                      [[sg.T("", size=tab_size, key="current_server")]]),
@@ -121,7 +131,7 @@ class Visualisation:
         slider_label_size = (6, 1)
         slider_value_size = (12, 1)
         slider_settings = {
-            "size": (base_f_width - (slider_label_size[0] / 2) - (slider_value_size[0] / 1.6), 10),
+            "size": (base_f_width - (slider_label_size[0] / 2) - (slider_value_size[0] / 1.4), 10),
             "orientation": "h",
             "enable_events": True,
             "disable_number_display": True
@@ -144,7 +154,7 @@ class Visualisation:
                      enable_events=True, key="select_time")]
         ]
 
-        timeline = sg.Column(graph_column, size=(int(self.width + self.margin / 3), int(resolution[1])),
+        timeline = sg.Column(graph_column, size=(int(self.width + self.margin / 3), int(win_size[1])),
                              scrollable=True, key="column")
 
         layout = [
@@ -155,7 +165,7 @@ class Visualisation:
         ]
 
         self.window = sg.Window("ds-viz", layout, resizable=True, return_keyboard_events=True,
-                                finalize=True, element_justification="center")
+                                element_justification="center", finalize=True)
         if sys.platform == "linux":
             self.window.TKroot.attributes("-zoomed", True)
         else:

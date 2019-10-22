@@ -1,23 +1,35 @@
+import sys
+
 import PySimpleGUI as sg
 
-size = 400
-layout = [[sg.Graph((size, size), (0, size), (size, 0), key="graph")]]
-window = sg.Window("test", layout, finalize=True)
 
-graph = window["graph"]  # type: sg.Graph
+def maximise(win):
+    if sys.platform == "linux":
+        win.TKroot.attributes("-zoomed", True)
+    else:
+        win.maximize()
 
-font = ("Symbol", 20)
-margin = 20
-mid = int(size / 2)
 
-graph.draw_text("{} {}".format(font[0], font[1]), (margin, margin), text_location=sg.TEXT_LOCATION_BOTTOM_LEFT)
-graph.draw_text("◀", (margin, mid), font=font)
-graph.draw_text("▲", (mid, margin), font=font)
-graph.draw_text("▶", (size - margin, mid), font=font)
-graph.draw_text("▼", (mid, size - margin), font=font)
+win1 = sg.Window("win1", [[]], finalize=True)
+res = win1.get_screen_dimensions()
+win1.close()
+
+win2 = sg.Window("win2", [[sg.Sizer(res[0], res[1])]], resizable=True,
+                 margins=(0, 0), element_padding=(0, 0), finalize=True)
+maximise(win2)
+size = win2.Size
+win2.close()
+
+window = sg.Window("window", [[sg.Column([[sg.Sizer(size[0], size[1])]], background_color="blue")]],
+                   margins=(0, 0), element_padding=(0, 0), resizable=True, return_keyboard_events=True, finalize=True)
+
+print("res:", res)
+print("size:", size)
 
 while True:
     event, values = window.Read()
     if event is None or event == 'Exit':
         break
+    if event == "a":
+        print(window.Size)
 window.Close()
