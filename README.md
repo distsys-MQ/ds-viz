@@ -19,6 +19,7 @@ Each core will be `10` pixels tall and the initial scaling factor is set to `2` 
 - Runtime instructions:
     - Click on the tabs above the information windows to switch between `Current Server` and `Current Job` for
     the left window, and `Current Results` and `Final Results` for the right window.
+    - Press the `Show Job` button to toggle highlighting for the currently selected job.
     - Selection:
         - Change the currently selected server by moving the `Server` slider. The information in `Current Server` will
         update accordingly, and the green highlight will move to the selected server.
