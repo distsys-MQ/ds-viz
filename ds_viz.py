@@ -1,3 +1,4 @@
+import sys
 from argparse import ArgumentParser
 
 from arg_checks import IsFile, MinInt
@@ -14,9 +15,9 @@ parser.add_argument("log", action=IsFile,
                     help="simulation log file to visualise")
 parser.add_argument("-f", "--failures", metavar="RESOURCE_FAILURES", action=IsFile,
                     help="resource-failures file from simulation")
-parser.add_argument("-c", "--core_height", type=int, default=4, action=MinInt, min_int=1,
+parser.add_argument("-c", "--core_height", type=int, default=10, action=MinInt, min_int=1,
                     help="set core height, minimum value of 1")
-parser.add_argument("-s", "--scale", type=int, default=0, action=MinInt,
+parser.add_argument("-s", "--scale", type=int, default=sys.maxsize, action=MinInt,
                     help="set scaling factor of visualisation")
 args = parser.parse_args()
 

@@ -113,7 +113,7 @@ class Visualisation:
         )
 
         btn_width = 8
-        btn_font = (self.fnt_f, self.fnt_s - 3)
+        btn_font = (self.fnt_f, self.fnt_s - 3, "bold")
         scale_width = 30
         title_length = int(f_width - scale_width - btn_width * 2.3)
 
