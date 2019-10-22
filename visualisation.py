@@ -21,6 +21,16 @@ def truncate_server(server: Server) -> str:
     return "{} {}".format(truncate(server.type_), server.sid)
 
 
+def get_resolution(window: sg.Window) -> Tuple[int, int]:
+    resolution = window.get_screen_dimensions()
+    return resolution
+
+
+def get_font_pixels(font: Tuple[str, int] = None) -> int:
+    # Requires an open window
+    return sg.tkinter.font.Font(font=font).measure('A')
+
+
 class Visualisation:
     def __init__(self, config: str, failures: str, log: str, c_height: int = 4, scale: int = 0):
         self.fnt_f = "Courier"
@@ -43,12 +53,11 @@ class Visualisation:
         self.base_scale = min(scale, self.max_scale)
         self.s_factor = 2 ** self.base_scale
 
-        # Tk needs an active window to detect resolution
-        dum_win = sg.Window("dummy", [[]], finalize=True)
-        resolution = dum_win.get_screen_dimensions()
-        base_px = sg.tkinter.font.Font().measure('A')  # ("Courier New", 16) on Windows
-        font_px_sizes = {i: sg.tkinter.font.Font(font=(self.fnt_f, i)).measure('A')
-                         for i in range(self.fnt_s - 3, self.fnt_s + 1)}
+        # Tk needs an active window to detect resolution and measure fonts
+        dum_win = sg.Window("dummy", [[]], alpha_channel=0, finalize=True)
+        resolution = get_resolution(dum_win)
+        base_px = get_font_pixels()  # ("Courier New", 16) on Windows
+        font_px_sizes = {i: get_font_pixels((self.fnt_f, i)) for i in range(self.fnt_s - 3, self.fnt_s + 1)}
         dum_win.close()
 
         self.c_height = c_height
