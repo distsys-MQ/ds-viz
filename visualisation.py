@@ -22,8 +22,11 @@ def truncate_server(server: Server) -> str:
 
 
 def get_resolution(window: sg.Window) -> Tuple[int, int]:
-    resolution = window.get_screen_dimensions()
-    return resolution
+    if sys.platform == "linux":
+        window.TKroot.attributes("-zoomed", True)
+    else:
+        window.maximize()
+    return window.Size
 
 
 def get_font_pixels(font: Tuple[str, int] = None) -> int:
