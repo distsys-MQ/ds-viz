@@ -66,7 +66,7 @@ class Job:
 
     def print_job(self, t: int) -> str:
         return (
-                "j{}: {}  ".format(self.jid, self.current_status(t)) +
+                "j{}: {},  ".format(self.jid, self.current_status(t)) +
                 "cores: {},  ".format(self.cores) +
                 "memory: {},  ".format(self.memory) +
                 "disk: {},\n".format(self.disk) +
