@@ -1,0 +1,11 @@
+#base_trace: websites02, config_file: configs/scheduling/personal-config16.xml, total_servers: 6, total_time: 86400, time_dist_mean: 2.430000, time_dist_stdev: 0.300000, node_dist_mean: 1.650000, node_dist_stdev: 1.220000
+0 114 small 0
+220 282 small 1
+436 577 tiny 1
+459 536 medium 1
+712 756 small 0
+1066 1138 medium 0
+1540 1616 medium 0
+1647 1749 small 1
+1855 1955 medium 0
+2097 2261 tiny 1

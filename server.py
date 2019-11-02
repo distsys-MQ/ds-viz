@@ -204,6 +204,10 @@ def get_results(log: str) -> str:
                 # Remove last two lines and reverse the list
                 return ''.join(reversed(results[:-2]))
 
+            if not line:
+                sys.exit("ERROR: Insufficient information in log file. "
+                         "Please use '-v brief' or '-v all' when creating a log with ds-server.")
+
 
 def get_end_time(system: str) -> int:
     root = parse(system).getroot()
