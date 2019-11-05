@@ -35,8 +35,15 @@ right_tabs.add(final_res_tab, text="Final Results")
 right_tabs.add(cur_server_jobs_tab, text="Current Server Jobs")
 right_tabs.grid(row=0, column=1, sticky=tk.NSEW)
 
-tk.Label(cur_server_tab, text="testing", font=courier_11).pack()
-tk.Label(cur_res_tab, text="testing", font=courier_11).pack()
+cur_server_text = tk.Text(cur_server_tab, height=3, font=courier_11)
+cur_server_text.insert(tk.END, "testing")
+cur_server_text.configure(state=tk.DISABLED)
+cur_server_text.pack()
+
+cur_res_text = tk.Text(cur_res_tab, height=3, font=courier_11)
+cur_res_text.insert(tk.END, "testing")
+cur_res_text.configure(state=tk.DISABLED)
+cur_res_text.pack()
 
 
 title = tk.Frame(root)
