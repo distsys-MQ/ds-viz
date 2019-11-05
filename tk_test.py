@@ -1,12 +1,13 @@
 # https://effbot.org/tkinterbook/pack.htm
 # https://effbot.org/tkinterbook/grid.htm
 # https://www.python-course.eu/tkinter_layout_management.php
+# https://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
 
 import tkinter as tk
 from tkinter import ttk, font
 
 root = tk.Tk()
-root.geometry("800x100")
+root.geometry("800x400")
 root.columnconfigure(0, weight=1)
 
 courier_8 = font.Font(family="Courier", size=8)
@@ -49,9 +50,24 @@ filename.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
 scale_label = tk.Label(title, text="Scale: ()", font=courier_11)
 scale_label.pack(side=tk.LEFT)
-scale_down_btn = tk.Button(title, text="-", bg="blue", fg="white", font=courier_8)
+scale_down_btn = tk.Button(title, text='-', bg="blue", fg="white", font=courier_8)
 scale_down_btn.pack(side=tk.LEFT)
-scale_up_btn = tk.Button(title, text="+", bg="blue", fg="white", font=courier_8)
+scale_up_btn = tk.Button(title, text='+', bg="blue", fg="white", font=courier_8)
 scale_up_btn.pack(side=tk.LEFT)
+
+
+controls = tk.Frame(root)
+controls.grid(row=2, column=0, sticky=tk.NSEW)
+controls.columnconfigure(0, weight=1)
+
+server_slider = tk.Frame(controls)
+server_slider.grid(row=0, column=0, sticky=tk.NSEW)
+server_label = tk.Label(server_slider, text="Server", font=courier_11, width=6)
+server_label.pack(side=tk.LEFT)
+server_scale = tk.Scale(server_slider, from_=0, to=100, orient=tk.HORIZONTAL, showvalue=False)
+server_scale.pack(side=tk.LEFT, fill=tk.X, expand=True)
+server_spin = tk.Spinbox(server_slider, from_=0, to=100, width=12, font=courier_8)
+server_spin.pack(side=tk.LEFT)
+
 
 tk.mainloop()
