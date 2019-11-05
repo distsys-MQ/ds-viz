@@ -9,7 +9,7 @@ from tkinter import ttk, font
 from custom_widgets import Slider
 
 root = tk.Tk()
-root.geometry("800x400")
+root.geometry("1600x800")
 root.columnconfigure(0, weight=1)
 
 courier_8 = font.Font(family="Courier", size=8)
@@ -40,12 +40,12 @@ right_tabs.grid(row=0, column=1, sticky=tk.NSEW)
 cur_server_text = tk.Text(cur_server_tab, height=3, font=courier_11)
 cur_server_text.insert(tk.END, "testing")
 cur_server_text.configure(state=tk.DISABLED)
-cur_server_text.pack()
+cur_server_text.pack(fill=tk.X, expand=True)
 
 cur_res_text = tk.Text(cur_res_tab, height=3, font=courier_11)
 cur_res_text.insert(tk.END, "testing")
 cur_res_text.configure(state=tk.DISABLED)
-cur_res_text.pack()
+cur_res_text.pack(fill=tk.X, expand=True)
 
 
 title = tk.Frame(root)
@@ -54,7 +54,7 @@ title.grid(row=1, column=0, sticky=tk.NSEW)
 show_job_btn = tk.Button(title, text="Show Job", bg="red", fg="white", font=courier_8)
 show_job_btn.pack(side=tk.LEFT)
 
-filename = tk.Label(title, text="title", bg="grey", font=courier_11)
+filename = tk.Label(title, text="title", font=courier_11)
 filename.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
 scale_label = tk.Label(title, text="Scale: ()", font=courier_11)
@@ -76,5 +76,18 @@ job_slider.grid(row=1, column=0, sticky=tk.NSEW)
 time_slider = Slider(controls, "Time", 0, 10000, tuple(range(0, 10001)))
 time_slider.grid(row=2, column=0, sticky=tk.NSEW)
 
+
+timeline_canvas = tk.Canvas(root)
+timeline_canvas.grid(row=3, column=0, sticky=tk.NSEW)
+root.rowconfigure(3, weight=1)
+# timeline_canvas.config(scrollregion=timeline_canvas.bbox(tk.ALL))
+root.update()
+
+width = timeline_canvas.winfo_width()
+height = timeline_canvas.winfo_height()
+margin = 50
+
+timeline_canvas.create_line(margin, margin, margin, height)
+timeline_canvas.create_line(margin, margin, width, margin)
 
 tk.mainloop()
