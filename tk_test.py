@@ -6,6 +6,8 @@
 import tkinter as tk
 from tkinter import ttk, font
 
+from custom_widgets import Slider
+
 root = tk.Tk()
 root.geometry("800x400")
 root.columnconfigure(0, weight=1)
@@ -67,14 +69,12 @@ controls = tk.Frame(root)
 controls.grid(row=2, column=0, sticky=tk.NSEW)
 controls.columnconfigure(0, weight=1)
 
-server_slider = tk.Frame(controls)
+server_slider = Slider(controls, "Slider", 0, 3, ("small 0", "small 1", "medium 0", "medium 1"))
 server_slider.grid(row=0, column=0, sticky=tk.NSEW)
-server_label = tk.Label(server_slider, text="Server", font=courier_11, width=6)
-server_label.pack(side=tk.LEFT)
-server_scale = tk.Scale(server_slider, from_=0, to=100, orient=tk.HORIZONTAL, showvalue=False)
-server_scale.pack(side=tk.LEFT, fill=tk.X, expand=True)
-server_spin = tk.Spinbox(server_slider, from_=0, to=100, width=12, font=courier_8)
-server_spin.pack(side=tk.LEFT)
+job_slider = Slider(controls, "Job", 0, 100, tuple(range(0, 101)))
+job_slider.grid(row=1, column=0, sticky=tk.NSEW)
+time_slider = Slider(controls, "Time", 0, 10000, tuple(range(0, 10001)))
+time_slider.grid(row=2, column=0, sticky=tk.NSEW)
 
 
 tk.mainloop()
