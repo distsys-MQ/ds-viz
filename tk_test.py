@@ -7,35 +7,39 @@ from tkinter import ttk
 
 root = tk.Tk()
 root.geometry("800x100")
+root.columnconfigure(0, weight=1)
+
 
 status = tk.Frame(root)
 
 left_tabs = ttk.Notebook(status)
-tab_a = tk.Frame(left_tabs)
-tab_b = tk.Frame(left_tabs)
-left_tabs.add(tab_a, text="a")
-left_tabs.add(tab_b, text="b")
-# left_tabs.pack(side=tk.LEFT, fill=tk.X, expand=True)
+cur_server_tab = tk.Frame(left_tabs)
+cur_job_tab = tk.Frame(left_tabs)
+left_tabs.add(cur_server_tab, text="Current Server")
+left_tabs.add(cur_job_tab, text="Current Job")
 left_tabs.grid(row=0, column=0, sticky=tk.NSEW)
 
 right_tabs = ttk.Notebook(status)
-tab_c = tk.Frame(right_tabs)
-tab_d = tk.Frame(right_tabs)
-tab_e = tk.Frame(right_tabs)
-right_tabs.add(tab_c, text="c")
-right_tabs.add(tab_d, text="d")
-right_tabs.add(tab_e, text="a very very very long tab title")
-# right_tabs.pack(side=tk.LEFT, fill=tk.X, expand=True)
+cur_res_tab = tk.Frame(right_tabs)
+final_res_tab = tk.Frame(right_tabs)
+cur_server_jobs_tab = tk.Frame(right_tabs)
+right_tabs.add(cur_res_tab, text="Current Results")
+right_tabs.add(final_res_tab, text="Final Results")
+right_tabs.add(cur_server_jobs_tab, text="Current Server Jobs")
 right_tabs.grid(row=0, column=1, sticky=tk.NSEW)
 
-tk.Label(tab_a, text="testing").pack()
-tk.Label(tab_c, text="testing").pack()
+tk.Label(cur_server_tab, text="testing").pack()
+tk.Label(cur_res_tab, text="testing").pack()
 
-status.columnconfigure(0, weight=1)
-status.columnconfigure(1, weight=1)
-status.pack(fill=tk.X)
+status.columnconfigure(0, weight=1, uniform="notebook")
+status.columnconfigure(1, weight=1, uniform="notebook")
+status.grid(row=0, column=0, sticky=tk.NSEW)
 
-title = tk.Label(root, text="title", bg="grey")
-title.pack(fill=tk.X)
+
+title = tk.Frame(root)
+
+filename = tk.Label(title, text="title", bg="grey")
+filename.pack(side=tk.LEFT, fill=tk.X, expand=True)
+title.grid(row=1, column=0, sticky=tk.NSEW)
 
 tk.mainloop()
