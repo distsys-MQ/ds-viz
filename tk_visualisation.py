@@ -90,11 +90,23 @@ class Visualisation:
         self.t_canvas = tk.Canvas(timeline, yscrollcommand=yscrollbar.set, scrollregion=(0, 0, t_width, t_height))
         self.t_canvas.grid(row=0, column=0, sticky=tk.NSEW)
         yscrollbar.config(command=self.t_canvas.yview)
+        # https://stackoverflow.com/a/37858368/8031185
+        timeline.bind('<Enter>', self._bound_to_mousewheel)
+        timeline.bind('<Leave>', self._unbound_to_mousewheel)
 
         self.root.update()
         margin = 50
         self.t_canvas.create_line(margin, margin, margin, t_height)
         self.t_canvas.create_line(margin, margin, self.t_canvas.winfo_width(), margin)
+
+    def _bound_to_mousewheel(self, event):
+        self.t_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+    def _unbound_to_mousewheel(self, event):
+        self.t_canvas.unbind_all("<MouseWheel>")
+
+    def _on_mousewheel(self, event):
+        self.t_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
 
 Visualisation()
