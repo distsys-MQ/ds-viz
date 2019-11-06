@@ -11,6 +11,7 @@ from custom_widgets import Slider
 root = tk.Tk()
 root.geometry("1600x800")
 root.columnconfigure(0, weight=1)
+root.rowconfigure(3, weight=1)
 
 courier_8 = font.Font(family="Courier", size=8)
 courier_11 = font.Font(family="Courier", size=11)
@@ -77,17 +78,23 @@ time_slider = Slider(controls, "Time", 0, 10000, tuple(range(0, 10001)))
 time_slider.grid(row=2, column=0, sticky=tk.NSEW)
 
 
-timeline_canvas = tk.Canvas(root)
-timeline_canvas.grid(row=3, column=0, sticky=tk.NSEW)
-root.rowconfigure(3, weight=1)
-# timeline_canvas.config(scrollregion=timeline_canvas.bbox(tk.ALL))
+timeline = tk.Frame(root)
+timeline.grid(row=3, column=0, sticky=tk.NSEW)
+timeline.rowconfigure(0, weight=1)
+timeline.columnconfigure(0, weight=1)
+
+yscrollbar = tk.Scrollbar(timeline)
+yscrollbar.grid(row=0, column=1, sticky=tk.NS)
+
+t_width = 1600
+t_height = 5000
+t_canvas = tk.Canvas(timeline, yscrollcommand=yscrollbar.set, scrollregion=(0, 0, t_width, t_height))
+t_canvas.grid(row=0, column=0, sticky=tk.NSEW)
+yscrollbar.config(command=t_canvas.yview)
 root.update()
 
-width = timeline_canvas.winfo_width()
-height = timeline_canvas.winfo_height()
 margin = 50
-
-timeline_canvas.create_line(margin, margin, margin, height)
-timeline_canvas.create_line(margin, margin, width, margin)
+t_canvas.create_line(margin, margin, margin, t_height)
+t_canvas.create_line(margin, margin, t_canvas.winfo_width(), margin)
 
 tk.mainloop()
