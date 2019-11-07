@@ -19,7 +19,7 @@ class Visualisation:
         failures = "./failures/personal-config16-pl05-failures.txt"
         self.c_height = 10
         self.margin = 30
-        self.x_offset = self.margin * 2
+        self.axis = self.margin * 2
 
         self.servers = server.get_servers_from_system(log, config, failures)
         self.s_list = [s for s in server.traverse_servers(self.servers)]  # TODO Replace with calls to traverse_servers
@@ -104,7 +104,7 @@ class Visualisation:
         self.server_slider.grid(row=0, column=0, sticky=tk.NSEW)
         self.job_slider = Slider(controls, "Job", 0, 100, tuple(range(0, 101)))
         self.job_slider.grid(row=1, column=0, sticky=tk.NSEW)
-        self.time_slider = Slider(controls, "Time", 0, 10000, tuple(range(0, 10001)))
+        self.time_slider = Slider(controls, "Time", 0, 10000, tuple(range(0, 10001)), self.update_time)
         self.time_slider.grid(row=2, column=0, sticky=tk.NSEW)
 
         # Timeline section
@@ -123,25 +123,28 @@ class Visualisation:
         self.graph.grid(row=0, column=0, sticky=tk.NSEW)
         t_yscroll.config(command=self.graph.yview)
         # https://stackoverflow.com/a/37858368/8031185
-        timeline.bind('<Enter>', self._bound_to_mousewheel)
-        timeline.bind('<Leave>', self._unbound_to_mousewheel)
+        timeline.bind('<Enter>', self.bound_to_mousewheel)
+        timeline.bind('<Leave>', self.unbound_to_mousewheel)
 
         self.root.update()
         self.width = self.graph.winfo_width()
         self.height = self.graph.winfo_height()
         self.graph.yview_moveto(0)  # Start scroll at top
 
-    def _bound_to_mousewheel(self, event):
-        self.graph.bind_all("<MouseWheel>", self._on_mousewheel)
+        self.norm_time = self.axis
+        self.timeline_cursor = None
 
-    def _unbound_to_mousewheel(self, event):
+    def bound_to_mousewheel(self, event) -> None:
+        self.graph.bind_all("<MouseWheel>", self.on_mousewheel)
+
+    def unbound_to_mousewheel(self, event) -> None:
         self.graph.unbind_all("<MouseWheel>")
 
-    def _on_mousewheel(self, event):
+    def on_mousewheel(self, event) -> None:
         self.graph.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
     def norm_times(self, arr: np.ndarray) -> np.ndarray:
-        return np.interp(arr, (0, Server.end_time), (self.x_offset, self.width))
+        return np.interp(arr, (0, Server.end_time), (self.axis, self.width))
 
     def norm_jobs(self, jobs: List[Job]) -> List[Job]:
         if not jobs:
@@ -166,9 +169,13 @@ class Visualisation:
 
         return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
+    def update_time(self, time: str) -> None:
+        self.norm_time = int(self.norm_times(np.array([int(time)]))[0])
+        self.root.call(self.graph, 'moveto', self.timeline_cursor, self.norm_time, 0)
+
     def draw(self, scale: int = None) -> None:
         last = self.c_height
-        axis = self.x_offset - 1
+        axis = self.axis - 1
         tick = 3
         s_fact = 2 ** scale
         canvas_font = font.Font(family="Courier", size=8)
@@ -240,8 +247,8 @@ class Visualisation:
             last = type_y + s_height * len(self.servers[type_])
 
         # Need to redraw these for them to persist after 'erase' call
-        # self.timeline = self.graph.draw_line((self.norm_time, self.c_height), (self.norm_time, self.height))
-        #
+        self.timeline_cursor = self.graph.create_line(self.norm_time, 0, self.norm_time, self.height)
+
         # p_font = ("Symbol", 8)
         # self.timeline_pointer = self.graph.draw_text('▼', (self.norm_time, self.c_height / 2), font=p_font)
         # self.s_pointer = self.graph.draw_text('▶', (self.s_pointer_x, self.server_ys[self.s_index] - 1), font=p_font)
