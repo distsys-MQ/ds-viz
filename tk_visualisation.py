@@ -1,13 +1,30 @@
 import tkinter as tk
-from tkinter import ttk, font
+from operator import attrgetter
+from tkinter import ttk, font, scrolledtext
+from typing import Dict, List, Tuple
 
 from custom_widgets import Slider
+from job import Job
+import server
 
 
 class Visualisation:
     def __init__(self):
+        config = "./configs/personal-config16.xml"
+        log = "./logs/personal-config16-pl05-bf.log"
+        failures = "./failures/personal-config16-pl05-failures.txt"
+
+        self.servers = server.get_servers_from_system(log, config, failures)
+        self.s_list = [s for s in server.traverse_servers(self.servers)]  # TODO Replace with calls to traverse_servers
+        self.unique_jids = sorted({j.jid for s in self.s_list for j in s.jobs})
+        self.jobs = {
+            jid: sorted([j for s in self.s_list for j in s.jobs if j.jid == jid], key=attrgetter("schd"))
+            for jid in self.unique_jids
+        }  # type: Dict[int, List[Job]]
+        self.j_graph_ids = {jid: [] for jid in self.unique_jids}  # type: Dict[int, List[Tuple[int, str]]]
+
         self.root = tk.Tk()
-        self.root.geometry("1600x800")
+        self.root.geometry("1200x600")
         self.root.columnconfigure(0, weight=1)  # Fill window width
         self.root.rowconfigure(3, weight=1)  # Timeline fills remaining window height
 
@@ -47,6 +64,13 @@ class Visualisation:
         self.cur_res_text.configure(state=tk.DISABLED)
         self.cur_res_text.pack(fill=tk.X, expand=True)
 
+        final_res_text = scrolledtext.ScrolledText(final_res_tab, height=3, font=courier_8)
+        final_res_text.grid(row=0, column=0, sticky=tk.NSEW)
+        final_res_tab.rowconfigure(0, weight=1)
+        final_res_tab.columnconfigure(0, weight=1)
+        final_res_text.insert(tk.END, server.get_results(log))
+        final_res_text.configure(state=tk.DISABLED)
+
         # Title section
         title = tk.Frame(self.root)
         title.grid(row=1, column=0, sticky=tk.NSEW)
@@ -82,14 +106,15 @@ class Visualisation:
         timeline.rowconfigure(0, weight=1)
         timeline.columnconfigure(0, weight=1)
 
-        yscrollbar = tk.Scrollbar(timeline)
-        yscrollbar.grid(row=0, column=1, sticky=tk.NS)
+        t_yscroll = tk.Scrollbar(timeline)
+        t_yscroll.grid(row=0, column=1, sticky=tk.NS)
 
-        t_width = 1600
+        t_width = 1200
         t_height = 5000
-        self.t_canvas = tk.Canvas(timeline, yscrollcommand=yscrollbar.set, scrollregion=(0, 0, t_width, t_height))
+        self.t_canvas = tk.Canvas(timeline, yscrollcommand=t_yscroll.set, scrollregion=(0, 0, t_width, t_height),
+                                  bg="white")
         self.t_canvas.grid(row=0, column=0, sticky=tk.NSEW)
-        yscrollbar.config(command=self.t_canvas.yview)
+        t_yscroll.config(command=self.t_canvas.yview)
         # https://stackoverflow.com/a/37858368/8031185
         timeline.bind('<Enter>', self._bound_to_mousewheel)
         timeline.bind('<Leave>', self._unbound_to_mousewheel)
