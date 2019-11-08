@@ -18,7 +18,7 @@ class Visualisation:
         log = "./logs/personal-config16-pl05-bf.log"
         failures = "./failures/personal-config16-pl05-failures.txt"
         self.c_height = 10
-        self.margin = 30
+        self.margin = 40
         self.axis = self.margin * 2
 
         self.servers = server.get_servers_from_system(log, config, failures)
@@ -100,7 +100,8 @@ class Visualisation:
         controls.grid(row=2, column=0, sticky=tk.NSEW)
         controls.columnconfigure(0, weight=1)
 
-        self.server_slider = Slider(controls, "Slider", 0, 3, ("small 0", "small 1", "medium 0", "medium 1"))
+        self.server_slider = Slider(controls, "Slider", 0, len(self.s_list) - 1,
+                                    tuple((str(s) for s in server.traverse_servers(self.servers))), self.update_server)
         self.server_slider.grid(row=0, column=0, sticky=tk.NSEW)
         self.job_slider = Slider(controls, "Job", 0, 100, tuple(range(0, 101)))
         self.job_slider.grid(row=1, column=0, sticky=tk.NSEW)
@@ -128,13 +129,17 @@ class Visualisation:
         timeline.bind('<Leave>', self.unbound_to_mousewheel)
 
         self.root.update()
-        self.width = self.graph.winfo_width() - self.margin / 3
+        self.width = self.graph.winfo_width() - self.margin / 4
         self.height = self.graph.winfo_height()
         self.graph.yview_moveto(0)  # Start scroll at top
 
         self.norm_time = self.axis
         self.timeline_cursor = None
         self.timeline_pointer = None
+        self.s_pointer = None
+        self.s_pointer_x = self.axis - 8
+        self.server_ys = []  # type: List[int]
+        self.s_index = 0
 
     def bound_to_mousewheel(self, event) -> None:
         self.graph.bind_all("<MouseWheel>", self.on_mousewheel)
@@ -176,6 +181,10 @@ class Visualisation:
         self.move_to(self.timeline_cursor, self.norm_time, 0)
         self.move_to(self.timeline_pointer, self.norm_time, 0)
 
+    def update_server(self, server_index: str) -> None:
+        self.s_index = int(server_index)
+        self.move_to(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index])
+
     def move_to(self, shape, x: int, y: int):
         xy = self.graph.coords(shape)
         self.graph.move(shape, x - xy[0], y - xy[1])
@@ -187,6 +196,7 @@ class Visualisation:
         s_fact = 2 ** scale
         canvas_font = font.Font(family="Courier", size=8)
         s_height = None
+        self.server_ys = []
 
         self.graph.create_line(axis, 0, self.width, 0)  # x-axis
         self.graph.create_line(axis, 0, axis, self.height)  # y-axis
@@ -194,8 +204,9 @@ class Visualisation:
         for type_ in list(self.servers):
             type_y = last
             s_type = type_
+            s_type_x = 30
 
-            self.graph.create_text(self.margin, type_y, text=s_type, font=canvas_font)
+            self.graph.create_text(s_type_x, type_y, text=s_type, font=canvas_font)
             self.graph.create_line(axis - tick * 3, type_y, axis, type_y)  # Server type tick mark
 
             for i, s in enumerate(self.servers[type_].values()):
@@ -204,6 +215,7 @@ class Visualisation:
 
                 server_y = type_y + s_height * i
                 self.graph.create_line(axis - tick * 2.5, server_y, axis, server_y)  # Server ID tick mark
+                self.server_ys.append(server_y - 1)
 
                 # self.graph.draw_line(axis, server_y, self.width - self.right_margin, server_y)  # Server border
 
@@ -256,9 +268,10 @@ class Visualisation:
         # Need to redraw these for them to persist after 'erase' call
         self.timeline_cursor = self.graph.create_line(self.norm_time, 0, self.norm_time, self.height)
 
-        p_font = font.Font(family="Symbol", size=20)
-        self.timeline_pointer = self.graph.create_text(self.norm_time, 0, text='▼', font=p_font)
-        # self.s_pointer = self.graph.draw_text('▶', (self.s_pointer_x, self.server_ys[self.s_index] - 1), font=p_font)
+        self.timeline_pointer = self.graph.create_text(self.norm_time, 0, text='▼',
+                                                       font=font.Font(family="Symbol", size=20))
+        self.s_pointer = self.graph.create_text(self.s_pointer_x, self.server_ys[self.s_index] - 1,
+                                                text='▶', font=font.Font(family="Symbol", size=12))
 
 
 Visualisation().draw(5)
