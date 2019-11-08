@@ -1,37 +1,23 @@
 import tkinter as tk
 
 root = tk.Tk()
-root.geometry("1600x800")
-root.columnconfigure(0, weight=1)
-root.rowconfigure(1, weight=1)
+root.geometry("600x200")
+
+scale = tk.Scale(root, from_=100, to=500, orient=tk.HORIZONTAL)
+scale.pack(fill=tk.X, expand=True)
+canvas = tk.Canvas(root, bg="white")
+canvas.pack(fill=tk.BOTH, expand=True)
+
+canvas.create_line(100, 0, 100, 100, fill="red")
+canvas.create_line(500, 0, 500, 100, fill="red")
+line = canvas.create_line(100, 0, 100, 100)
 
 
-upper = tk.Label(root, text="upper", bg="black", fg="white")
-upper.grid(row=0, column=0, sticky=tk.NSEW)
+def move_line(x):
+    print("x: ", x)
+    root.call(canvas, "moveto", line, int(x), 0)
+    print("line pos: ", canvas.coords(line))
 
 
-middle = tk.Frame(root)
-middle.grid(row=1, column=0, sticky=tk.NSEW)
-middle.rowconfigure(0, weight=1)
-middle.columnconfigure(0, weight=1)
-
-yscrollbar = tk.Scrollbar(middle)
-yscrollbar.grid(row=0, column=1, sticky=tk.NS)
-
-canvas = tk.Canvas(middle, yscrollcommand=yscrollbar.set)
-canvas.grid(row=0, column=0, sticky=tk.NSEW)
-yscrollbar.config(command=canvas.yview)
-
-x = 400
-y1 = 50
-y2 = 1500
-canvas.create_line(x, y1, x, y2)
-
-canvas.config(scrollregion=(0, 0, 1600, 1600))
-
-
-lower = tk.Label(root, text="lower", bg="black", fg="white")
-lower.grid(row=2, column=0, sticky=tk.NSEW)
-
-
+scale.configure(command=move_line)
 root.mainloop()
