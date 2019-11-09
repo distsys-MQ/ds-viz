@@ -1,15 +1,23 @@
 import tkinter as tk
 from operator import attrgetter
 from tkinter import ttk, font, scrolledtext
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 
+import job
 import server
 from custom_widgets import Slider
 from job import Job
 from server import Server
 from server_failure import ServerFailure
+
+
+def replace_text(element: tk.Text, text: str):
+    element.config(state=tk.NORMAL)
+    element.delete(1.0, tk.END)
+    element.insert(tk.END, text)
+    element.config(state=tk.DISABLED)
 
 
 class Visualisation:
@@ -22,7 +30,8 @@ class Visualisation:
         self.axis = self.margin * 2
 
         self.servers = server.get_servers_from_system(log, config, failures)
-        self.s_list = [s for s in server.traverse_servers(self.servers)]  # TODO Replace with calls to traverse_servers
+        # TODO Replace with calls to traverse_servers
+        self.s_list = [s for s in server.traverse_servers(self.servers)]  # type: List[Server]
         self.unique_jids = sorted({j.jid for s in self.s_list for j in s.jobs})
         self.jobs = {
             jid: sorted([j for s in self.s_list for j in s.jobs if j.jid == jid], key=attrgetter("schd"))
@@ -62,14 +71,13 @@ class Visualisation:
         right_tabs.grid(row=0, column=1, sticky=tk.NSEW)
 
         self.cur_server_text = tk.Text(cur_server_tab, height=3, font=courier_11)
-        self.cur_server_text.insert(tk.END, "testing")
-        self.cur_server_text.configure(state=tk.DISABLED)
         self.cur_server_text.pack(fill=tk.X, expand=True)
-
+        self.cur_job_text = tk.Text(cur_job_tab, height=3, font=courier_11)
+        self.cur_job_text.pack(fill=tk.X, expand=True)
         self.cur_res_text = tk.Text(cur_res_tab, height=3, font=courier_11)
-        self.cur_res_text.insert(tk.END, "testing")
-        self.cur_res_text.configure(state=tk.DISABLED)
         self.cur_res_text.pack(fill=tk.X, expand=True)
+        self.cur_server_jobs_text = tk.Text(cur_server_jobs_tab, height=3, font=courier_8)
+        self.cur_server_jobs_text.pack(fill=tk.X, expand=True)
 
         final_res_text = scrolledtext.ScrolledText(final_res_tab, height=3, font=courier_8)
         final_res_text.grid(row=0, column=0, sticky=tk.NSEW)
@@ -100,14 +108,14 @@ class Visualisation:
         controls.grid(row=2, column=0, sticky=tk.NSEW)
         controls.columnconfigure(0, weight=1)
 
-        self.server_slider = Slider(controls, "Slider", 0, len(self.s_list) - 1,
-                                    tuple((str(s) for s in server.traverse_servers(self.servers))), self.update_server)
-        self.server_slider.grid(row=0, column=0, sticky=tk.NSEW)
-        self.job_slider = Slider(controls, "Job", 0, 100, tuple(range(0, 101)))
-        self.job_slider.grid(row=1, column=0, sticky=tk.NSEW)
-        self.time_slider = Slider(controls, "Time", 0, Server.end_time, tuple(range(0, Server.end_time)),
-                                  self.update_time)
-        self.time_slider.grid(row=2, column=0, sticky=tk.NSEW)
+        server_slider = Slider(controls, "Slider", 0, len(self.s_list) - 1,
+                               tuple((str(s) for s in server.traverse_servers(self.servers))), self.update_server)
+        server_slider.grid(row=0, column=0, sticky=tk.NSEW)
+        job_slider = Slider(controls, "Job", min(self.unique_jids), max(self.unique_jids), tuple(self.unique_jids),
+                            self.update_job)
+        job_slider.grid(row=1, column=0, sticky=tk.NSEW)
+        time_slider = Slider(controls, "Time", 0, Server.end_time, tuple(range(0, Server.end_time)), self.update_time)
+        time_slider.grid(row=2, column=0, sticky=tk.NSEW)
 
         # Timeline section
         timeline = tk.Frame(self.root)
@@ -140,6 +148,10 @@ class Visualisation:
         self.s_pointer_x = self.axis - 8
         self.server_ys = []  # type: List[int]
         self.s_index = 0
+
+        self.cur_time = 0
+        self.cur_server = self.s_list[0]  # type: Server
+        self.cur_job = self.jobs[self.unique_jids[0]][0]  # type: Job
 
     def bound_to_mousewheel(self, event) -> None:
         self.graph.bind_all("<MouseWheel>", self.on_mousewheel)
@@ -176,14 +188,28 @@ class Visualisation:
 
         return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
-    def update_time(self, time: str) -> None:
-        self.norm_time = int(self.norm_times(np.array([int(time)]))[0])
+    def update_server(self, server_index: Union[str, int]) -> None:
+        self.s_index = int(server_index)
+        self.cur_server = self.s_list[self.s_index]
+        self.move_to(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index])
+
+        replace_text(self.cur_server_text, self.cur_server.print_server_at(self.cur_time))
+        replace_text(self.cur_server_jobs_text, self.cur_server.print_job_info(self.cur_time))
+
+    def update_job(self, job_id: Union[str, int]) -> None:
+        self.cur_job = job.get_job_at(self.jobs[int(job_id)], self.cur_time)
+        replace_text(self.cur_job_text, self.cur_job.print_job(self.cur_time))
+
+    def update_time(self, time: Union[str, int]) -> None:
+        self.cur_time = int(time)
+
+        self.update_server(self.s_index)
+        self.update_job(self.cur_job.jid)
+        replace_text(self.cur_res_text, server.print_servers_at(self.s_list, self.cur_time))
+
+        self.norm_time = int(self.norm_times(np.array([self.cur_time]))[0])
         self.move_to(self.timeline_cursor, self.norm_time, 0)
         self.move_to(self.timeline_pointer, self.norm_time, 0)
-
-    def update_server(self, server_index: str) -> None:
-        self.s_index = int(server_index)
-        self.move_to(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index])
 
     def move_to(self, shape, x: int, y: int):
         xy = self.graph.coords(shape)
@@ -274,5 +300,7 @@ class Visualisation:
                                                 text='▶', font=font.Font(family="Symbol", size=12))
 
 
-Visualisation().draw(5)
+vis = Visualisation()
+vis.draw(5)
+vis.update_time(0)
 tk.mainloop()
