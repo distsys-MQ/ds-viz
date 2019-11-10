@@ -1,4 +1,5 @@
 import math
+import os
 import tkinter as tk
 from operator import attrgetter
 from tkinter import ttk, font, scrolledtext
@@ -102,7 +103,8 @@ class Visualisation:
         self.show_job_btn = tk.Button(title, text="Show Job", bg="red", fg="white", font=courier_8)
         self.show_job_btn.pack(side=tk.LEFT)
 
-        self.filename = tk.Label(title, text="title", font=courier_11)
+        self.filename = tk.Label(title, text="Visualising: {}".format(os.path.basename(log)),
+                                 font=font.Font(family="Courier", size=11, underline=True))
         self.filename.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
         self.scale_label = tk.Label(title, text="Scale: ()", font=courier_11)
