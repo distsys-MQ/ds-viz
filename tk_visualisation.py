@@ -107,9 +107,10 @@ class Visualisation:
 
         self.scale_label = tk.Label(title, text="Scale: ()", font=courier_11)
         self.scale_label.pack(side=tk.LEFT)
-        self.scale_down_btn = tk.Button(title, text='-', bg="blue", fg="white", font=courier_8)
+        btn_width = 4
+        self.scale_down_btn = tk.Button(title, text='-', bg="blue", fg="white", font=courier_8, width=btn_width)
         self.scale_down_btn.pack(side=tk.LEFT)
-        self.scale_up_btn = tk.Button(title, text='+', bg="blue", fg="white", font=courier_8)
+        self.scale_up_btn = tk.Button(title, text='+', bg="blue", fg="white", font=courier_8, width=btn_width)
         self.scale_up_btn.pack(side=tk.LEFT)
 
         # Controls section
