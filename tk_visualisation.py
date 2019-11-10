@@ -15,11 +15,17 @@ from server import Server
 from server_failure import ServerFailure
 
 
-def replace_text(element: tk.Text, text: str):
-    element.config(state=tk.NORMAL)
-    element.delete(1.0, tk.END)
-    element.insert(tk.END, text)
-    element.config(state=tk.DISABLED)
+def replace_text(element: Union[tk.Text, tk.Spinbox], text: str):
+    if isinstance(element, tk.Text):
+        index = 1.0
+        element.config(state=tk.NORMAL)
+        element.delete(index, tk.END)
+        element.insert(tk.END, text)
+        element.config(state=tk.DISABLED)
+    else:
+        index = 0
+        element.delete(index, tk.END)
+        element.insert(tk.END, text)
 
 
 class Visualisation:
@@ -120,14 +126,16 @@ class Visualisation:
         controls.grid(row=2, column=0, sticky=tk.NSEW)
         controls.columnconfigure(0, weight=1)
 
-        server_slider = Slider(controls, "Slider", 0, len(self.s_list) - 1,
-                               tuple((str(s) for s in server.traverse_servers(self.servers))), self.update_server)
-        server_slider.grid(row=0, column=0, sticky=tk.NSEW)
-        job_slider = Slider(controls, "Job", min(self.unique_jids), max(self.unique_jids), tuple(self.unique_jids),
-                            self.update_job)
-        job_slider.grid(row=1, column=0, sticky=tk.NSEW)
-        time_slider = Slider(controls, "Time", 0, Server.end_time, tuple(range(0, Server.end_time)), self.update_time)
-        time_slider.grid(row=2, column=0, sticky=tk.NSEW)
+        self.server_slider = Slider(controls, "Slider", 0, len(self.s_list) - 1,
+                                    tuple((str(s) for s in server.traverse_servers(self.servers))),
+                                    self.server_scale_callback, self.server_spin_callback)
+        self.server_slider.grid(row=0, column=0, sticky=tk.NSEW)
+        self.job_slider = Slider(controls, "Job", min(self.unique_jids), max(self.unique_jids), tuple(self.unique_jids),
+                                 self.job_scale_callback, self.job_spin_callback)
+        self.job_slider.grid(row=1, column=0, sticky=tk.NSEW)
+        self.time_slider = Slider(controls, "Time", 0, Server.end_time, tuple(range(0, Server.end_time)),
+                                  self.time_scale_callback, self.time_spin_callback)
+        self.time_slider.grid(row=2, column=0, sticky=tk.NSEW)
 
         # Timeline section
         timeline = tk.Frame(self.root)
@@ -172,6 +180,32 @@ class Visualisation:
     def on_mousewheel(self, event) -> None:
         self.graph.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
+    def server_scale_callback(self, server_index: str):
+        self.update_server(int(server_index))
+
+    def job_scale_callback(self, job_id: str):
+        self.update_job(int(job_id))
+
+    def time_scale_callback(self, time: str):
+        self.update_time(int(time))
+
+    def server_spin_callback(self):
+        server_info = self.server_slider.spin.get().split()
+        server_type = server_info[0]
+        server_id = int(server_info[1])
+
+        cur_server = self.servers[server_type][server_id]
+        server_index = self.s_list.index(cur_server)
+        self.update_server(server_index)
+
+    def job_spin_callback(self):
+        job_id = int(self.job_slider.spin.get())
+        self.update_job(job_id)
+
+    def time_spin_callback(self):
+        time = int(self.time_slider.spin.get())
+        self.update_time(time)
+
     def norm_times(self, arr: np.ndarray) -> np.ndarray:
         return np.interp(arr, (0, Server.end_time), (self.axis, self.width))
 
@@ -201,8 +235,8 @@ class Visualisation:
     def calc_height(self, scale: int) -> int:
         return sum(min(s.cores, scale) for s in self.s_list) * self.c_height + self.c_height * 2
 
-    def update_server(self, server_index: Union[str, int]) -> None:
-        self.s_index = int(server_index)
+    def update_server(self, server_index: int) -> None:
+        self.s_index = server_index
         self.cur_server = self.s_list[self.s_index]
         self.move_to(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index])
 
@@ -210,11 +244,11 @@ class Visualisation:
         replace_text(self.cur_server_jobs_text, self.cur_server.print_job_info(self.cur_time))
 
     def update_job(self, job_id: Union[str, int]) -> None:
-        self.cur_job = job.get_job_at(self.jobs[int(job_id)], self.cur_time)
+        self.cur_job = job.get_job_at(self.jobs[job_id], self.cur_time)
         replace_text(self.cur_job_text, self.cur_job.print_job(self.cur_time))
 
-    def update_time(self, time: Union[str, int]) -> None:
-        self.cur_time = int(time)
+    def update_time(self, time: int) -> None:
+        self.cur_time = time
 
         self.update_server(self.s_index)
         self.update_job(self.cur_job.jid)
