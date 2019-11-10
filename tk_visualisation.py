@@ -1,3 +1,4 @@
+import math
 import tkinter as tk
 from operator import attrgetter
 from tkinter import ttk, font, scrolledtext
@@ -26,8 +27,9 @@ class Visualisation:
         log = "./logs/personal-config16-pl05-bf.log"
         failures = "./failures/personal-config16-pl05-failures.txt"
         self.c_height = 10
-        self.margin = 40
-        self.axis = self.margin * 2
+        scale = 5
+        margin = 40
+        self.axis = margin * 2
 
         self.servers = server.get_servers_from_system(log, config, failures)
         # TODO Replace with calls to traverse_servers
@@ -39,8 +41,15 @@ class Visualisation:
         }  # type: Dict[int, List[Job]]
         self.j_graph_ids = {jid: [] for jid in self.unique_jids}  # type: Dict[int, List[Tuple[int, str]]]
 
+        self.max_scale = int(math.log(max(s.cores for s in self.s_list), 2))
+        self.base_scale = min(scale, self.max_scale)
+        self.s_factor = 2 ** self.base_scale
+
+        t_width = 1600
+        t_height = 600
+
         self.root = tk.Tk()
-        self.root.geometry("1200x600")
+        self.root.geometry("{}x{}".format(t_width, t_height))
         self.root.columnconfigure(0, weight=1)  # Fill window width
         self.root.rowconfigure(3, weight=1)  # Timeline fills remaining window height
 
@@ -126,9 +135,8 @@ class Visualisation:
         t_yscroll = tk.Scrollbar(timeline)
         t_yscroll.grid(row=0, column=1, sticky=tk.NS)
 
-        t_width = 1200
-        t_height = 5000
-        self.graph = tk.Canvas(timeline, yscrollcommand=t_yscroll.set, scrollregion=(0, 0, t_width, t_height),
+        self.height = self.calc_height(self.s_factor)
+        self.graph = tk.Canvas(timeline, yscrollcommand=t_yscroll.set, scrollregion=(0, 0, t_width, self.height),
                                bg="white")
         self.graph.grid(row=0, column=0, sticky=tk.NSEW)
         t_yscroll.config(command=self.graph.yview)
@@ -137,8 +145,7 @@ class Visualisation:
         timeline.bind('<Leave>', self.unbound_to_mousewheel)
 
         self.root.update()
-        self.width = self.graph.winfo_width() - self.margin / 4
-        self.height = self.graph.winfo_height()
+        self.width = self.graph.winfo_width() - margin / 4
         self.graph.yview_moveto(0)  # Start scroll at top
 
         self.norm_time = self.axis
@@ -187,6 +194,9 @@ class Visualisation:
         arr = self.norm_times(arr)
 
         return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
+
+    def calc_height(self, scale: int) -> int:
+        return sum(min(s.cores, scale) for s in self.s_list) * self.c_height + self.c_height * 2
 
     def update_server(self, server_index: Union[str, int]) -> None:
         self.s_index = int(server_index)
