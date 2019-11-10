@@ -1,1 +1,0 @@
-#base_trace: ldns04, config_file: configs/scheduling/personal-config16.xml, total_servers: 6, total_time: 86400, time_dist_mean: 1.980000, time_dist_stdev: 0.760000, node_dist_mean: 0.270000, node_dist_stdev: 1.780000

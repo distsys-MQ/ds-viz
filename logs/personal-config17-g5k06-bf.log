@@ -1,4 +1,4 @@
-# ds-sim server 23-Sep, 2019 @ MQ
+# ds-sim server 06-Nov, 2019 @ MQ
 # Server-side simulator started with './ds-server -n -v brief -c configs/scheduling/personal-config17.xml -f g5k06'
 # Waiting for connection to port 50000 of IP address 127.0.0.1
 RCVD HELO
@@ -537,4 +537,4 @@ SENT QUIT
 # =============================== [ Overall ] ===============================
 # actual simulation end time: 9663
 # total #servers used: 5, avg utilisation: 37.19 and total cost: $24.89
-# avg waiting time: 99, avg exec time: 401 and avg turnaround time: 500
+# avg waiting time: 90, avg exec time: 364 and avg turnaround time: 455
