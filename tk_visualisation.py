@@ -138,13 +138,13 @@ class Visualisation:
 
         self.server_slider = Slider(controls, "Slider", 0, len(self.s_list) - 1,
                                     tuple((str(s) for s in server.traverse_servers(self.servers))),
-                                    self.server_slider_callback, self.server_spin_callback)
+                                    lambda s_index: self.update_server(int(s_index)), self.server_spin_callback)
         self.server_slider.grid(row=0, column=0, sticky=tk.NSEW)
         self.job_slider = Slider(controls, "Job", min(self.unique_jids), max(self.unique_jids), tuple(self.unique_jids),
-                                 self.job_slider_callback, self.job_spin_callback)
+                                 lambda jid: self.update_job(int(jid)), self.job_spin_callback)
         self.job_slider.grid(row=1, column=0, sticky=tk.NSEW)
         self.time_slider = Slider(controls, "Time", 0, Server.end_time, tuple(range(0, Server.end_time)),
-                                  self.time_slider_callback, self.time_spin_callback)
+                                  lambda t: self.update_time(int(t)), self.time_spin_callback)
         self.time_slider.grid(row=2, column=0, sticky=tk.NSEW)
 
         # Timeline section
@@ -163,8 +163,9 @@ class Visualisation:
         self.graph.grid(row=0, column=0, sticky=tk.NSEW)
         t_yscroll.config(command=self.graph.yview)
         # https://stackoverflow.com/a/37858368/8031185
-        timeline.bind('<Enter>', self.bound_to_mousewheel)
-        timeline.bind('<Leave>', self.unbound_to_mousewheel)
+        timeline.bind("<Enter>", lambda _: self.graph.bind_all(
+            "<MouseWheel>", lambda event: self.graph.yview_scroll(int(-1 * (event.delta / 120)), "units")))
+        timeline.bind("<Leave>", lambda _: self.graph.unbind_all("<MouseWheel>"))
 
         self.root.update()
         self.width = self.graph.winfo_width() - margin / 4
@@ -181,24 +182,6 @@ class Visualisation:
         self.cur_time = 0
         self.cur_server = self.s_list[0]  # type: Server
         self.cur_job = self.jobs[self.unique_jids[0]][0]  # type: Job
-
-    def bound_to_mousewheel(self, event) -> None:
-        self.graph.bind_all("<MouseWheel>", self.on_mousewheel)
-
-    def unbound_to_mousewheel(self, event) -> None:
-        self.graph.unbind_all("<MouseWheel>")
-
-    def on_mousewheel(self, event) -> None:
-        self.graph.yview_scroll(int(-1 * (event.delta / 120)), "units")
-
-    def server_slider_callback(self, server_index: str) -> None:
-        self.update_server(int(server_index))
-
-    def job_slider_callback(self, job_id: str) -> None:
-        self.update_job(int(job_id))
-
-    def time_slider_callback(self, time: str) -> None:
-        self.update_time(int(time))
 
     def server_spin_callback(self, event=None) -> None:
         server_info = self.server_slider.spin.get().split()  # type: List[str]
