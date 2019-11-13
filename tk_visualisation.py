@@ -19,6 +19,10 @@ SCALE_STRING = "Scale: {} ({} max cores)"
 HIGHLIGHT = "yellow"
 
 
+def truncate(text: str, length: int = 10) -> str:
+    return text if len(text) <= length else text[:length - 3] + ".."
+
+
 def replace_text(element: Union[tk.Text, tk.Spinbox], text: Union[str, int]) -> None:
     if isinstance(element, tk.Text):
         index = 1.0
@@ -185,6 +189,7 @@ class Visualisation:
         self.cur_server = self.s_list[0]  # type: Server
         self.cur_job = self.jobs[self.unique_jids[0]][0]  # type: Job
 
+    # noinspection PyUnusedLocal
     def server_spin_callback(self, event=None) -> None:
         server_info = self.server_slider.spin.get().split()  # type: List[str]
 
@@ -200,6 +205,7 @@ class Visualisation:
                     self.update_server(server_index)
                     self.server_slider.scale.set(server_index)
 
+    # noinspection PyUnusedLocal
     def job_spin_callback(self, event=None) -> None:
         spin_value = self.job_slider.spin.get()  # type: str
         job_id = int(spin_value) if spin_value.isdigit() else -1
@@ -208,6 +214,7 @@ class Visualisation:
             self.update_job(job_id)
             self.job_slider.scale.set(job_id)
 
+    # noinspection PyUnusedLocal
     def time_spin_callback(self, event=None) -> None:
         spin_value = self.time_slider.spin.get()  # type: str
         time = int(spin_value) if spin_value.isdigit() else -1
@@ -339,8 +346,8 @@ class Visualisation:
 
         for type_ in list(self.servers):
             type_y = last
-            s_type = type_
-            s_type_x = 30
+            s_type = truncate(type_)
+            s_type_x = 35
 
             self.graph.create_text(s_type_x, type_y, text=s_type, font=canvas_font)
             self.graph.create_line(axis - tick * 3, type_y, axis, type_y)  # Server type tick mark
