@@ -15,6 +15,7 @@ from server import Server
 from server_failure import ServerFailure
 
 SCALE_STRING = "Scale: {} ({} max cores)"
+HIGHLIGHT = "yellow"
 
 
 def replace_text(element: Union[tk.Text, tk.Spinbox], text: str) -> None:
@@ -111,7 +112,9 @@ class Visualisation:
         title = tk.Frame(self.root)
         title.grid(row=1, column=0, sticky=tk.NSEW)
 
-        self.show_job_btn = tk.Button(title, text="Show Job", bg="red", fg="white", font=courier_8)
+        self.show_job = False
+        self.show_job_btn = tk.Button(title, text="Show Job", bg="red", fg="white", font=courier_8,
+                                      command=self.show_job_callback)
         self.show_job_btn.pack(side=tk.LEFT)
 
         self.filename = tk.Label(title, text="Visualising: {}".format(os.path.basename(log)),
@@ -214,17 +217,36 @@ class Visualisation:
         time = int(self.time_slider.spin.get())
         self.update_time(time)
 
+    def show_job_callback(self):
+        self.show_job = not self.show_job
+
+        if self.show_job:
+            self.show_job_btn.config(bg="green")
+            self.change_job_colour(self.cur_job, HIGHLIGHT)
+        else:
+            self.show_job_btn.config(bg="red")
+            self.reset_job_colour(self.cur_job)
+
+    def change_job_colour(self, j: Job, col: str):
+        for j_graph_id, _ in self.j_graph_ids[j.jid]:
+            self.graph.itemconfig(j_graph_id, fill=col)
+
+    def reset_job_colour(self, j: Job):
+        for j_graph_id, orig_col in self.j_graph_ids[j.jid]:
+            self.graph.itemconfig(j_graph_id, fill=orig_col)
+
     def change_scaling(self, scale: int):
         self.graph.delete("all")
 
         scale_factor = 2 ** scale
         self.height = self.calc_height(scale_factor)
         self.graph.config(height=self.height, scrollregion=(0, 0, self.width, self.height))
+
         self.draw(scale)
         self.scale_label.config(text=SCALE_STRING.format(scale, scale_factor))
 
-        # if show_job:
-        #     self.change_job_colour(prev_jid, self.highlight_colour)
+        if self.show_job:
+            self.change_job_colour(self.cur_job, HIGHLIGHT)
 
     def decrease_scale(self) -> None:
         if self.cur_scale <= 0:
@@ -278,8 +300,13 @@ class Visualisation:
         replace_text(self.cur_server_jobs_text, self.cur_server.print_job_info(self.cur_time))
 
     def update_job(self, job_id: Union[str, int]) -> None:
+        old_job = self.cur_job
         self.cur_job = job.get_job_at(self.jobs[job_id], self.cur_time)
         replace_text(self.cur_job_text, self.cur_job.print_job(self.cur_time))
+
+        if self.show_job:
+            self.reset_job_colour(old_job)
+            self.change_job_colour(self.cur_job, HIGHLIGHT)
 
     def update_time(self, time: int) -> None:
         self.cur_time = time
