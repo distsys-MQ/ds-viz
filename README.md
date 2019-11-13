@@ -29,10 +29,6 @@ the left window, and `Current Results` and `Final Results` for the right window.
     `Current Job`, and `Current Results` will update accordingly.
     - These selections can also be made using the spinners (text boxes with arrows) next to the sliders. Type a
     particular value and press the enter key, or simply click on an arrow.
-    - Additionally, the arrow keys can be used to change the last used selection element. For example, if the time
-    slider was just moved, pressing the left arrow key to reduce the time by 1 and pressing the right arrow key to
-    increase the time by 1. The same can be achieved for the spinners by pressing the up or down arrow keys and
-    then the enter key after clicking a spinner's text box.
 - Press the `-` or `+` button to decrease or increase the scaling factor, respectively.
 
 ### Troubleshooting

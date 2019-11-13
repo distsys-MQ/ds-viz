@@ -1,60 +1,50 @@
 import math
 import os
 import sys
+import tkinter as tk
 from operator import attrgetter
-from typing import Dict, List, Tuple, Optional
+from tkinter import ttk, font, scrolledtext
+from typing import Dict, List, Tuple, Union
 
-import PySimpleGUI as sg
 import numpy as np
 
-from job import Job, get_job_at
-from server import get_servers_from_system, traverse_servers, Server, get_results, print_servers_at
+import job
+import server
+from custom_widgets import Slider
+from job import Job
+from server import Server
 from server_failure import ServerFailure
 
-
-def truncate(text: str, length: int = 8) -> str:
-    return text if len(text) <= length else text[:5] + ".."
-
-
-# TODO figure out how to use a truncated server type as a key
-def truncate_server(server: Server) -> str:
-    return "{} {}".format(truncate(server.type_), server.sid)
+SCALE_STRING = "Scale: {} ({} max cores)"
+HIGHLIGHT = "yellow"
 
 
-def get_resolution() -> Tuple[int, int]:
-    # Tk needs an open window to detect resolution and measure fonts
-    window = sg.Window("resolution", [[]], alpha_channel=0, finalize=True)
-    resolution = window.get_screen_dimensions()
-    window.close()
-    return resolution
+def truncate(text: str, length: int = 10) -> str:
+    return text if len(text) <= length else text[:length - 3] + ".."
 
 
-def get_max_window_size():
-    window = sg.Window("window_size", [[sg.Sizer(*get_resolution())]], alpha_channel=0,
-                       resizable=True, margins=(0, 0), element_padding=(0, 0), finalize=True)
-    window.maximize()
-    size = window.Size
-    window.close()
-    # Actual size is slightly smaller than returned value, possibly due to window borders
-    return size[0] - 1, size[1] - 1
-
-
-def get_font_pixels(font: Tuple[str, int] = None) -> int:
-    # Requires an open window
-    return sg.tkinter.font.Font(font=font).measure('A')
+def replace_text(element: Union[tk.Text, tk.Spinbox], text: Union[str, int]) -> None:
+    if isinstance(element, tk.Text):
+        index = 1.0
+        element.config(state=tk.NORMAL)
+        element.delete(index, tk.END)
+        element.insert(tk.END, text)
+        element.config(state=tk.DISABLED)
+    else:
+        index = 0
+        element.delete(index, tk.END)
+        element.insert(tk.END, text)
 
 
 class Visualisation:
     def __init__(self, config: str, failures: str, log: str, c_height: int = 4, scale: int = 0):
-        self.fnt_f = "Courier"
-        self.fnt_s = 10
-        b_colour = "whitesmoke"
-        sg.set_options(font=(self.fnt_f, self.fnt_s), element_padding=(0, 0), margins=(1, 1),
-                       background_color=b_colour, text_element_background_color=b_colour,
-                       element_background_color=b_colour, input_elements_background_color=b_colour)
+        self.c_height = c_height
+        margin = 40
+        self.axis = margin * 2
 
-        self.servers = get_servers_from_system(log, config, failures)
-        self.s_list = [s for s in traverse_servers(self.servers)]  # TODO Replace with calls to traverse_servers
+        self.servers = server.get_servers_from_system(log, config, failures)
+        # TODO Replace with calls to traverse_servers
+        self.s_list = [s for s in server.traverse_servers(self.servers)]  # type: List[Server]
         self.unique_jids = sorted({j.jid for s in self.s_list for j in s.jobs})
         self.jobs = {
             jid: sorted([j for s in self.s_list for j in s.jobs if j.jid == jid], key=attrgetter("schd"))
@@ -63,135 +53,216 @@ class Visualisation:
         self.j_graph_ids = {jid: [] for jid in self.unique_jids}  # type: Dict[int, List[Tuple[int, str]]]
 
         self.max_scale = int(math.log(max(s.cores for s in self.s_list), 2))
-        self.base_scale = min(scale, self.max_scale)
-        self.s_factor = 2 ** self.base_scale
+        self.cur_scale = min(scale, self.max_scale)
+        scale_factor = 2 ** self.cur_scale
 
-        dum_win = sg.Window("font", [[]], alpha_channel=0, finalize=True)
-        base_px = get_font_pixels()  # ("Courier New", 16) on Windows
-        font_px_sizes = {i: get_font_pixels((self.fnt_f, i)) for i in range(self.fnt_s - 3, self.fnt_s + 1)}
-        dum_win.close()
+        root = tk.Tk()
+        root.columnconfigure(0, weight=1)  # Fill window width
+        root.rowconfigure(3, weight=1)  # Timeline fills remaining window height
 
-        win_size = get_max_window_size()
-        self.c_height = c_height
-        self.height = self.calc_height(self.s_factor)
-        self.margin = 30
-        self.width = int(win_size[0]) - self.margin
+        # Fonts
+        courier_8 = font.Font(family="Courier", size=8)
+        courier_11 = font.Font(family="Courier", size=11)
 
-        graph_column = [
-            [sg.Graph(canvas_size=(self.width, self.height), graph_bottom_left=(0, self.height),
-                      graph_top_right=(self.width, 0), change_submits=True, drag_submits=False,
-                      background_color="white", key="graph")]
-        ]
+        # Status section
+        status = tk.Frame(root)
+        status.columnconfigure(0, weight=1, uniform="notebook")
+        status.columnconfigure(1, weight=1, uniform="notebook")
+        status.grid(row=0, column=0, sticky=tk.NSEW)
 
-        # The following variables are just used to create the window
-        base_f_width = self.width / base_px
-        f_ratio = base_px / font_px_sizes[self.fnt_s]
-        f_width = f_ratio * base_f_width
-        tab_size = (int(f_width / 2), 3)
+        left_tabs = ttk.Notebook(status)
+        cur_server_tab = tk.Frame(left_tabs)
+        cur_job_tab = tk.Frame(left_tabs)
+        left_tabs.add(cur_server_tab, text="Current Server")
+        left_tabs.add(cur_job_tab, text="Current Job")
+        left_tabs.grid(row=0, column=0, sticky=tk.NSEW)
 
-        left_tabs = sg.TabGroup(
-            [[sg.Tab("Current Server",
-                     [[sg.T("", size=tab_size, key="current_server")]]),
-              sg.Tab("Current Job",
-                     [[sg.T("", size=tab_size, key="current_job")]])
-              ]]
-        )
-        small_f_s = self.fnt_s - 3
-        small_f_ratio = base_px / font_px_sizes[small_f_s]
-        small_tab_size = (int((base_f_width / 2) * small_f_ratio), tab_size[1] + 1)
+        right_tabs = ttk.Notebook(status)
+        cur_res_tab = tk.Frame(right_tabs)
+        final_res_tab = tk.Frame(right_tabs)
+        cur_server_jobs_tab = tk.Frame(right_tabs)
+        right_tabs.add(cur_res_tab, text="Current Results")
+        right_tabs.add(final_res_tab, text="Final Results")
+        right_tabs.add(cur_server_jobs_tab, text="Current Server Jobs")
+        right_tabs.grid(row=0, column=1, sticky=tk.NSEW)
 
-        right_tabs = sg.TabGroup(
-            [[sg.Tab("Current Results",
-                     [[sg.T("", size=tab_size, key="current_results")]]),
-              sg.Tab("Final Results",
-                     [[sg.Multiline(get_results(log), size=small_tab_size, disabled=True,
-                                    font=(self.fnt_f, small_f_s), key="final_results")]]),
-              sg.Tab("Current Server Jobs",
-                     [[sg.Multiline("", size=small_tab_size, disabled=True,
-                                    font=(self.fnt_f, small_f_s), key="server_jobs")]])
-              ]]
-        )
+        self.cur_server_text = tk.Text(cur_server_tab, height=3, font=courier_11)
+        self.cur_server_text.pack(fill=tk.X, expand=True)
+        self.cur_job_text = tk.Text(cur_job_tab, height=3, font=courier_11)
+        self.cur_job_text.pack(fill=tk.X, expand=True)
+        self.cur_res_text = tk.Text(cur_res_tab, height=3, font=courier_11)
+        self.cur_res_text.pack(fill=tk.X, expand=True)
+        self.cur_server_jobs_text = tk.Text(cur_server_jobs_tab, height=3, font=courier_8)
+        self.cur_server_jobs_text.pack(fill=tk.X, expand=True)
 
-        btn_width = 8
-        btn_font = (self.fnt_f, self.fnt_s - 3, "bold")
-        scale_width = 30
-        title_length = int(f_width - scale_width - btn_width * 2.3)
+        final_res_text = scrolledtext.ScrolledText(final_res_tab, height=3, font=courier_8)
+        final_res_text.grid(row=0, column=0, sticky=tk.NSEW)
+        final_res_tab.rowconfigure(0, weight=1)
+        final_res_tab.columnconfigure(0, weight=1)
+        final_res_text.insert(tk.END, server.get_results(log))
+        final_res_text.configure(state=tk.DISABLED)
 
-        title = [
-            sg.Button("Show Job", size=(btn_width, 1), font=btn_font, button_color=("white", "red"),
-                      key="show_job"),
-            sg.T("Visualising: {}".format(os.path.basename(log)),
-                 size=(title_length, 1), font=(self.fnt_f, self.fnt_s, "underline"), justification="center"),
-            sg.T("Scale: {} ({} max cores)".format(self.base_scale, 2 ** self.base_scale),
-                 size=(scale_width, 1), justification="right", key="scale"),
-            sg.Btn('-', size=(int(btn_width / 2), 1), font=btn_font, key="decrease_scale"),
-            sg.Btn('+', size=(int(btn_width / 2), 1), font=btn_font, key="increase_scale")
-        ]
+        # Title section
+        title = tk.Frame(root)
+        title.grid(row=1, column=0, sticky=tk.NSEW)
 
-        slider_label_size = (6, 1)
-        slider_value_size = (12, 1)
-        slider_settings = {
-            "size": (base_f_width - (slider_label_size[0] / 2) - (slider_value_size[0] / 1.4), 10),
-            "orientation": "h",
-            "enable_events": True,
-            "disable_number_display": True
-        }
+        self.show_job = False
+        self.show_job_btn = tk.Button(title, text="Show Job", bg="red", fg="white", font=courier_8,
+                                      command=self.show_job_callback)
+        self.show_job_btn.pack(side=tk.LEFT)
 
-        sliders = [
-            [sg.T("Server", size=slider_label_size),
-             sg.Slider((0, len(self.s_list) - 1), default_value=self.s_list[0].sid, key="server_slider",
-                       **slider_settings),
-             sg.Spin([str(s) for s in traverse_servers(self.servers)], str(self.s_list[0]), size=slider_value_size,
-                     enable_events=True, key="select_server")],
-            [sg.T("Job", size=slider_label_size),
-             sg.Slider((self.unique_jids[0], self.unique_jids[-1]), default_value=self.unique_jids[0], key="job_slider",
-                       **slider_settings),
-             sg.Spin([j for j in self.unique_jids], self.unique_jids[0], size=slider_value_size,
-                     enable_events=True, key="select_job")],
-            [sg.T("Time", size=slider_label_size),
-             sg.Slider((0, Server.end_time), default_value=0, key="time_slider", **slider_settings),
-             sg.Spin([i for i in range(Server.end_time + 1)], 0, size=slider_value_size,
-                     enable_events=True, key="select_time")]
-        ]
+        self.filename = tk.Label(title, text="Visualising: {}".format(os.path.basename(log)),
+                                 font=font.Font(family="Courier", size=11, underline=True))
+        self.filename.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        timeline = sg.Column(graph_column, size=(int(self.width + self.margin / 3), int(win_size[1])),
-                             scrollable=True, key="column")
+        self.scale_label = tk.Label(title, text=SCALE_STRING.format(self.cur_scale, scale_factor), font=courier_11)
+        self.scale_label.pack(side=tk.LEFT)
+        btn_width = 4
+        self.scale_down_btn = tk.Button(title, text='-', bg="blue", fg="white", font=courier_8, width=btn_width,
+                                        command=self.decrease_scale)
+        self.scale_down_btn.pack(side=tk.LEFT)
+        self.scale_up_btn = tk.Button(title, text='+', bg="blue", fg="white", font=courier_8, width=btn_width,
+                                      command=self.increase_scale)
+        self.scale_up_btn.pack(side=tk.LEFT)
 
-        layout = [
-            [left_tabs, right_tabs],
-            title,
-            *sliders,
-            [timeline]
-        ]
+        # Controls section
+        controls = tk.Frame(root)
+        controls.grid(row=2, column=0, sticky=tk.NSEW)
+        controls.columnconfigure(0, weight=1)
 
-        self.window = sg.Window("ds-viz", layout, resizable=True, return_keyboard_events=True,
-                                element_justification="center", finalize=True)
+        self.server_slider = Slider(controls, "Slider", 0, len(self.s_list) - 1,
+                                    tuple((str(s) for s in server.traverse_servers(self.servers))),
+                                    lambda s_index: self.update_server(int(s_index)), self.server_spin_callback)
+        self.server_slider.grid(row=0, column=0, sticky=tk.NSEW)
+        self.job_slider = Slider(controls, "Job", min(self.unique_jids), max(self.unique_jids), tuple(self.unique_jids),
+                                 lambda jid: self.update_job(int(jid)), self.job_spin_callback)
+        self.job_slider.grid(row=1, column=0, sticky=tk.NSEW)
+        self.time_slider = Slider(controls, "Time", 0, Server.end_time, tuple(range(0, Server.end_time)),
+                                  lambda t: self.update_time(int(t)), self.time_spin_callback)
+        self.time_slider.grid(row=2, column=0, sticky=tk.NSEW)
+
+        # Timeline section
+        timeline = tk.Frame(root)
+        timeline.grid(row=3, column=0, sticky=tk.NSEW)
+        timeline.rowconfigure(0, weight=1)
+        timeline.columnconfigure(0, weight=1)
+
+        t_yscroll = tk.Scrollbar(timeline)
+        t_yscroll.grid(row=0, column=1, sticky=tk.NS)
+
+        self.height = self.calc_height(scale_factor)
+        self.graph = tk.Canvas(timeline, bg="white", yscrollcommand=t_yscroll.set)
+        self.graph.grid(row=0, column=0, sticky=tk.NSEW)
+        t_yscroll.config(command=self.graph.yview)
+
         if sys.platform == "linux":
-            self.window.TKroot.attributes("-zoomed", True)
+            root.attributes("-zoomed", True)
         else:
-            self.window.maximize()
+            root.state("zoomed")
 
-        self.graph = self.window["graph"]  # type: sg.Graph
-        self.window["time_slider"].set_focus()
+        root.update()
+        self.width = self.graph.winfo_width() - margin / 4
+        self.graph.config(scrollregion=(0, 0, self.width, self.height))
+        self.graph.yview_moveto(0)  # Start scroll at top
 
-        # Not necessary for creating window, but needed for drawing visualisation in graph and handling user input
-        # Could create other classes to handle these
-        self.x_offset = self.margin * 2
-        self.norm_time = self.x_offset
-        self.timeline = None  # type: Optional[int]
-        self.timeline_pointer = None  # type: Optional[int]
+        # https://stackoverflow.com/a/37858368/8031185
+        timeline.bind("<Enter>", lambda _: self.graph.bind_all(
+            "<MouseWheel>", lambda event: self.graph.yview_scroll(int(-1 * (event.delta / 120)), "units")))
+        timeline.bind("<Leave>", lambda _: self.graph.unbind_all("<MouseWheel>"))
+
+        self.norm_time = self.axis
+        self.timeline_cursor = None
+        self.timeline_pointer = None
+        self.s_pointer = None
+        self.s_pointer_x = self.axis - 8
+        self.server_ys = []  # type: List[int]
         self.s_index = 0
-        self.server_ys = []
-        self.s_pointer_x = self.x_offset - 8
-        self.s_pointer = None  # type: Optional[int]
-        self.highlight_colour = "yellow"
 
-    def calc_height(self, scale: int) -> int:
-        menu_offset = 50
-        return sum(min(s.cores, scale) for s in self.s_list) * self.c_height + menu_offset
+        self.cur_time = 0
+        self.cur_server = self.s_list[0]  # type: Server
+        self.cur_job = self.jobs[self.unique_jids[0]][0]  # type: Job
+
+    # noinspection PyUnusedLocal
+    def server_spin_callback(self, event=None) -> None:
+        server_info = self.server_slider.spin.get().split()  # type: List[str]
+
+        if len(server_info) == 2:
+            server_type = server_info[0]
+
+            if server_info[1].isdigit():
+                server_id = int(server_info[1])
+
+                if server_type in self.servers and server_id in self.servers[server_type]:
+                    cur_server = self.servers[server_type][server_id]
+                    server_index = self.s_list.index(cur_server)
+                    self.update_server(server_index)
+                    self.server_slider.scale.set(server_index)
+
+    # noinspection PyUnusedLocal
+    def job_spin_callback(self, event=None) -> None:
+        spin_value = self.job_slider.spin.get()  # type: str
+        job_id = int(spin_value) if spin_value.isdigit() else -1
+
+        if job_id in self.unique_jids:
+            self.update_job(job_id)
+            self.job_slider.scale.set(job_id)
+
+    # noinspection PyUnusedLocal
+    def time_spin_callback(self, event=None) -> None:
+        spin_value = self.time_slider.spin.get()  # type: str
+        time = int(spin_value) if spin_value.isdigit() else -1
+
+        if time in range(0, Server.end_time):
+            self.update_time(time)
+            self.time_slider.scale.set(time)
+
+    def show_job_callback(self):
+        self.show_job = not self.show_job
+
+        if self.show_job:
+            self.show_job_btn.config(bg="green")
+            self.change_job_colour(self.cur_job, HIGHLIGHT)
+        else:
+            self.show_job_btn.config(bg="red")
+            self.reset_job_colour(self.cur_job)
+
+    def change_job_colour(self, j: Job, col: str):
+        for j_graph_id, _ in self.j_graph_ids[j.jid]:
+            self.graph.itemconfig(j_graph_id, fill=col)
+
+    def reset_job_colour(self, j: Job):
+        for j_graph_id, orig_col in self.j_graph_ids[j.jid]:
+            self.graph.itemconfig(j_graph_id, fill=orig_col)
+
+    def change_scaling(self, scale: int):
+        self.graph.delete("all")
+
+        scale_factor = 2 ** scale
+        self.height = self.calc_height(scale_factor)
+        self.graph.config(height=self.height, scrollregion=(0, 0, self.width, self.height))
+
+        self.draw(scale)
+        self.scale_label.config(text=SCALE_STRING.format(scale, scale_factor))
+
+        if self.show_job:
+            self.change_job_colour(self.cur_job, HIGHLIGHT)
+
+    def decrease_scale(self) -> None:
+        if self.cur_scale <= 0:
+            pass
+        else:
+            self.cur_scale -= 1
+            self.change_scaling(self.cur_scale)
+
+    def increase_scale(self) -> None:
+        if self.cur_scale >= self.max_scale:
+            pass
+        else:
+            self.cur_scale += 1
+            self.change_scaling(self.cur_scale)
 
     def norm_times(self, arr: np.ndarray) -> np.ndarray:
-        return np.interp(arr, (0, Server.end_time), (self.x_offset, self.width))
+        return np.interp(arr, (0, Server.end_time), (self.axis, self.width))
 
     def norm_jobs(self, jobs: List[Job]) -> List[Job]:
         if not jobs:
@@ -216,41 +287,77 @@ class Visualisation:
 
         return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
-    def draw(self, scale: int = None) -> None:
-        if scale is None:
-            scale = self.base_scale
+    def calc_height(self, scale: int) -> int:
+        return sum(min(s.cores, scale) for s in self.s_list) * self.c_height + self.c_height * 2
 
+    def update_server(self, server_index: int) -> None:
+        self.s_index = server_index
+        self.cur_server = self.s_list[self.s_index]
+        self.move_to(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index])
+
+        replace_text(self.cur_server_text, self.cur_server.print_server_at(self.cur_time))
+        replace_text(self.cur_server_jobs_text, self.cur_server.print_job_info(self.cur_time))
+        replace_text(self.server_slider.spin, "{} {}".format(self.cur_server.type_, self.cur_server.sid))
+
+    def update_job(self, job_id: Union[str, int]) -> None:
+        old_job = self.cur_job
+        self.cur_job = job.get_job_at(self.jobs[job_id], self.cur_time)
+        replace_text(self.cur_job_text, self.cur_job.print_job(self.cur_time))
+        replace_text(self.job_slider.spin, self.cur_job.jid)
+
+        if self.show_job:
+            self.reset_job_colour(old_job)
+            self.change_job_colour(self.cur_job, HIGHLIGHT)
+
+    def update_time(self, time: int) -> None:
+        self.cur_time = time
+
+        self.update_server(self.s_index)
+        self.update_job(self.cur_job.jid)
+        replace_text(self.cur_res_text, server.print_servers_at(self.s_list, self.cur_time))
+        replace_text(self.time_slider.spin, time)
+
+        self.norm_time = int(self.norm_times(np.array([self.cur_time]))[0])
+        self.move_to(self.timeline_cursor, self.norm_time, 0)
+        self.move_to(self.timeline_pointer, self.norm_time, 0)
+
+    def move_to(self, shape, x: int, y: int):
+        xy = self.graph.coords(shape)
+        self.graph.move(shape, x - xy[0], y - xy[1])
+
+    def draw(self, scale: int) -> None:
         last = self.c_height
-        axis = self.x_offset - 1
+        axis = self.axis - 1
         tick = 3
         s_fact = 2 ** scale
-        font = (self.fnt_f, self.fnt_s - 3)
-
+        canvas_font = font.Font(family="Courier", size=8)
         s_height = None
-        self.server_ys = []  # type: List[int]
+        self.server_ys = []
 
-        self.graph.draw_line((axis, 0), (axis, self.height))  # y-axis
+        self.graph.create_line(axis, 0, self.width, 0)  # x-axis
+        self.graph.create_line(axis, 0, axis, self.height)  # y-axis
 
         for type_ in list(self.servers):
             type_y = last
             s_type = truncate(type_)
+            s_type_x = 35
 
-            self.graph.draw_text(s_type, (self.margin, type_y), font=font)
-            self.graph.draw_line((axis - tick * 3, type_y), (axis, type_y))  # Server type tick mark
+            self.graph.create_text(s_type_x, type_y, text=s_type, font=canvas_font)
+            self.graph.create_line(axis - tick * 3, type_y, axis, type_y)  # Server type tick mark
 
             for i, s in enumerate(self.servers[type_].values()):
                 s_scale = min(s.cores, s_fact)
                 s_height = s_scale * self.c_height
 
                 server_y = type_y + s_height * i
-                self.graph.draw_line((axis - tick * 2.5, server_y), (axis, server_y))  # Server ID tick mark
-                self.server_ys.append(server_y)
+                self.graph.create_line(axis - tick * 2.5, server_y, axis, server_y)  # Server ID tick mark
+                self.server_ys.append(server_y - 1)
 
-                # self.graph.draw_line((axis, server_y), (self.width - self.right_margin, server_y))  # Server border
+                # self.graph.draw_line(axis, server_y, self.width - self.right_margin, server_y)  # Server border
 
                 for k in range(s_scale):
                     core_y = server_y + self.c_height * k
-                    self.graph.draw_line((axis - tick, core_y), (axis, core_y))  # Server core tick mark
+                    self.graph.create_line(axis - tick, core_y, axis, core_y)  # Server core tick mark
 
                 jobs = self.norm_jobs(s.jobs)
                 for jb in jobs:
@@ -276,170 +383,33 @@ class Visualisation:
                             col = "#{0:02X}{0:02X}{0:02X}".format(fail_col)
 
                         self.j_graph_ids[jb.jid].append(
-                            (self.graph.draw_line((jb.start, job_y), (jb.end, job_y),
-                                                  width=self.c_height, color=col),
+                            (self.graph.create_line(
+                                jb.start, job_y,
+                                jb.end, job_y,
+                                width=self.c_height, fill=col),
                              col)
                         )
 
                 for fail in self.norm_server_failures(s.failures):
                     fail_y1 = server_y
                     fail_y2 = server_y + s_height - 1
-                    self.graph.draw_rectangle(
-                        (fail.fail, fail_y1), (fail.recover, fail_y2),
-                        fill_color="red", line_color="red")
+                    self.graph.create_rectangle(
+                        fail.fail, fail_y1,
+                        fail.recover, fail_y2,
+                        fill="red", outline="red"
+                    )
 
             last = type_y + s_height * len(self.servers[type_])
 
         # Need to redraw these for them to persist after 'erase' call
-        self.timeline = self.graph.draw_line((self.norm_time, self.c_height), (self.norm_time, self.height))
+        self.timeline_cursor = self.graph.create_line(self.norm_time, 0, self.norm_time, self.height)
 
-        p_font = ("Symbol", 8)
-        self.timeline_pointer = self.graph.draw_text('▼', (self.norm_time, self.c_height / 2), font=p_font)
-        self.s_pointer = self.graph.draw_text('▶', (self.s_pointer_x, self.server_ys[self.s_index] - 1), font=p_font)
+        self.timeline_pointer = self.graph.create_text(self.norm_time, 0, text='▼',
+                                                       font=font.Font(family="Symbol", size=20))
+        self.s_pointer = self.graph.create_text(self.s_pointer_x, self.server_ys[self.s_index] - 1,
+                                                text='▶', font=font.Font(family="Symbol", size=12))
 
-    def update_output(self, t: int, server: Server, job: Job):
-        self.window["current_server"].update(server.print_server_at(t))
-        self.window["current_job"].update(job.print_job(t))
-        self.window["current_results"].update(print_servers_at(self.s_list, t))
-        self.window["server_jobs"].update(server.print_job_info(t))
-        self.window["select_server"].update("{} {}".format(server.type_, server.sid))
-        self.window["select_job"].update(job.jid)
-        self.window["select_time"].update(t)
-
-    def change_job_colour(self, jid: int, col: str):
-        for j_graph_id, _ in self.j_graph_ids[jid]:
-            self.graph.Widget.itemconfig(j_graph_id, fill=col)
-
-    def reset_job_colour(self, jid: int):
-        for j_graph_id, orig_col in self.j_graph_ids[jid]:
-            self.graph.Widget.itemconfig(j_graph_id, fill=orig_col)
-
-    def change_selected_job(self, jid: int, prev_jid: int):
-        self.reset_job_colour(prev_jid)
-        self.change_job_colour(jid, self.highlight_colour)
-
-    def change_scaling(self, scale: int, show_job: bool, prev_jid: int):
-        self.graph.erase()
-
-        s_fact = 2 ** scale
-        self.height = self.calc_height(s_fact)
-        self.window["column"].Widget.config(height=self.height)
-        self.graph.Widget.config(height=self.height)
-
-        self.draw(scale)
-        self.window["scale"].update("Scale: {} ({} max cores)".format(scale, 2 ** scale))
-
-        if show_job:
-            self.change_job_colour(prev_jid, self.highlight_colour)
-
-    def run(self):
-        prev_jid = self.unique_jids[0]
-        show_job = False
-        cur_scale = self.base_scale
-        cur_server = self.s_list[0]
-        cur_job = self.jobs[self.unique_jids[0]][0]
-        time = 0
-
-        self.draw(cur_scale)
-        self.update_output(time, cur_server, cur_job)
-
-        while True:
-            event, values = self.window.read()
-
-            # Handle closing the window
-            if event is None or event == 'Exit':
-                break
-
-            # Handle time slider movement
-            if event == "time_slider":
-                time = int(values[event])
-                cur_job = get_job_at(self.jobs[cur_job.jid], time)
-                self.norm_time = int(self.norm_times(np.array([time]))[0])
-
-                self.graph.relocate_figure(self.timeline, self.norm_time, self.c_height)
-                self.graph.relocate_figure(self.timeline_pointer, self.norm_time, self.c_height / 2)
-
-                self.update_output(time, cur_server, cur_job)
-                self.window[event].set_focus()
-
-            # Handle job slider movement
-            if event == "job_slider":
-                jid = int(values[event])
-                cur_job = get_job_at(self.jobs[jid], time)
-                self.update_output(time, cur_server, cur_job)
-                self.window[event].set_focus()
-
-                if show_job:
-                    self.change_selected_job(jid, prev_jid)
-                    prev_jid = jid
-
-            # Handle server slider movement
-            if event == "server_slider":
-                self.s_index = int(values[event])
-                cur_server = self.s_list[self.s_index]
-                self.graph.relocate_figure(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index] - 1)
-                self.update_output(time, cur_server, cur_job)
-                self.window[event].set_focus()
-
-            # Handle spinner changes
-            if event in ['\r', "select_server", "select_job", "select_time"]:
-                s_info = values["select_server"].split()
-
-                if len(s_info) == 2:
-                    s_type = s_info[0]
-                    if s_info[1].isdigit():
-                        sid = int(s_info[1])
-                        if s_type in self.servers and sid in self.servers[s_type]:
-                            cur_server = self.servers[s_type][sid]
-                if isinstance(values["select_job"], int):
-                    jid = values["select_job"]
-                else:
-                    jid = prev_jid
-                if isinstance(values["select_time"], int):
-                    time = values["select_time"]
-                if show_job:
-                    self.change_selected_job(jid, prev_jid)
-                    prev_jid = jid
-                cur_job = get_job_at(self.jobs[jid], time)
-
-                self.s_index = self.s_list.index(cur_server)
-                self.norm_time = int(self.norm_times(np.array([time]))[0])
-
-                self.graph.relocate_figure(self.timeline, self.norm_time, self.c_height)
-                self.graph.relocate_figure(self.timeline_pointer, self.norm_time, self.c_height / 2)
-                self.graph.relocate_figure(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index] - 1)
-
-                self.window["server_slider"].update(self.s_index)
-                self.window["job_slider"].update(jid)
-                self.window["time_slider"].update(time)
-
-                self.update_output(time, cur_server, cur_job)
-
-            # Handle clicking "show job" button
-            if event == "show_job":
-                show_job = not show_job
-                jid = int(values["job_slider"])
-                prev_jid = jid
-
-                if show_job:
-                    self.window[event].update(button_color=("white", "green"))
-                    self.change_job_colour(jid, self.highlight_colour)
-                else:
-                    self.window[event].update(button_color=("white", "red"))
-                    self.reset_job_colour(jid)
-
-            # Handle clicking on scale buttons
-            elif event == "decrease_scale":
-                if cur_scale <= 0:
-                    continue
-                else:
-                    cur_scale = cur_scale - 1
-                    self.change_scaling(cur_scale, show_job, prev_jid)
-            elif event == "increase_scale":
-                if cur_scale >= self.max_scale:
-                    continue
-                else:
-                    cur_scale = cur_scale + 1
-                    self.change_scaling(cur_scale, show_job, prev_jid)
-
-        self.window.close()
+    def run(self) -> None:
+        self.draw(self.cur_scale)
+        self.update_time(0)
+        self.graph.tk.mainloop()

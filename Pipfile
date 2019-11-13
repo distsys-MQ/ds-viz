@@ -8,7 +8,6 @@ verify_ssl = true
 [packages]
 file-read-backwards = "*"
 numpy = "*"
-PySimpleGUI = "*"
 natsort = "*"
 
 [requires]
