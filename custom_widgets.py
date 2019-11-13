@@ -19,4 +19,5 @@ class Slider(tk.Frame):
         spin_width = 12
         spin_font = font.Font(family="Courier", size=8)
         self.spin = tk.Spinbox(self, values=values, width=spin_width, font=spin_font, command=spin_command)
+        self.spin.bind("<Return>", spin_command)
         self.spin.pack(side=tk.LEFT)

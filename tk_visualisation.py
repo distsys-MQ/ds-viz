@@ -200,22 +200,33 @@ class Visualisation:
     def time_slider_callback(self, time: str) -> None:
         self.update_time(int(time))
 
-    def server_spin_callback(self) -> None:
-        server_info = self.server_slider.spin.get().split()
-        server_type = server_info[0]
-        server_id = int(server_info[1])
+    def server_spin_callback(self, event=None) -> None:
+        server_info = self.server_slider.spin.get().split()  # type: List[str]
 
-        cur_server = self.servers[server_type][server_id]
-        server_index = self.s_list.index(cur_server)
-        self.update_server(server_index)
+        if len(server_info) == 2:
+            server_type = server_info[0]
 
-    def job_spin_callback(self) -> None:
-        job_id = int(self.job_slider.spin.get())
-        self.update_job(job_id)
+            if server_info[1].isdigit():
+                server_id = int(server_info[1])
 
-    def time_spin_callback(self) -> None:
-        time = int(self.time_slider.spin.get())
-        self.update_time(time)
+                if server_type in self.servers and server_id in self.servers[server_type]:
+                    cur_server = self.servers[server_type][server_id]
+                    server_index = self.s_list.index(cur_server)
+                    self.update_server(server_index)
+
+    def job_spin_callback(self, event=None) -> None:
+        spin_value = self.job_slider.spin.get()  # type: str
+        job_id = int(spin_value) if spin_value.isdigit() else -1
+
+        if job_id in self.unique_jids:
+            self.update_job(job_id)
+
+    def time_spin_callback(self, event=None) -> None:
+        spin_value = self.time_slider.spin.get()  # type: str
+        time = int(spin_value) if spin_value.isdigit() else -1
+
+        if time in range(0, Server.end_time):
+            self.update_time(time)
 
     def show_job_callback(self):
         self.show_job = not self.show_job
