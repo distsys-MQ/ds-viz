@@ -14,8 +14,10 @@ from job import Job
 from server import Server
 from server_failure import ServerFailure
 
+SCALE_STRING = "Scale: {} ({} max cores)"
 
-def replace_text(element: Union[tk.Text, tk.Spinbox], text: str):
+
+def replace_text(element: Union[tk.Text, tk.Spinbox], text: str) -> None:
     if isinstance(element, tk.Text):
         index = 1.0
         element.config(state=tk.NORMAL)
@@ -33,6 +35,9 @@ class Visualisation:
         config = "./configs/personal-config16.xml"
         log = "./logs/personal-config16-pl05-bf.log"
         failures = "./failures/personal-config16-pl05-failures.txt"
+        # config = "./configs/config100.xml"
+        # log = "./logs/config100-g5k06-bf.log"
+        # failures = "./failures/config100-g5k06-failures.txt"
         self.c_height = 10
         scale = 5
         margin = 40
@@ -49,8 +54,8 @@ class Visualisation:
         self.j_graph_ids = {jid: [] for jid in self.unique_jids}  # type: Dict[int, List[Tuple[int, str]]]
 
         self.max_scale = int(math.log(max(s.cores for s in self.s_list), 2))
-        self.base_scale = min(scale, self.max_scale)
-        self.s_factor = 2 ** self.base_scale
+        self.cur_scale = min(scale, self.max_scale)
+        scale_factor = 2 ** self.cur_scale
 
         t_width = 1600
         t_height = 600
@@ -113,12 +118,14 @@ class Visualisation:
                                  font=font.Font(family="Courier", size=11, underline=True))
         self.filename.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        self.scale_label = tk.Label(title, text="Scale: ()", font=courier_11)
+        self.scale_label = tk.Label(title, text=SCALE_STRING.format(self.cur_scale, scale_factor), font=courier_11)
         self.scale_label.pack(side=tk.LEFT)
         btn_width = 4
-        self.scale_down_btn = tk.Button(title, text='-', bg="blue", fg="white", font=courier_8, width=btn_width)
+        self.scale_down_btn = tk.Button(title, text='-', bg="blue", fg="white", font=courier_8, width=btn_width,
+                                        command=self.decrease_scale)
         self.scale_down_btn.pack(side=tk.LEFT)
-        self.scale_up_btn = tk.Button(title, text='+', bg="blue", fg="white", font=courier_8, width=btn_width)
+        self.scale_up_btn = tk.Button(title, text='+', bg="blue", fg="white", font=courier_8, width=btn_width,
+                                      command=self.increase_scale)
         self.scale_up_btn.pack(side=tk.LEFT)
 
         # Controls section
@@ -146,7 +153,8 @@ class Visualisation:
         t_yscroll = tk.Scrollbar(timeline)
         t_yscroll.grid(row=0, column=1, sticky=tk.NS)
 
-        self.height = self.calc_height(self.s_factor)
+        # TODO set width dynamically
+        self.height = self.calc_height(scale_factor)
         self.graph = tk.Canvas(timeline, yscrollcommand=t_yscroll.set, scrollregion=(0, 0, t_width, self.height),
                                bg="white")
         self.graph.grid(row=0, column=0, sticky=tk.NSEW)
@@ -180,16 +188,16 @@ class Visualisation:
     def on_mousewheel(self, event) -> None:
         self.graph.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
-    def server_slider_callback(self, server_index: str):
+    def server_slider_callback(self, server_index: str) -> None:
         self.update_server(int(server_index))
 
-    def job_slider_callback(self, job_id: str):
+    def job_slider_callback(self, job_id: str) -> None:
         self.update_job(int(job_id))
 
-    def time_slider_callback(self, time: str):
+    def time_slider_callback(self, time: str) -> None:
         self.update_time(int(time))
 
-    def server_spin_callback(self):
+    def server_spin_callback(self) -> None:
         server_info = self.server_slider.spin.get().split()
         server_type = server_info[0]
         server_id = int(server_info[1])
@@ -198,13 +206,39 @@ class Visualisation:
         server_index = self.s_list.index(cur_server)
         self.update_server(server_index)
 
-    def job_spin_callback(self):
+    def job_spin_callback(self) -> None:
         job_id = int(self.job_slider.spin.get())
         self.update_job(job_id)
 
-    def time_spin_callback(self):
+    def time_spin_callback(self) -> None:
         time = int(self.time_slider.spin.get())
         self.update_time(time)
+
+    def change_scaling(self, scale: int):
+        self.graph.delete("all")
+
+        scale_factor = 2 ** scale
+        self.height = self.calc_height(scale_factor)
+        self.graph.config(height=self.height, scrollregion=(0, 0, self.width, self.height))
+        self.draw(scale)
+        self.scale_label.config(text=SCALE_STRING.format(scale, scale_factor))
+
+        # if show_job:
+        #     self.change_job_colour(prev_jid, self.highlight_colour)
+
+    def decrease_scale(self) -> None:
+        if self.cur_scale <= 0:
+            pass
+        else:
+            self.cur_scale -= 1
+            self.change_scaling(self.cur_scale)
+
+    def increase_scale(self) -> None:
+        if self.cur_scale >= self.max_scale:
+            pass
+        else:
+            self.cur_scale += 1
+            self.change_scaling(self.cur_scale)
 
     def norm_times(self, arr: np.ndarray) -> np.ndarray:
         return np.interp(arr, (0, Server.end_time), (self.axis, self.width))
