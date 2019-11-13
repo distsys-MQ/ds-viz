@@ -18,7 +18,7 @@ SCALE_STRING = "Scale: {} ({} max cores)"
 HIGHLIGHT = "yellow"
 
 
-def replace_text(element: Union[tk.Text, tk.Spinbox], text: str) -> None:
+def replace_text(element: Union[tk.Text, tk.Spinbox], text: Union[str, int]) -> None:
     if isinstance(element, tk.Text):
         index = 1.0
         element.config(state=tk.NORMAL)
@@ -196,6 +196,7 @@ class Visualisation:
                     cur_server = self.servers[server_type][server_id]
                     server_index = self.s_list.index(cur_server)
                     self.update_server(server_index)
+                    self.server_slider.scale.set(server_index)
 
     def job_spin_callback(self, event=None) -> None:
         spin_value = self.job_slider.spin.get()  # type: str
@@ -203,6 +204,7 @@ class Visualisation:
 
         if job_id in self.unique_jids:
             self.update_job(job_id)
+            self.job_slider.scale.set(job_id)
 
     def time_spin_callback(self, event=None) -> None:
         spin_value = self.time_slider.spin.get()  # type: str
@@ -210,6 +212,7 @@ class Visualisation:
 
         if time in range(0, Server.end_time):
             self.update_time(time)
+            self.time_slider.scale.set(time)
 
     def show_job_callback(self):
         self.show_job = not self.show_job
@@ -292,11 +295,13 @@ class Visualisation:
 
         replace_text(self.cur_server_text, self.cur_server.print_server_at(self.cur_time))
         replace_text(self.cur_server_jobs_text, self.cur_server.print_job_info(self.cur_time))
+        replace_text(self.server_slider.spin, "{} {}".format(self.cur_server.type_, self.cur_server.sid))
 
     def update_job(self, job_id: Union[str, int]) -> None:
         old_job = self.cur_job
         self.cur_job = job.get_job_at(self.jobs[job_id], self.cur_time)
         replace_text(self.cur_job_text, self.cur_job.print_job(self.cur_time))
+        replace_text(self.job_slider.spin, self.cur_job.jid)
 
         if self.show_job:
             self.reset_job_colour(old_job)
@@ -308,6 +313,7 @@ class Visualisation:
         self.update_server(self.s_index)
         self.update_job(self.cur_job.jid)
         replace_text(self.cur_res_text, server.print_servers_at(self.s_list, self.cur_time))
+        replace_text(self.time_slider.spin, time)
 
         self.norm_time = int(self.norm_times(np.array([self.cur_time]))[0])
         self.move_to(self.timeline_cursor, self.norm_time, 0)
