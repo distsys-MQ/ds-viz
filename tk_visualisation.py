@@ -1,5 +1,6 @@
 import math
 import os
+import sys
 import tkinter as tk
 from operator import attrgetter
 from tkinter import ttk, font, scrolledtext
@@ -58,11 +59,7 @@ class Visualisation:
         self.cur_scale = min(scale, self.max_scale)
         scale_factor = 2 ** self.cur_scale
 
-        t_width = 1600
-        t_height = 600
-
         self.root = tk.Tk()
-        self.root.geometry("{}x{}".format(t_width, t_height))
         self.root.columnconfigure(0, weight=1)  # Fill window width
         self.root.rowconfigure(3, weight=1)  # Timeline fills remaining window height
 
@@ -156,20 +153,25 @@ class Visualisation:
         t_yscroll = tk.Scrollbar(timeline)
         t_yscroll.grid(row=0, column=1, sticky=tk.NS)
 
-        # TODO set width dynamically
         self.height = self.calc_height(scale_factor)
-        self.graph = tk.Canvas(timeline, yscrollcommand=t_yscroll.set, scrollregion=(0, 0, t_width, self.height),
-                               bg="white")
+        self.graph = tk.Canvas(timeline, bg="white", yscrollcommand=t_yscroll.set)
         self.graph.grid(row=0, column=0, sticky=tk.NSEW)
         t_yscroll.config(command=self.graph.yview)
+
+        if sys.platform == "linux":
+            self.root.attributes("-zoomed", True)
+        else:
+            self.root.state("zoomed")
+
+        self.root.update()
+        self.width = self.graph.winfo_width() - margin / 4
+        self.graph.config(scrollregion=(0, 0, self.width, self.height))
+        self.graph.yview_moveto(0)  # Start scroll at top
+
         # https://stackoverflow.com/a/37858368/8031185
         timeline.bind("<Enter>", lambda _: self.graph.bind_all(
             "<MouseWheel>", lambda event: self.graph.yview_scroll(int(-1 * (event.delta / 120)), "units")))
         timeline.bind("<Leave>", lambda _: self.graph.unbind_all("<MouseWheel>"))
-
-        self.root.update()
-        self.width = self.graph.winfo_width() - margin / 4
-        self.graph.yview_moveto(0)  # Start scroll at top
 
         self.norm_time = self.axis
         self.timeline_cursor = None
