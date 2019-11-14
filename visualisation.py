@@ -37,25 +37,25 @@ def replace_text(element: Union[tk.Text, tk.Spinbox], text: Union[str, int]) -> 
 
 
 class Visualisation:
-    def __init__(self, config: str, failures: str, log: str, c_height: int = 4, scale: int = 0, width: int = 1):
-        self.c_height = c_height
-        margin = 40
-        self.axis = margin * 2
+    def __init__(self, config: str, failures: str, log: str, core_height: int = 4, scale: int = 0, width: int = 1):
+        self.core_height = core_height
 
+        # Simulation log data
         self.servers = server.get_servers_from_system(log, config, failures)
         # TODO Replace with calls to traverse_servers
-        self.s_list = [s for s in server.traverse_servers(self.servers)]  # type: List[Server]
-        self.unique_jids = sorted({j.jid for s in self.s_list for j in s.jobs})
+        self.server_list = [s for s in server.traverse_servers(self.servers)]  # type: List[Server]
+        self.unique_jids = sorted({j.jid for s in self.server_list for j in s.jobs})
         self.jobs = {
-            jid: sorted([j for s in self.s_list for j in s.jobs if j.jid == jid], key=attrgetter("schd"))
+            jid: sorted([j for s in self.server_list for j in s.jobs if j.jid == jid], key=attrgetter("schd"))
             for jid in self.unique_jids
         }  # type: Dict[int, List[Job]]
-        self.j_graph_ids = {jid: [] for jid in self.unique_jids}  # type: Dict[int, List[Tuple[int, str]]]
+        self.job_graph_ids = {jid: [] for jid in self.unique_jids}  # type: Dict[int, List[Tuple[int, str]]]
 
-        self.max_scale = int(math.log(max(s.cores for s in self.s_list), 2))
+        self.max_scale = int(math.log(max(s.cores for s in self.server_list), 2))
         self.cur_scale = min(scale, self.max_scale)
         scale_factor = 2 ** self.cur_scale
 
+        # GUI construction
         root = tk.Tk()
         root.title("ds-viz")
         root.columnconfigure(0, weight=1)  # Fill window width
@@ -131,7 +131,7 @@ class Visualisation:
         controls.grid(row=2, column=0, sticky=tk.NSEW)
         controls.columnconfigure(0, weight=1)
 
-        self.server_slider = Slider(controls, "Server", 0, len(self.s_list) - 1,
+        self.server_slider = Slider(controls, "Server", 0, len(self.server_list) - 1,
                                     tuple((str(s) for s in server.traverse_servers(self.servers))),
                                     lambda s_index: self.update_server(int(s_index)), self.server_spin_callback)
         self.server_slider.grid(row=0, column=0, sticky=tk.NSEW)
@@ -148,33 +148,36 @@ class Visualisation:
         timeline.rowconfigure(0, weight=1)
         timeline.columnconfigure(0, weight=1)
 
-        t_xscroll = tk.Scrollbar(timeline, orient=tk.HORIZONTAL)
-        t_xscroll.grid(row=1, column=0, sticky=tk.EW)
-        t_yscroll = tk.Scrollbar(timeline)
-        t_yscroll.grid(row=0, column=1, sticky=tk.NS)
+        graph_xscroll = tk.Scrollbar(timeline, orient=tk.HORIZONTAL)
+        graph_xscroll.grid(row=1, column=0, sticky=tk.EW)
+        graph_yscroll = tk.Scrollbar(timeline)
+        graph_yscroll.grid(row=0, column=1, sticky=tk.NS)
 
         self.height = self.calc_height(scale_factor)
-        self.graph = tk.Canvas(timeline, bg="white", xscrollcommand=t_xscroll.set, yscrollcommand=t_yscroll.set)
+        self.graph = tk.Canvas(timeline, bg="white", xscrollcommand=graph_xscroll.set, yscrollcommand=graph_yscroll.set)
         self.graph.grid(row=0, column=0, sticky=tk.NSEW)
 
-        t_xscroll.config(command=self.graph.xview)
-        t_yscroll.config(command=self.graph.yview)
+        graph_xscroll.config(command=self.graph.xview)
+        graph_yscroll.config(command=self.graph.yview)
 
         if sys.platform == "linux":
             root.attributes("-zoomed", True)
         else:
             root.state("zoomed")
 
+        # Variables for runtime use
+        margin = 40
+        self.axis = margin * 2
         self.norm_time = self.axis
         self.timeline_cursor = None
         self.timeline_pointer = None
-        self.s_pointer = None
-        self.s_pointer_x = self.axis - 8
-        self.server_ys = [self.c_height]  # type: List[int]
-        self.s_index = 0
+        self.server_pointer = None
+        self.server_pointer_x = self.axis - 8
+        self.server_ys = [self.core_height]  # type: List[int]
 
         self.cur_time = 0
-        self.cur_server = self.s_list[0]  # type: Server
+        self.server_index = 0
+        self.cur_server = self.server_list[self.server_index]  # type: Server
         self.cur_job = self.jobs[self.unique_jids[0]][0]  # type: Job
 
         self.width = 0  # Prevents an AttributeError when callback methods are executed during the update() call
@@ -200,12 +203,11 @@ class Visualisation:
 
                 if server_type in self.servers and server_id in self.servers[server_type]:
                     cur_server = self.servers[server_type][server_id]
-                    server_index = self.s_list.index(cur_server)
+                    server_index = self.server_list.index(cur_server)
                     self.update_server(server_index)
                     self.server_slider.scale.set(server_index)
 
-    # noinspection PyUnusedLocal
-    def job_spin_callback(self, event=None) -> None:
+    def job_spin_callback(self, _) -> None:
         spin_value = self.job_slider.spin.get()  # type: str
         job_id = int(spin_value) if spin_value.isdigit() else -1
 
@@ -213,8 +215,7 @@ class Visualisation:
             self.update_job(job_id)
             self.job_slider.scale.set(job_id)
 
-    # noinspection PyUnusedLocal
-    def time_spin_callback(self, event=None) -> None:
+    def time_spin_callback(self, _) -> None:
         spin_value = self.time_slider.spin.get()  # type: str
         time = int(spin_value) if spin_value.isdigit() else -1
 
@@ -222,7 +223,7 @@ class Visualisation:
             self.update_time(time)
             self.time_slider.scale.set(time)
 
-    def show_job_callback(self):
+    def show_job_callback(self) -> None:
         self.show_job = not self.show_job
 
         if self.show_job:
@@ -232,15 +233,15 @@ class Visualisation:
             self.show_job_btn.config(bg="red")
             self.reset_job_colour(self.cur_job)
 
-    def change_job_colour(self, j: Job, col: str):
-        for j_graph_id, _ in self.j_graph_ids[j.jid]:
+    def change_job_colour(self, j: Job, col: str) -> None:
+        for j_graph_id, _ in self.job_graph_ids[j.jid]:
             self.graph.itemconfig(j_graph_id, fill=col)
 
     def reset_job_colour(self, j: Job):
-        for j_graph_id, orig_col in self.j_graph_ids[j.jid]:
+        for j_graph_id, orig_col in self.job_graph_ids[j.jid]:
             self.graph.itemconfig(j_graph_id, fill=orig_col)
 
-    def change_scaling(self, scale: int):
+    def change_scaling(self, scale: int) -> None:
         self.graph.delete("all")
 
         scale_factor = 2 ** scale
@@ -294,12 +295,12 @@ class Visualisation:
         return [ServerFailure(fail, recover) for (fail, recover) in [(int(f), int(r)) for (f, r) in arr]]
 
     def calc_height(self, scale: int) -> int:
-        return sum(min(s.cores, scale) for s in self.s_list) * self.c_height + self.c_height * 2
+        return sum(min(s.cores, scale) for s in self.server_list) * self.core_height + self.core_height * 2
 
     def update_server(self, server_index: int) -> None:
-        self.s_index = server_index
-        self.cur_server = self.s_list[self.s_index]
-        self.move_to(self.s_pointer, self.s_pointer_x, self.server_ys[self.s_index])
+        self.server_index = server_index
+        self.cur_server = self.server_list[self.server_index]
+        self.move_to(self.server_pointer, self.server_pointer_x, self.server_ys[self.server_index])
 
         replace_text(self.cur_server_text, self.cur_server.print_server_at(self.cur_time))
         replace_text(self.cur_server_jobs_text, self.cur_server.print_job_info(self.cur_time))
@@ -318,103 +319,105 @@ class Visualisation:
     def update_time(self, time: int) -> None:
         self.cur_time = time
 
-        self.update_server(self.s_index)
+        self.update_server(self.server_index)
         self.update_job(self.cur_job.jid)
-        replace_text(self.cur_res_text, server.print_servers_at(self.s_list, self.cur_time))
+        replace_text(self.cur_res_text, server.print_servers_at(self.server_list, self.cur_time))
         replace_text(self.time_slider.spin, time)
 
         self.norm_time = int(self.norm_times(np.array([self.cur_time]))[0])
         self.move_to(self.timeline_cursor, self.norm_time, 0)
         self.move_to(self.timeline_pointer, self.norm_time, 0)
 
-    def move_to(self, shape, x: int, y: int):
+    def move_to(self, shape, x: int, y: int) -> None:
         if shape:
             xy = self.graph.coords(shape)
             self.graph.move(shape, x - xy[0], y - xy[1])
 
     def draw(self, scale: int) -> None:
-        last = self.c_height
+        last = self.core_height
         axis = self.axis - 1
         tick = 3
-        s_fact = 2 ** scale
+        scale_factor = 2 ** scale
         canvas_font = font.Font(family="Courier", size=8)
-        s_height = None
+        server_height = None
         self.server_ys = []
 
         self.graph.create_line(axis, 0, self.width, 0)  # x-axis
         self.graph.create_line(axis, 0, axis, self.height)  # y-axis
 
         for type_ in list(self.servers):
-            type_y = last
-            s_type = truncate(type_)
-            s_type_x = 35
+            server_type = truncate(type_)
+            server_type_x = 35
+            server_type_y = last
 
-            self.graph.create_text(s_type_x, type_y, text=s_type, font=canvas_font)
-            self.graph.create_line(axis - tick * 3, type_y, axis, type_y)  # Server type tick mark
+            self.graph.create_text(server_type_x, server_type_y, text=server_type, font=canvas_font)
+            self.graph.create_line(axis - tick * 3, server_type_y, axis, server_type_y)  # Server type tick mark
 
             for i, s in enumerate(self.servers[type_].values()):
-                s_scale = min(s.cores, s_fact)
-                s_height = s_scale * self.c_height
+                server_scale = min(s.cores, scale_factor)
+                server_height = server_scale * self.core_height
 
-                server_y = type_y + s_height * i
+                server_y = server_type_y + server_height * i
                 self.graph.create_line(axis - tick * 2.5, server_y, axis, server_y)  # Server ID tick mark
                 self.server_ys.append(server_y - 1)
 
                 # self.graph.draw_line(axis, server_y, self.width - self.right_margin, server_y)  # Server border
 
-                for k in range(s_scale):
-                    core_y = server_y + self.c_height * k
+                for k in range(server_scale):
+                    core_y = server_y + self.core_height * k
                     self.graph.create_line(axis - tick, core_y, axis, core_y)  # Server core tick mark
 
                 jobs = self.norm_jobs(s.jobs)
                 for jb in jobs:
-                    j_scale = min(jb.cores, s_fact)
+                    job_scale = min(jb.cores, scale_factor)
 
                     # Only check if previous jobs are overlapping, later jobs should be stacked on previous jobs
                     overlap = list(filter(lambda j: j.is_overlapping(jb), jobs[:jobs.index(jb)]))
                     used_cores = sum(j.cores for j in overlap)
 
                     # Draw a job bar for every core used by the job, up to the scaling factor
-                    for k in range(j_scale):
+                    for k in range(job_scale):
                         # Offset by number of job's cores + sum of cores used by concurrent jobs
                         # If offset would exceed server height, reset to the top
                         # Also need to adjust y position by half c_height to align job bar edge with server ticks
-                        job_core = (used_cores + k) % s_scale
-                        job_y = server_y + job_core * self.c_height + self.c_height * 0.5
+                        job_core = (used_cores + k) % server_scale
+                        job_y = server_y + job_core * self.core_height + self.core_height * 0.5
 
                         if not jb.will_fail and jb.fails == 0:
-                            col = "green"
+                            colour = "green"
                         else:
-                            base_col = 180
-                            fail_col = max(base_col - jb.fails, 0)  # Can't be darker than black (0, 0, 0)
-                            col = "#{0:02X}{0:02X}{0:02X}".format(fail_col)
+                            base_colour = 180
+                            fail_colour = max(base_colour - jb.fails, 0)  # Can't be darker than black (0, 0, 0)
+                            colour = "#{0:02X}{0:02X}{0:02X}".format(fail_colour)
 
-                        self.j_graph_ids[jb.jid].append(
+                        self.job_graph_ids[jb.jid].append(
                             (self.graph.create_line(
                                 jb.start, job_y,
                                 jb.end, job_y,
-                                width=self.c_height, fill=col),
-                             col)
+                                width=self.core_height, fill=colour),
+                             colour)
                         )
 
                 for fail in self.norm_server_failures(s.failures):
                     fail_y1 = server_y
-                    fail_y2 = server_y + s_height - 1
+                    fail_y2 = server_y + server_height - 1
                     self.graph.create_rectangle(
                         fail.fail, fail_y1,
                         fail.recover, fail_y2,
                         fill="red", outline="red"
                     )
 
-            last = type_y + s_height * len(self.servers[type_])
+            last = server_type_y + server_height * len(self.servers[type_])
 
         # Need to redraw these for them to persist after 'erase' call
-        self.timeline_cursor = self.graph.create_line(self.norm_time, 0, self.norm_time, self.height)
+        self.timeline_cursor = self.graph.create_line(
+            self.norm_time, 0, self.norm_time, self.height)
 
-        self.timeline_pointer = self.graph.create_text(self.norm_time, 0, text='▼',
-                                                       font=font.Font(family="Symbol", size=self.c_height + 5))
-        self.s_pointer = self.graph.create_text(self.s_pointer_x, self.server_ys[self.s_index] - 1,
-                                                text='▶', font=font.Font(family="Symbol", size=self.c_height + 2))
+        self.timeline_pointer = self.graph.create_text(
+            self.norm_time, 0, text='▼', font=font.Font(family="Symbol", size=self.core_height + 5))
+        self.server_pointer = self.graph.create_text(
+            self.server_pointer_x, self.server_ys[self.server_index] - 1,
+            text='▶', font=font.Font(family="Symbol", size=self.core_height + 2))
 
     def run(self) -> None:
         self.draw(self.cur_scale)
