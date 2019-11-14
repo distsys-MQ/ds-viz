@@ -165,6 +165,19 @@ class Visualisation:
         else:
             root.state("zoomed")
 
+        self.norm_time = self.axis
+        self.timeline_cursor = None
+        self.timeline_pointer = None
+        self.s_pointer = None
+        self.s_pointer_x = self.axis - 8
+        self.server_ys = [self.c_height]  # type: List[int]
+        self.s_index = 0
+
+        self.cur_time = 0
+        self.cur_server = self.s_list[0]  # type: Server
+        self.cur_job = self.jobs[self.unique_jids[0]][0]  # type: Job
+
+        self.width = 0  # Prevents an AttributeError when callback methods are executed during the update() call
         root.update()
         self.width = (self.graph.winfo_width() - margin / 4) * width
         self.graph.config(scrollregion=(0, 0, self.width, self.height))
@@ -174,18 +187,6 @@ class Visualisation:
             "<MouseWheel>", lambda event: self.graph.yview_scroll(int(-1 * (event.delta / 120)), "units"))
         self.graph.bind(
             "<Shift-MouseWheel>", lambda event: self.graph.xview_scroll(int(-1 * (event.delta / 120)), "units"))
-
-        self.norm_time = self.axis
-        self.timeline_cursor = None
-        self.timeline_pointer = None
-        self.s_pointer = None
-        self.s_pointer_x = self.axis - 8
-        self.server_ys = []  # type: List[int]
-        self.s_index = 0
-
-        self.cur_time = 0
-        self.cur_server = self.s_list[0]  # type: Server
-        self.cur_job = self.jobs[self.unique_jids[0]][0]  # type: Job
 
     # noinspection PyUnusedLocal
     def server_spin_callback(self, event=None) -> None:
@@ -327,8 +328,9 @@ class Visualisation:
         self.move_to(self.timeline_pointer, self.norm_time, 0)
 
     def move_to(self, shape, x: int, y: int):
-        xy = self.graph.coords(shape)
-        self.graph.move(shape, x - xy[0], y - xy[1])
+        if shape:
+            xy = self.graph.coords(shape)
+            self.graph.move(shape, x - xy[0], y - xy[1])
 
     def draw(self, scale: int) -> None:
         last = self.c_height
