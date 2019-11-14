@@ -57,6 +57,7 @@ class Visualisation:
         scale_factor = 2 ** self.cur_scale
 
         root = tk.Tk()
+        root.title("ds-viz")
         root.columnconfigure(0, weight=1)  # Fill window width
         root.rowconfigure(3, weight=1)  # Timeline fills remaining window height
 
@@ -130,7 +131,7 @@ class Visualisation:
         controls.grid(row=2, column=0, sticky=tk.NSEW)
         controls.columnconfigure(0, weight=1)
 
-        self.server_slider = Slider(controls, "Slider", 0, len(self.s_list) - 1,
+        self.server_slider = Slider(controls, "Server", 0, len(self.s_list) - 1,
                                     tuple((str(s) for s in server.traverse_servers(self.servers))),
                                     lambda s_index: self.update_server(int(s_index)), self.server_spin_callback)
         self.server_slider.grid(row=0, column=0, sticky=tk.NSEW)
