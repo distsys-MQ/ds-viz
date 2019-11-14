@@ -147,12 +147,16 @@ class Visualisation:
         timeline.rowconfigure(0, weight=1)
         timeline.columnconfigure(0, weight=1)
 
+        t_xscroll = tk.Scrollbar(timeline, orient=tk.HORIZONTAL)
+        t_xscroll.grid(row=1, column=0, sticky=tk.EW)
         t_yscroll = tk.Scrollbar(timeline)
         t_yscroll.grid(row=0, column=1, sticky=tk.NS)
 
         self.height = self.calc_height(scale_factor)
-        self.graph = tk.Canvas(timeline, bg="white", yscrollcommand=t_yscroll.set)
+        self.graph = tk.Canvas(timeline, bg="white", xscrollcommand=t_xscroll.set, yscrollcommand=t_yscroll.set)
         self.graph.grid(row=0, column=0, sticky=tk.NSEW)
+
+        t_xscroll.config(command=self.graph.xview)
         t_yscroll.config(command=self.graph.yview)
 
         if sys.platform == "linux":
