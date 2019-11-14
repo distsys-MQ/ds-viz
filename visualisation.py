@@ -169,10 +169,10 @@ class Visualisation:
         self.graph.config(scrollregion=(0, 0, self.width, self.height))
         self.graph.yview_moveto(0)  # Start scroll at top
 
-        # https://stackoverflow.com/a/37858368/8031185
-        timeline.bind("<Enter>", lambda _: self.graph.bind_all(
-            "<MouseWheel>", lambda event: self.graph.yview_scroll(int(-1 * (event.delta / 120)), "units")))
-        timeline.bind("<Leave>", lambda _: self.graph.unbind_all("<MouseWheel>"))
+        self.graph.bind(
+            "<MouseWheel>", lambda event: self.graph.yview_scroll(int(-1 * (event.delta / 120)), "units"))
+        self.graph.bind(
+            "<Shift-MouseWheel>", lambda event: self.graph.xview_scroll(int(-1 * (event.delta / 120)), "units"))
 
         self.norm_time = self.axis
         self.timeline_cursor = None
