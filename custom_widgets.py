@@ -10,7 +10,7 @@ class Slider(tk.Frame):
 
         label_width = 6
         label_font = font.Font(family="Courier", size=11)
-        self.label = tk.Label(self, text=slider_label, width=label_width, font=label_font)
+        self.label = tk.Label(self, text=slider_label, width=label_width, font=label_font, anchor=tk.E)
         self.label.pack(side=tk.LEFT)
 
         self.scale = tk.Scale(self, from_=from_, to=to, orient=tk.HORIZONTAL, showvalue=False, command=scale_command)

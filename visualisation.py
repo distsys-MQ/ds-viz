@@ -15,8 +15,12 @@ from job import Job
 from server import Server
 from server_failure import ServerFailure
 
+# Constants
 SCALE_STRING = "Scale: {} ({} max cores)"
 HIGHLIGHT = "yellow"
+RED = "#e50000"
+BLUE = "#0000b2"
+GREEN = "#005900"
 
 
 def truncate(text: str, length: int = 10) -> str:
@@ -108,7 +112,7 @@ class Visualisation:
         title.grid(row=1, column=0, sticky=tk.NSEW)
 
         self.show_job = False
-        self.show_job_btn = tk.Button(title, text="Show Job", bg="red", fg="white", font=courier_8,
+        self.show_job_btn = tk.Button(title, text="Show Job", bg=RED, fg="white", font=courier_8,
                                       command=self.show_job_callback)
         self.show_job_btn.pack(side=tk.LEFT)
 
@@ -119,10 +123,10 @@ class Visualisation:
         self.scale_label = tk.Label(title, text=SCALE_STRING.format(self.cur_scale, scale_factor), font=courier_11)
         self.scale_label.pack(side=tk.LEFT)
         btn_width = 4
-        self.scale_down_btn = tk.Button(title, text='-', bg="blue", fg="white", font=courier_8, width=btn_width,
+        self.scale_down_btn = tk.Button(title, text='-', bg=BLUE, fg="white", font=courier_8, width=btn_width,
                                         command=self.decrease_scale)
         self.scale_down_btn.pack(side=tk.LEFT)
-        self.scale_up_btn = tk.Button(title, text='+', bg="blue", fg="white", font=courier_8, width=btn_width,
+        self.scale_up_btn = tk.Button(title, text='+', bg=BLUE, fg="white", font=courier_8, width=btn_width,
                                       command=self.increase_scale)
         self.scale_up_btn.pack(side=tk.LEFT)
 
@@ -182,7 +186,7 @@ class Visualisation:
 
         self.width = 0  # Prevents an AttributeError when callback methods are executed during the update() call
         root.update()
-        self.width = (self.graph.winfo_width() - margin / 4) * width
+        self.width = self.graph.winfo_width() * width - margin / 4
         self.graph.config(scrollregion=(0, 0, self.width, self.height))
         self.graph.yview_moveto(0)  # Start scroll at top
 
@@ -227,10 +231,10 @@ class Visualisation:
         self.show_job = not self.show_job
 
         if self.show_job:
-            self.show_job_btn.config(bg="green")
+            self.show_job_btn.config(bg=GREEN)
             self.change_job_colour(self.cur_job, HIGHLIGHT)
         else:
-            self.show_job_btn.config(bg="red")
+            self.show_job_btn.config(bg=RED)
             self.reset_job_colour(self.cur_job)
 
     def change_job_colour(self, j: Job, col: str) -> None:
