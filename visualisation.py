@@ -27,6 +27,12 @@ def truncate(text: str, length: int = 10) -> str:
     return text if len(text) <= length else text[:length - 3] + ".."
 
 
+def scroll_command(scroller):
+    def inner(event):
+        scroller(int(-1 * (event.delta / 120)), "units")
+    return inner
+
+
 def replace_text(element: Union[tk.Text, tk.Spinbox], text: Union[str, int]) -> None:
     if isinstance(element, tk.Text):
         index = 1.0
@@ -190,13 +196,10 @@ class Visualisation:
         self.graph.config(scrollregion=(0, 0, self.width, self.height))
         self.graph.yview_moveto(0)  # Start scroll at top
 
-        self.graph.bind(
-            "<MouseWheel>", lambda event: self.graph.yview_scroll(int(-1 * (event.delta / 120)), "units"))
-        self.graph.bind(
-            "<Shift-MouseWheel>", lambda event: self.graph.xview_scroll(int(-1 * (event.delta / 120)), "units"))
+        self.graph.bind("<MouseWheel>", scroll_command(self.graph.yview_scroll))
+        self.graph.bind("<Shift-MouseWheel>", scroll_command(self.graph.xview_scroll))
 
-    # noinspection PyUnusedLocal
-    def server_spin_callback(self, event=None) -> None:
+    def server_spin_callback(self, _) -> None:
         server_info = self.server_slider.spin.get().split()  # type: List[str]
 
         if len(server_info) == 2:
