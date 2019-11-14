@@ -410,9 +410,9 @@ class Visualisation:
         self.timeline_cursor = self.graph.create_line(self.norm_time, 0, self.norm_time, self.height)
 
         self.timeline_pointer = self.graph.create_text(self.norm_time, 0, text='▼',
-                                                       font=font.Font(family="Symbol", size=20))
+                                                       font=font.Font(family="Symbol", size=self.c_height + 5))
         self.s_pointer = self.graph.create_text(self.s_pointer_x, self.server_ys[self.s_index] - 1,
-                                                text='▶', font=font.Font(family="Symbol", size=12))
+                                                text='▶', font=font.Font(family="Symbol", size=self.c_height + 2))
 
     def run(self) -> None:
         self.draw(self.cur_scale)
