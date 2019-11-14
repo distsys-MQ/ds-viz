@@ -37,7 +37,7 @@ def replace_text(element: Union[tk.Text, tk.Spinbox], text: Union[str, int]) -> 
 
 
 class Visualisation:
-    def __init__(self, config: str, failures: str, log: str, c_height: int = 4, scale: int = 0):
+    def __init__(self, config: str, failures: str, log: str, c_height: int = 4, scale: int = 0, width: int = 1):
         self.c_height = c_height
         margin = 40
         self.axis = margin * 2
@@ -166,7 +166,7 @@ class Visualisation:
             root.state("zoomed")
 
         root.update()
-        self.width = self.graph.winfo_width() - margin / 4
+        self.width = (self.graph.winfo_width() - margin / 4) * width
         self.graph.config(scrollregion=(0, 0, self.width, self.height))
         self.graph.yview_moveto(0)  # Start scroll at top
 

@@ -10,6 +10,9 @@
     - `-s num` to specify the initial scaling factor to `num`. Default is the maximum scaling factor possible.
     The scaling factor will determine the maximum number of cores to display per server, represented as an exponent
     of 2. E.g. a scale factor of 3 will display at most 8 cores per server.
+    - `-w num` to specify the width of the visualisation as a multiple of window width. Default is 1. A width value
+    of `1` will make the timeline fill the entire width of the window, a value of `2` will make the timeline twice
+    as wide as the window.
 - The following example will produce a visualisation of the server log saved in `g5k06-config100.xml.log`, using
 the system information from `config100.xml` and the resource failure information from `g5k06-config100-fails.txt`.
 Each core will be `10` pixels tall and the initial scaling factor is set to `2` (maximum of 4 cores per server).
