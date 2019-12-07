@@ -1,6 +1,6 @@
-# ds-sim server 12-Aug, 2019 @ MQ
+# ds-sim server 06-Nov, 2019 @ MQ
 # Server-side simulator started with './ds-server -n -v brief -c configs/testing/day1/config100.xml -f ldns04'
-# Waiting for connection to port 49152 of IP address 127.0.0.1
+# Waiting for connection to port 50000 of IP address 127.0.0.1
 RCVD HELO
 SENT OK
 RCVD AUTH jak0723
@@ -20675,8 +20675,6 @@ t:      86449 job  2956 (running) on # 0 of server 5xlarge (active) SCHEDULED
 t:      86449 job  2956 on # 0 of server 5xlarge RUNNING
 SENT OK
 RCVD REDY
-SENT NONE
-RCVD QUIT
 t:      86520 job  2956 on # 0 of server 5xlarge COMPLETED
 t:      86615 job  2941 on # 0 of server 5xlarge COMPLETED
 t:      86638 job  2954 on # 0 of server 5xlarge COMPLETED
@@ -20709,6 +20707,8 @@ t:      90506 job  2923 on # 0 of server 5xlarge COMPLETED
 t:      91384 job  2508 on # 0 of server 5xlarge COMPLETED
 t:      94547 job  2843 on # 0 of server 5xlarge COMPLETED
 t:      96909 job  2825 on # 0 of server 5xlarge COMPLETED
+SENT NONE
+RCVD QUIT
 SENT QUIT
 # ---------------------------------------------------------------------------
 # 0 tiny servers used with a utilisation of 0.00 at the cost of $0.00

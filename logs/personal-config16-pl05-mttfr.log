@@ -1,4 +1,4 @@
-# ds-sim server 23-Sep, 2019 @ MQ
+# ds-sim server 06-Nov, 2019 @ MQ
 # Server-side simulator started with './ds-server -n -v brief -c configs/scheduling/personal-config16.xml -f pl05'
 # Waiting for connection to port 50000 of IP address 127.0.0.1
 RCVD HELO
@@ -122,10 +122,10 @@ SENT NONE
 RCVD QUIT
 SENT QUIT
 # ---------------------------------------------------------------------------
-# 2 tiny servers used with a utilisation of -214.40 at the cost of $0.08
-# 1 small servers used with a utilisation of 100.00 at the cost of $0.04
-# 2 medium servers used with a utilisation of 51.60 at the cost of $0.54
+# 2 tiny servers used with a utilisation of 0.05 at the cost of $369.93
+# 1 small servers used with a utilisation of 27.76 at the cost of $0.14
+# 2 medium servers used with a utilisation of 0.02 at the cost of $1511.59
 # =============================== [ Overall ] ===============================
-# actual simulation end time: 1487
-# total #servers used: 5, avg utilisation: -45.12 and total cost: $0.66
-# avg waiting time: 102, avg exec time: 408 and avg turnaround time: 511
+# actual simulation end time: 2273
+# total #servers used: 5, avg utilisation: 5.58 and total cost: $1881.66
+# avg waiting time: 68, avg exec time: 272 and avg turnaround time: 340

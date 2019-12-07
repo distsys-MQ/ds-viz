@@ -21,7 +21,9 @@ parser.add_argument("-c", "--core_height", type=int, default=8, action=MinInt, m
                     help="set core height, minimum value of 1")
 parser.add_argument("-s", "--scale", type=int, default=sys.maxsize, action=MinInt,
                     help="set scaling factor of visualisation")
+parser.add_argument("-w", "--width", type=int, default=1, action=MinInt, min_int=1,
+                    help="set visualisation width as a multiple of window width, minimum value of 1")
 args = parser.parse_args()
 
-viz = Visualisation(args.config, args.failures, args.log, args.core_height, args.scale)
+viz = Visualisation(args.config, args.failures, args.log, args.core_height, args.scale, args.width)
 viz.run()
