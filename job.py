@@ -26,9 +26,9 @@ class Job:
             return False
         if self.start <= job.start and self.end >= job.end:  # self's runtime envelops job's runtime
             return True
-        elif job.start <= self.start <= job.end:  # self starts during job's runtime
+        elif job.start < self.start <= job.end:  # self starts during job's runtime
             return True
-        elif job.start <= self.end <= job.end:  # self ends during job's runtime
+        elif job.start < self.end <= job.end:  # self ends during job's runtime
             return True
         else:
             return False
