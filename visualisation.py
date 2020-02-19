@@ -198,7 +198,7 @@ class Visualisation:
         controls_height = 200
         root.geometry("{}x{}".format(self.width + margin, self.height + controls_height))
 
-    def server_spin_callback(self, _) -> None:
+    def server_spin_callback(self, _=None) -> None:
         server_info = self.server_slider.spin.get().split()  # type: List[str]
 
         if len(server_info) == 2:
@@ -213,7 +213,7 @@ class Visualisation:
                     self.update_server(server_index)
                     self.server_slider.scale.set(server_index)
 
-    def job_spin_callback(self, _) -> None:
+    def job_spin_callback(self, _=None) -> None:
         spin_value = self.job_slider.spin.get()  # type: str
         job_id = int(spin_value) if spin_value.isdigit() else -1
 
@@ -221,7 +221,7 @@ class Visualisation:
             self.update_job(job_id)
             self.job_slider.scale.set(job_id)
 
-    def time_spin_callback(self, _) -> None:
+    def time_spin_callback(self, _=None) -> None:
         spin_value = self.time_slider.spin.get()  # type: str
         time = int(spin_value) if spin_value.isdigit() else -1
 
