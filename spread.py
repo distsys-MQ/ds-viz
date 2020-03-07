@@ -3,6 +3,7 @@ import os
 
 import re
 from functools import total_ordering
+from typing import Callable
 
 
 @total_ordering
@@ -68,18 +69,30 @@ class Config:
         return self.trace >= other.trace
 
 
-def make_spreadsheet():
+re_turn = re.compile(r".* avg turnaround time: (\d+)")
+re_cost = re.compile(r".* total cost: \$(\d+\.?\d*)")
+
+
+def get_turnaround(line: str) -> str:
+    if line.startswith("# avg"):
+        return re_turn.match(line).group(1)
+
+
+def get_cost(line: str) -> str:
+    if line.startswith("# total"):
+        return re_cost.match(line).group(1)
+
+
+def make_spreadsheet(extract_results: Callable[[str], str]):
     folder = "results"
-    re_turn = re.compile(r".* avg turnaround time: (\d+)")
 
     with open("out.csv", 'w', newline='') as csv_f:
         writer = csv.writer(csv_f)
-        writer.writerow(["failure trace", "ff", "bf", "minwj", "csa"])
         last_servers = -1
         last_length_load = ""
-        # for config in sorted([Config(filename) for filename in os.listdir("results")],
-        #                      key=lambda c: (c.servers, c., x[1])):
         for config in sorted([Config(filename) for filename in os.listdir("results")]):
+            writer.writerow(["failure trace", "ff", "bf", "minwj", "csa"])
+
             with open("{}/{}".format(folder, config.filename), 'r') as log:
                 if config.servers != last_servers:
                     writer.writerow([config.servers])
@@ -90,14 +103,13 @@ def make_spreadsheet():
                     writer.writerow([length_load])
                     last_length_load = length_load
 
-                times = []
-
+                results = []
                 for line in log:
-                    if line.startswith("# avg"):
-                        turn = re_turn.match(line).group(1)
-                        times.append(turn)
+                    result = extract_results(line)
 
-                writer.writerow([config.trace] + times)
+                    if result is not None:
+                        results.append(result)
+                writer.writerow([config.trace] + results)
 
 
-make_spreadsheet()
+make_spreadsheet(get_turnaround)
