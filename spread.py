@@ -26,30 +26,22 @@ class Config:
         return self.filename
 
     def __lt__(self, other: "Config"):
-        # if self.filename == "config20-short-low-g5k06-results.txt" and other.filename == "config20-short-med-g5k06-results.txt":
-        if self.filename == "config20-short-med-g5k06-results.txt":
-            print("test")
-
-        if self.servers < other.servers:
-            return True
-        if self.load_index < other.load_index:
-            return True
-        if self.length > other.length:
-            return True
-        if self.trace < other.trace:
-            return True
-        return False
+        if self.servers != other.servers:
+            return self.servers < other.servers
+        if self.load_index != other.load_index:
+            return self.load_index < other.load_index
+        if self.length != other.length:
+            return self.length > other.length
+        return self.trace < other.trace
 
     def __le__(self, other: "Config"):
-        if self.servers <= other.servers:
-            return True
-        if self.load_index <= other.load_index:
-            return True
-        if self.length > other.length:
-            return True
-        if self.trace <= other.trace:
-            return True
-        return False
+        if self.servers != other.servers:
+            return self.servers < other.servers
+        if self.load_index != other.load_index:
+            return self.load_index < other.load_index
+        if self.length != other.length:
+            return self.length > other.length
+        return self.trace <= other.trace
 
     def __eq__(self, other: "Config"):
         return self.filename == other.filename
@@ -58,26 +50,22 @@ class Config:
         return self.filename != other.filename
 
     def __gt__(self, other: "Config"):
-        if self.servers > other.servers:
-            return True
-        if self.load_index > other.load_index:
-            return True
-        if self.length < other.length:
-            return True
-        if self.trace > other.trace:
-            return True
-        return False
+        if self.servers != other.servers:
+            return self.servers > other.servers
+        if self.load_index != other.load_index:
+            return self.load_index > other.load_index
+        if self.length != other.length:
+            return self.length < other.length
+        return self.trace > other.trace
 
     def __ge__(self, other: "Config"):
-        if self.servers >= other.servers:
-            return True
-        if self.load_index >= other.load_index:
-            return True
-        if self.length <= other.length:
-            return True
-        if self.trace >= other.trace:
-            return True
-        return False
+        if self.servers != other.servers:
+            return self.servers > other.servers
+        if self.load_index != other.load_index:
+            return self.load_index > other.load_index
+        if self.length != other.length:
+            return self.length < other.length
+        return self.trace >= other.trace
 
 
 def make_spreadsheet():
@@ -97,7 +85,7 @@ def make_spreadsheet():
                     writer.writerow([config.servers])
                     last_servers = config.servers
 
-                length_load = "{}-{}".format(config.length, config.load)
+                length_load = "{} jobs -- {} load".format(config.length, config.load)
                 if length_load != last_length_load:
                     writer.writerow([length_load])
                     last_length_load = length_load
@@ -112,5 +100,4 @@ def make_spreadsheet():
                 writer.writerow([config.trace] + times)
 
 
-# make_spreadsheet()
-print(sorted([Config(filename) for filename in os.listdir("results")]))
+make_spreadsheet()
