@@ -1,0 +1,68 @@
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ff <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 6-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config20-short-high.xml -f ldns04 -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 4 tiny servers used with a utilisation of 55.26 at the cost of $26.77
+# 4 small servers used with a utilisation of 47.50 at the cost of $20.12
+# 4 medium servers used with a utilisation of 28.82 at the cost of $819.48
+# 4 large servers used with a utilisation of 47.93 at the cost of $611.20
+# 4 xlarge servers used with a utilisation of 57.36 at the cost of $936.69
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 224706
+# total #servers used: 20, avg utilisation: 47.37 and total cost: $2414.25
+# avg waiting time: 10135, avg exec time: 611 and avg turnaround time: 10746
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> bf <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 6-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config20-short-high.xml -f ldns04 -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 4 tiny servers used with a utilisation of 34.58 at the cost of $30.75
+# 4 small servers used with a utilisation of 36.07 at the cost of $19.86
+# 4 medium servers used with a utilisation of 24.91 at the cost of $920.34
+# 4 large servers used with a utilisation of 42.53 at the cost of $690.62
+# 4 xlarge servers used with a utilisation of 54.41 at the cost of $977.87
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 232540
+# total #servers used: 20, avg utilisation: 38.50 and total cost: $2639.45
+# avg waiting time: 10751, avg exec time: 611 and avg turnaround time: 11362
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> minwj <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 6-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config20-short-high.xml -f ldns04 -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 4 tiny servers used with a utilisation of 53.82 at the cost of $43.76
+# 4 small servers used with a utilisation of 51.04 at the cost of $20.14
+# 4 medium servers used with a utilisation of 28.57 at the cost of $972.22
+# 4 large servers used with a utilisation of 53.99 at the cost of $753.02
+# 4 xlarge servers used with a utilisation of 60.20 at the cost of $979.98
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 179410
+# total #servers used: 20, avg utilisation: 49.52 and total cost: $2769.11
+# avg waiting time: 9561, avg exec time: 611 and avg turnaround time: 10173
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> csa <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 6-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config20-short-high.xml -f ldns04 -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 4 tiny servers used with a utilisation of 54.01 at the cost of $44.40
+# 4 small servers used with a utilisation of 50.68 at the cost of $20.14
+# 4 medium servers used with a utilisation of 23.83 at the cost of $914.10
+# 4 large servers used with a utilisation of 55.22 at the cost of $680.37
+# 4 xlarge servers used with a utilisation of 64.06 at the cost of $964.43
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 172874
+# total #servers used: 20, avg utilisation: 49.56 and total cost: $2623.44
+# avg waiting time: 9432, avg exec time: 611 and avg turnaround time: 10044
