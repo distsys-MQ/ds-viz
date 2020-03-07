@@ -2,6 +2,82 @@ import csv
 import os
 
 import re
+from functools import total_ordering
+
+
+@total_ordering
+class Config:
+    loads = ["low", "med", "high"]
+
+    def __init__(self, filename: str):
+        self.filename = filename
+
+        config = self.filename.split('-')
+        self.servers = int(config[0].split('g')[1])
+        self.length = config[1]
+        self.load = config[2]
+        self.load_index = Config.loads.index(self.load)
+        self.trace = config[3]
+
+    def __str__(self):
+        return self.filename
+
+    def __repr__(self):
+        return self.filename
+
+    def __lt__(self, other: "Config"):
+        # if self.filename == "config20-short-low-g5k06-results.txt" and other.filename == "config20-short-med-g5k06-results.txt":
+        if self.filename == "config20-short-med-g5k06-results.txt":
+            print("test")
+
+        if self.servers < other.servers:
+            return True
+        if self.load_index < other.load_index:
+            return True
+        if self.length > other.length:
+            return True
+        if self.trace < other.trace:
+            return True
+        return False
+
+    def __le__(self, other: "Config"):
+        if self.servers <= other.servers:
+            return True
+        if self.load_index <= other.load_index:
+            return True
+        if self.length > other.length:
+            return True
+        if self.trace <= other.trace:
+            return True
+        return False
+
+    def __eq__(self, other: "Config"):
+        return self.filename == other.filename
+
+    def __ne__(self, other: "Config"):
+        return self.filename != other.filename
+
+    def __gt__(self, other: "Config"):
+        if self.servers > other.servers:
+            return True
+        if self.load_index > other.load_index:
+            return True
+        if self.length < other.length:
+            return True
+        if self.trace > other.trace:
+            return True
+        return False
+
+    def __ge__(self, other: "Config"):
+        if self.servers >= other.servers:
+            return True
+        if self.load_index >= other.load_index:
+            return True
+        if self.length <= other.length:
+            return True
+        if self.trace >= other.trace:
+            return True
+        return False
 
 
 def make_spreadsheet():
@@ -11,25 +87,20 @@ def make_spreadsheet():
     with open("out.csv", 'w', newline='') as csv_f:
         writer = csv.writer(csv_f)
         writer.writerow(["failure trace", "ff", "bf", "minwj", "csa"])
-        servers = -1
-        config = ""
+        last_servers = -1
+        last_length_load = ""
+        # for config in sorted([Config(filename) for filename in os.listdir("results")],
+        #                      key=lambda c: (c.servers, c., x[1])):
+        for config in sorted([Config(filename) for filename in os.listdir("results")]):
+            with open("{}/{}".format(folder, config.filename), 'r') as log:
+                if config.servers != last_servers:
+                    writer.writerow([config.servers])
+                    last_servers = config.servers
 
-        for filename in os.listdir(folder):
-            with open("{}/{}".format(folder, filename), 'r') as log:
-                title = filename.split('-')
-                length = title[1]
-                load = title[2]
-                trace = title[3]
-
-                new_servers = title[0].split('g')[1]
-                if new_servers != servers:
-                    writer.writerow([new_servers])
-                    servers = new_servers
-
-                new_config = "{}-{}".format(length, load)
-                if new_config != config:
-                    writer.writerow([new_config])
-                    config = new_config
+                length_load = "{}-{}".format(config.length, config.load)
+                if length_load != last_length_load:
+                    writer.writerow([length_load])
+                    last_length_load = length_load
 
                 times = []
 
@@ -38,7 +109,8 @@ def make_spreadsheet():
                         turn = re_turn.match(line).group(1)
                         times.append(turn)
 
-                writer.writerow([trace] + times)
+                writer.writerow([config.trace] + times)
 
 
-make_spreadsheet()
+# make_spreadsheet()
+print(sorted([Config(filename) for filename in os.listdir("results")]))
