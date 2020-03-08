@@ -70,7 +70,7 @@ class Config:
 
 
 re_turn = re.compile(r".* avg turnaround time: (\d+)")
-re_cost = re.compile(r".* total cost: \$(\d+\.?\d*)")
+re_cost = re.compile(r".* total cost: \$(\d*\.?\d*)")
 
 
 def get_turnaround(line: str) -> str:
@@ -91,8 +91,6 @@ def make_spreadsheet(extract_results: Callable[[str], str]):
         last_servers = -1
         last_length_load = ""
         for config in sorted([Config(filename) for filename in os.listdir("results")]):
-            writer.writerow(["failure trace", "ff", "bf", "minwj", "csa"])
-
             with open("{}/{}".format(folder, config.filename), 'r') as log:
                 if config.servers != last_servers:
                     writer.writerow([config.servers])
@@ -101,6 +99,7 @@ def make_spreadsheet(extract_results: Callable[[str], str]):
                 length_load = "{} jobs -- {} load".format(config.length, config.load)
                 if length_load != last_length_load:
                     writer.writerow([length_load])
+                    writer.writerow(["", "failure trace", "ff", "bf", "minwj", "csa"])
                     last_length_load = length_load
 
                 results = []
@@ -109,7 +108,7 @@ def make_spreadsheet(extract_results: Callable[[str], str]):
 
                     if result is not None:
                         results.append(result)
-                writer.writerow([config.trace] + results)
+                writer.writerow(["", config.trace] + results)
 
 
 make_spreadsheet(get_turnaround)
