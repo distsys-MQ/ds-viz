@@ -2,6 +2,7 @@ import csv
 import os
 
 import re
+from argparse import ArgumentParser
 from functools import total_ordering
 from typing import Callable
 
@@ -83,15 +84,14 @@ def get_cost(line: str) -> str:
         return re_cost.match(line).group(1)
 
 
-def make_spreadsheet(extract_results: Callable[[str], str]):
-    folder = "results"
-
-    with open("out.csv", 'w', newline='') as csv_f:
+def make_spreadsheet(result_dir: str, output_filename: str, extract_results: Callable[[str], str]):
+    with open(output_filename, 'w', newline='') as csv_f:
         writer = csv.writer(csv_f)
         last_servers = -1
         last_length_load = ""
-        for config in sorted([Config(filename) for filename in os.listdir("results")]):
-            with open("{}/{}".format(folder, config.filename), 'r') as log:
+
+        for config in sorted([Config(filename) for filename in os.listdir(result_dir)]):
+            with open("{}/{}".format(result_dir, config.filename), 'r') as log:
                 if config.servers != last_servers:
                     writer.writerow([config.servers])
                     last_servers = config.servers
@@ -111,4 +111,16 @@ def make_spreadsheet(extract_results: Callable[[str], str]):
                 writer.writerow(["", config.trace] + results)
 
 
-make_spreadsheet(get_turnaround)
+extractors = {
+    "turnaround": get_turnaround,
+    "cost": get_cost
+}
+
+parser = ArgumentParser(description="Generates spreadsheets from logs")
+parser.add_argument("-d", "--dir", default="results", help="directory of logs")
+parser.add_argument("-o", "--out", default="out.csv", help="name of output file")
+parser.add_argument("-s", "--stat", default="turnaround", choices=["turnaround", "cost"],
+                    help="statistic to extract from logs")
+args = parser.parse_args()
+
+make_spreadsheet(args.dir, args.out, extractors[args.stat])
