@@ -1,7 +1,7 @@
 import csv
 import os
 import re
-from typing import Dict
+from typing import Dict, List
 
 
 class Video:
@@ -17,21 +17,9 @@ re_comp = re.compile(r".* filename:.*/(.*)\.mp4")
 re_sum = re.compile(r".* time: (\d*\.?\d*)s")
 
 
-def make_spreadsheet():
-    folder = "node4"
-
-    all_logs = [log for log in os.listdir(folder) if log.endswith(".log")]
-    worker_logs = [log for log in all_logs if log.startswith("worker")]
-    offline_logs = [log for log in all_logs if log.startswith("offline")]
-
-    # Each simulation log folder should contain only one master log
-    master_log_name = [log for log in all_logs if log.startswith("master")][0]
-
-    # Fill dictionary of device names with empty dictionaries
-    devices = {device[:-4]: {} for device in worker_logs}  # type: Dict[str, Dict[str, Video]]
-
+def parse_worker_logs(devices: Dict[str, Dict[str, Video]], worker_logs: List[str], log_dir: str):
     for filename in worker_logs:
-        with open("{}/{}".format(folder, filename), 'r') as work_log:
+        with open("{}/{}".format(log_dir, filename), 'r') as work_log:
             device_name = filename[:-4]
 
             for line in work_log:
@@ -51,7 +39,9 @@ def make_spreadsheet():
 
                     devices[device_name][video_name].sum_time = sum_time
 
-    with open("{}/{}".format(folder, master_log_name), 'r') as master_log:
+
+def parse_master_log(devices: Dict[str, Dict[str, Video]], master_name: str, log_dir: str):
+    with open("{}/{}".format(log_dir, master_name), 'r') as master_log:
         for line in master_log:
             down = re_down.match(line)
 
@@ -65,9 +55,11 @@ def make_spreadsheet():
                     if video_name in video_dict:
                         video_dict[video_name].return_time = return_time
 
-    with open("out.csv", 'w', newline='') as csv_f:
+
+def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_name: str, log_dir: str, out_name: str = "out.csv"):
+    with open(out_name, 'w', newline='') as csv_f:
         writer = csv.writer(csv_f)
-        writer.writerow(["{} ({})".format(folder, master_log_name)])
+        writer.writerow(["{} ({})".format(log_dir, master_name)])
 
         for device_name, video_dict in devices.items():
             writer.writerow([device_name])
@@ -77,4 +69,19 @@ def make_spreadsheet():
                 writer.writerow([video.name, video.down_time, video.return_time, video.sum_time])
 
 
-make_spreadsheet()
+def edge_spread(log_dir: str):
+    all_logs = [log for log in os.listdir(log_dir) if log.endswith(".log")]
+    offline_logs = [log for log in all_logs if log.startswith("offline")]
+    worker_logs = [log for log in all_logs if log.startswith("worker")]
+    # Each simulation log folder should contain only one master log
+    master_name = [log for log in all_logs if log.startswith("master")][0]
+
+    # Initialise device dictionary with empty dictionaries
+    devices = {device[:-4]: {} for device in worker_logs}
+
+    parse_worker_logs(devices, worker_logs, log_dir)
+    parse_master_log(devices, master_name, log_dir)
+    make_spreadsheet(devices, master_name, log_dir)
+
+
+edge_spread("node4")
