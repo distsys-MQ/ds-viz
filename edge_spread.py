@@ -1,7 +1,7 @@
 import csv
 import os
 import re
-from typing import Dict, List
+from typing import Dict
 
 
 class Video:
@@ -17,7 +17,11 @@ re_comp = re.compile(r".* filename:.*/(.*)\.mp4")
 re_sum = re.compile(r".* time: (\d*\.?\d*)s")
 
 
-def parse_worker_logs(devices: Dict[str, Dict[str, Video]], worker_logs: List[str], log_dir: str):
+def parse_worker_logs(log_dir: str) -> Dict[str, Dict[str, Video]]:
+    worker_logs = [log for log in os.listdir(log_dir) if log.startswith("worker")]
+    # Initialise device dictionary with empty dictionaries
+    devices = {device[:-4]: {} for device in worker_logs}
+
     for filename in worker_logs:
         with open("{}/{}".format(log_dir, filename), 'r') as work_log:
             device_name = filename[:-4]
@@ -38,6 +42,8 @@ def parse_worker_logs(devices: Dict[str, Dict[str, Video]], worker_logs: List[st
                     sum_time = float(re_sum.match(line).group(1))
 
                     devices[device_name][video_name].sum_time = sum_time
+
+    return devices
 
 
 def parse_master_log(devices: Dict[str, Dict[str, Video]], master_name: str, log_dir: str):
@@ -70,16 +76,9 @@ def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_name: str, log
 
 
 def edge_spread(log_dir: str):
-    all_logs = [log for log in os.listdir(log_dir) if log.endswith(".log")]
-    offline_logs = [log for log in all_logs if log.startswith("offline")]
-    worker_logs = [log for log in all_logs if log.startswith("worker")]
+    devices = parse_worker_logs(log_dir)
     # Each simulation log folder should contain only one master log
-    master_name = [log for log in all_logs if log.startswith("master")][0]
-
-    # Initialise device dictionary with empty dictionaries
-    devices = {device[:-4]: {} for device in worker_logs}
-
-    parse_worker_logs(devices, worker_logs, log_dir)
+    master_name = [log for log in os.listdir(log_dir) if log.startswith("master")][0]
     parse_master_log(devices, master_name, log_dir)
     make_spreadsheet(devices, master_name, log_dir)
 
