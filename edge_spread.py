@@ -30,28 +30,28 @@ def parse_worker_logs(log_dir: str) -> Dict[str, Dict[str, Video]]:
                 down = re_down.match(line)
                 comp = re_comp.match(line)
 
-                if down:
+                if down is not None:
                     video_name = down.group(1)
                     down_time = float(down.group(2))
 
                     video = Video(name=video_name, down_time=down_time)
                     devices[device_name][video_name] = video
-                elif comp:
+                elif comp is not None:
                     video_name = comp.group(1)
-                    line = work_log.readline()
-                    sum_time = float(re_sum.match(line).group(1))
+                    time_line = work_log.readline()
+                    sum_time = float(re_sum.match(time_line).group(1))
 
                     devices[device_name][video_name].sum_time = sum_time
 
     return devices
 
 
-def parse_master_log(devices: Dict[str, Dict[str, Video]], master_name: str, log_dir: str):
-    with open("{}/{}".format(log_dir, master_name), 'r') as master_log:
+def parse_master_log(devices: Dict[str, Dict[str, Video]], master_filename: str, log_dir: str):
+    with open("{}/{}".format(log_dir, master_filename), 'r') as master_log:
         for line in master_log:
             down = re_down.match(line)
 
-            if down:
+            if down is not None:
                 video_name = down.group(1)
                 return_time = float(down.group(2))
 
@@ -60,6 +60,28 @@ def parse_master_log(devices: Dict[str, Dict[str, Video]], master_name: str, log
                 for video_dict in devices.values():
                     if video_name in video_dict:
                         video_dict[video_name].return_time = return_time
+
+
+def make_offline_spreadsheet(log_dir: str = "offline", out_name: str = "out.csv"):
+    offline_logs = [log for log in os.listdir(log_dir) if log.startswith("offline")]
+
+    with open(out_name, 'w', newline='') as csv_f:
+        writer = csv.writer(csv_f)
+        writer.writerow(["Offline simulations"])
+
+        for filename in offline_logs:
+            with open("{}/{}".format(log_dir, filename), 'r') as offline_log:
+                writer.writerow([filename[:-4]])
+                writer.writerow(["Filename", "Summarisation time (s)"])
+
+                for line in offline_log:
+                    comp = re_comp.match(line)
+
+                    if comp is not None:
+                        video_name = comp.group(1)
+                        time_line = offline_log.readline()
+                        sum_time = float(re_sum.match(time_line).group(1))
+                        writer.writerow([video_name, sum_time])
 
 
 def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_name: str, log_dir: str, out_name: str = "out.csv"):
@@ -78,9 +100,9 @@ def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_name: str, log
 def edge_spread(log_dir: str):
     devices = parse_worker_logs(log_dir)
     # Each simulation log folder should contain only one master log
-    master_name = [log for log in os.listdir(log_dir) if log.startswith("master")][0]
-    parse_master_log(devices, master_name, log_dir)
-    make_spreadsheet(devices, master_name, log_dir)
+    master_filename = [log for log in os.listdir(log_dir) if log.startswith("master")][0]
+    parse_master_log(devices, master_filename, log_dir)
+    make_spreadsheet(devices, master_filename[:-4], log_dir)
 
 
 edge_spread("node4")
