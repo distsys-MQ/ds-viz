@@ -1,0 +1,85 @@
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ff <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 11-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config20-med-high.xml -f teragrid -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 4 tiny servers used with a utilisation of 46.61 at the cost of $7.73
+# 4 small servers used with a utilisation of 33.98 at the cost of $13.43
+# 4 medium servers used with a utilisation of 33.49 at the cost of $28.86
+# 4 large servers used with a utilisation of 38.60 at the cost of $72.84
+# 4 xlarge servers used with a utilisation of 57.02 at the cost of $151.47
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 91575, #jobs: 549
+# total #servers used: 20, avg utilisation: 41.94 and total cost: $274.32
+# avg waiting time: 193, avg exec time: 1179 and avg turnaround time: 1372
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> bf <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 11-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config20-med-high.xml -f teragrid -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 4 tiny servers used with a utilisation of 47.95 at the cost of $7.73
+# 4 small servers used with a utilisation of 30.63 at the cost of $13.02
+# 4 medium servers used with a utilisation of 28.62 at the cost of $27.32
+# 4 large servers used with a utilisation of 33.91 at the cost of $55.79
+# 4 xlarge servers used with a utilisation of 58.21 at the cost of $152.18
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 91575, #jobs: 549
+# total #servers used: 20, avg utilisation: 39.86 and total cost: $256.05
+# avg waiting time: 210, avg exec time: 1179 and avg turnaround time: 1389
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> minwjff <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 11-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config20-med-high.xml -f teragrid -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 3 tiny servers used with a utilisation of 39.54 at the cost of $5.02
+# 4 small servers used with a utilisation of 49.56 at the cost of $10.20
+# 4 medium servers used with a utilisation of 33.37 at the cost of $24.54
+# 3 large servers used with a utilisation of 49.82 at the cost of $55.96
+# 4 xlarge servers used with a utilisation of 57.72 at the cost of $152.72
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 91575, #jobs: 549
+# total #servers used: 18, avg utilisation: 46.15 and total cost: $248.43
+# avg waiting time: 63, avg exec time: 1179 and avg turnaround time: 1242
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> minwjbf <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 11-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config20-med-high.xml -f teragrid -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 3 tiny servers used with a utilisation of 39.54 at the cost of $5.02
+# 4 small servers used with a utilisation of 49.56 at the cost of $10.20
+# 4 medium servers used with a utilisation of 33.37 at the cost of $24.54
+# 3 large servers used with a utilisation of 49.82 at the cost of $55.96
+# 4 xlarge servers used with a utilisation of 57.72 at the cost of $152.72
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 91575, #jobs: 549
+# total #servers used: 18, avg utilisation: 46.15 and total cost: $248.43
+# avg waiting time: 63, avg exec time: 1179 and avg turnaround time: 1242
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> csa <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 11-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config20-med-high.xml -f teragrid -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 4 tiny servers used with a utilisation of 29.75 at the cost of $5.23
+# 4 small servers used with a utilisation of 56.68 at the cost of $10.20
+# 4 medium servers used with a utilisation of 33.37 at the cost of $24.54
+# 4 large servers used with a utilisation of 56.44 at the cost of $56.53
+# 4 xlarge servers used with a utilisation of 57.78 at the cost of $152.72
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 91575, #jobs: 549
+# total #servers used: 20, avg utilisation: 46.80 and total cost: $249.21
+# avg waiting time: 66, avg exec time: 1179 and avg turnaround time: 1245

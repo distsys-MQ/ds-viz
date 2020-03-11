@@ -1,0 +1,34 @@
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ff <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 11-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config20-short-med.xml -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 4 tiny servers used with a utilisation of 30.77 at the cost of $9.14
+# 4 small servers used with a utilisation of 40.65 at the cost of $13.45
+# 3 medium servers used with a utilisation of 12.60 at the cost of $20.83
+# 4 large servers used with a utilisation of 45.06 at the cost of $53.31
+# 4 xlarge servers used with a utilisation of 40.62 at the cost of $143.61
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 88694, #jobs: 712
+# total #servers used: 19, avg utilisation: 35.06 and total cost: $240.32
+# avg waiting time: 3, avg exec time: 560 and avg turnaround time: 563
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> bf <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 11-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config20-short-med.xml -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 4 tiny servers used with a utilisation of 30.77 at the cost of $9.14
+# 4 small servers used with a utilisation of 39.55 at the cost of $13.44
+# 3 medium servers used with a utilisation of 13.03 at the cost of $19.33
+# 4 large servers used with a utilisation of 36.38 at the cost of $47.21
+# 4 xlarge servers used with a utilisation of 39.28 at the cost of $143.61
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 88694, #jobs: 712
+# total #servers used: 19, avg utilisation: 32.79 and total cost: $232.72
+# avg waiting time: 3, avg exec time: 560 and avg turnaround time: 563
