@@ -72,6 +72,7 @@ class Config:
 
 re_turn = re.compile(r".* avg turnaround time: (\d+)")
 re_cost = re.compile(r".* total cost: \$(\d*\.?\d*)")
+algos = ["ff", "bf", "minwjff", "minwjbf", "csa"]
 
 
 def get_turnaround(line: str) -> str:
@@ -99,7 +100,7 @@ def make_spreadsheet(result_dir: str, output_filename: str, extract_results: Cal
                 length_load = "{} jobs -- {} load".format(config.length, config.load)
                 if length_load != last_length_load:
                     writer.writerow([length_load])
-                    writer.writerow(["", "failure trace", "ff", "bf", "minwj", "csa"])
+                    writer.writerow(["", "failure trace"] + algos)
                     last_length_load = length_load
 
                 results = []

@@ -1,0 +1,85 @@
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ff <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 11-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config100-short-med.xml -f g5k06 -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 20 tiny servers used with a utilisation of 33.82 at the cost of $23.86
+# 20 small servers used with a utilisation of 19.69 at the cost of $30.05
+# 13 medium servers used with a utilisation of 41.09 at the cost of $45.95
+# 18 large servers used with a utilisation of 32.39 at the cost of $182.36
+# 20 xlarge servers used with a utilisation of 26.44 at the cost of $727.85
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 169763, #jobs: 2654
+# total #servers used: 91, avg utilisation: 29.85 and total cost: $1010.06
+# avg waiting time: 2854, avg exec time: 613 and avg turnaround time: 3467
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> bf <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 11-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config100-short-med.xml -f g5k06 -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 20 tiny servers used with a utilisation of 31.97 at the cost of $25.10
+# 20 small servers used with a utilisation of 20.18 at the cost of $29.98
+# 15 medium servers used with a utilisation of 27.07 at the cost of $49.79
+# 17 large servers used with a utilisation of 29.02 at the cost of $135.25
+# 20 xlarge servers used with a utilisation of 30.21 at the cost of $713.76
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 147052, #jobs: 2654
+# total #servers used: 92, avg utilisation: 27.68 and total cost: $953.89
+# avg waiting time: 2431, avg exec time: 613 and avg turnaround time: 3044
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> minwjff <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 11-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config100-short-med.xml -f g5k06 -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 13 tiny servers used with a utilisation of 27.01 at the cost of $7.06
+# 7 small servers used with a utilisation of 19.15 at the cost of $8.71
+# 9 medium servers used with a utilisation of 40.82 at the cost of $44.46
+# 18 large servers used with a utilisation of 29.03 at the cost of $172.61
+# 20 xlarge servers used with a utilisation of 28.50 at the cost of $792.14
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 136787, #jobs: 2654
+# total #servers used: 67, avg utilisation: 29.03 and total cost: $1024.98
+# avg waiting time: 1501, avg exec time: 613 and avg turnaround time: 2114
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> minwjbf <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 11-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config100-short-med.xml -f g5k06 -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 14 tiny servers used with a utilisation of 22.03 at the cost of $2.21
+# 12 small servers used with a utilisation of 18.83 at the cost of $5.97
+# 15 medium servers used with a utilisation of 33.54 at the cost of $27.13
+# 18 large servers used with a utilisation of 40.87 at the cost of $167.89
+# 20 xlarge servers used with a utilisation of 30.14 at the cost of $762.30
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 135365, #jobs: 2654
+# total #servers used: 79, avg utilisation: 30.08 and total cost: $965.50
+# avg waiting time: 1617, avg exec time: 613 and avg turnaround time: 2230
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> csa <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ds-sim server 11-Mar, 2020 @ MQ
+# Server-side simulator started with './ds-server -c ./configs/journal/config100-short-med.xml -f g5k06 -v stats'
+# Waiting for connection to port 50000 of IP address 127.0.0.1
+# Welcome  jak0723!
+# The system information can be read from 'system.xml'
+# ---------------------------------------------------------------------------
+# 18 tiny servers used with a utilisation of 19.77 at the cost of $11.50
+# 15 small servers used with a utilisation of 14.80 at the cost of $17.46
+# 17 medium servers used with a utilisation of 23.97 at the cost of $68.32
+# 18 large servers used with a utilisation of 29.20 at the cost of $207.80
+# 20 xlarge servers used with a utilisation of 29.21 at the cost of $837.93
+# =============================== [ Overall ] ===============================
+# actual simulation end time: 138067, #jobs: 2654
+# total #servers used: 88, avg utilisation: 23.81 and total cost: $1143.01
+# avg waiting time: 1895, avg exec time: 613 and avg turnaround time: 2508
