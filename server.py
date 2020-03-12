@@ -236,7 +236,7 @@ def simulation_end_time(log: str) -> int:
     with FileReadBackwards(log, encoding="utf-8") as f:
         for _ in range(3):  # "actual simulation end time" is on the third-last line
             line = f.readline()
-        return int(line.split()[-1])
+        return int(line.split()[-3][:-1])
 
 
 def print_servers_at(servers: List[Server], t: int) -> str:
