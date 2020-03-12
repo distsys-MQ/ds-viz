@@ -1,3 +1,4 @@
+import re
 import sys
 from collections import OrderedDict
 from itertools import chain
@@ -209,34 +210,16 @@ def get_results(log: str) -> str:
                          "Please use '-v brief' or '-v all' when creating a log with ds-server.")
 
 
-def get_end_time(system: str) -> int:
-    root = parse(system).getroot()
-    term = next(filter(lambda node: "endtime" == node.get("type"), root.find("termination").findall("condition")))
-    return int(term.get("value"))
-
-
-def get_last_job_time(log: str) -> int:
-    with FileReadBackwards(log, encoding="utf-8") as f:
-        while True:
-            line = f.readline()
-
-            if line.startswith("t:", 0, 2):
-                return int(line.split()[1])
-
-
-def get_last_time(log: str, system: str) -> int:
-    end_time = get_end_time(system)
-    last_job_time = get_last_job_time(log)
-
-    last_time = max(end_time, last_job_time)
-    return last_time
-
-
 def simulation_end_time(log: str) -> int:
+    re_time = re.compile(r".*actual simulation end time: (\d+).*")
+
     with FileReadBackwards(log, encoding="utf-8") as f:
-        for _ in range(3):  # "actual simulation end time" is on the third-last line
-            line = f.readline()
-        return int(line.split()[-3][:-1])
+        for line in f:
+            time = re_time.match(line)
+
+            if time is not None:
+                return int(time.group(1))
+    sys.exit("ERROR: simulation end time could not be retrieved")
 
 
 def print_servers_at(servers: List[Server], t: int) -> str:
