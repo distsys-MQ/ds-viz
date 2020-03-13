@@ -72,7 +72,7 @@ class Config:
 
 re_turn = re.compile(r".* avg turnaround time: (\d+)")
 re_cost = re.compile(r".* total cost: \$(\d*\.?\d*)")
-algos = ["ff", "bf", "minwjff", "minwjbf", "csa"]
+algos = ["ff", "bf", "minwjff", "minwjff2"]
 
 
 def get_turnaround(line: str) -> str:
