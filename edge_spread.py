@@ -8,8 +8,8 @@ from typing import Dict
 
 
 class Video:
-    def __init__(self, name: str, dash_down_time: float = None, down_time: float = None,
-                 sum_time: float = None, return_time: float = None):
+    def __init__(self, name: str, dash_down_time: float = 0, down_time: float = 0,
+                 sum_time: float = 0, return_time: float = 0):
         self.name = name
         self.dash_down_time = dash_down_time
         self.down_time = down_time
@@ -18,8 +18,8 @@ class Video:
 
 
 master = "00a6a4630f4e34d8"
-timestamp = r"^(\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \s+\d+\s+\d+ "
-re_timestamp = re.compile(r"^(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})\.(\d{3}) (?=\s+\d+\s+\d+).*(?:\s+)?$")
+timestamp = r"^(\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\s+\d+\s+\d+ "
+re_timestamp = re.compile(r"^(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})\.(\d{3})(?=\s+\d+\s+\d+).*(?:\s+)?$")
 re_dash_down = re.compile(
     timestamp +
     r"W DashDownloadManager: Successfully downloaded "
@@ -31,29 +31,48 @@ re_down = re.compile(
 re_comp = re.compile(timestamp + r"W Summariser: {3}filename: (.*)\.mp4(?:\s+)?$")
 re_sum = re.compile(timestamp + r"W Summariser: {3}time: (\d*\.?\d*)s(?:\s+)?$")
 re_pref = re.compile(timestamp + r"W NearbyFragment: Preferences:(?:\s+)?$")
-re_algo = re.compile(timestamp + r"W NearbyFragment: {3}Algorithm: (.*)(?:\s+)?$")
 
-test = """06-29 01:16:44.208  5434  5434 E TransferService: No notification is passed in the intent. Unable to transition to foreground.
-06-29 01:16:57.319  5434  5434 W NearbyFragment: Preferences:
-06-29 01:16:57.319  5434  5434 W NearbyFragment:   Auto download: true
-06-29 01:16:57.319  5434  5434 W NearbyFragment:   Algorithm: best
-06-29 01:16:57.319  5434  5434 W NearbyFragment:   Fast scheduling: true
-06-29 01:16:57.319  5434  5434 W NearbyFragment:   Segmentation: false
-06-29 01:16:57.319  5434  5434 W NearbyFragment:   Auto segmentation: false
-06-29 01:16:57.319  5434  5434 W NearbyFragment:   Segment number: 4
-06-29 01:16:57.319  5434  5434 W NearbyFragment:   Noise tolerance: 45.00
-06-29 01:16:57.319  5434  5434 W NearbyFragment:   Quality: 23
-06-29 01:16:57.319  5434  5434 W NearbyFragment:   Speed: medium
-06-29 01:16:57.319  5434  5434 W NearbyFragment:   Freeze duration: 1.00
-06-29 01:16:57.320  5434  5434 W NearbyFragment: Download delay: 1s
-06-29 01:16:57.320  5434  5434 W NearbyFragment: Started downloading from dashcam"""
+test = """06-29 01:56:05.825 21050 21050 E ViewRootImpl: sendUserActionEvent() returned.
+06-29 01:57:05.124 21050 21050 W NearbyFragment: Completed downloading 20200312_150643!000.mp4 from Endpoint{id=vf39, name=Nexus 5X [34d8]} in 01.863s
+06-29 01:57:07.238 21050 21050 W NearbyFragment: Completed downloading 20200312_150643!001.mp4 from Endpoint{id=vf39, name=Nexus 5X [34d8]} in 02.003s
+06-29 01:57:07.478 21050 23114 W Summariser: No activity detected
+06-29 01:57:07.546 21050 23114 W Summariser: Summarisation completed
+06-29 01:57:07.546 21050 23114 W Summariser:   filename: 20200312_150643!000.mp4
+06-29 01:57:07.546 21050 23114 W Summariser:   active sections: 0
+06-29 01:57:07.546 21050 23114 W Summariser:   time: 02.211s
+06-29 01:57:07.546 21050 23114 W Summariser:   original duration: 16.07
+06-29 01:57:07.546 21050 23114 W Summariser:   summarised duration: -1.0
+06-29 01:57:07.546 21050 23114 W Summariser:   noise tolerance: 45.00
+06-29 01:57:07.546 21050 23114 W Summariser:   quality: 23
+06-29 01:57:07.546 21050 23114 W Summariser:   speed: medium
+06-29 01:57:07.546 21050 23114 W Summariser:   freeze duration: 1.00
+06-29 01:57:09.216 21050 21050 W NearbyFragment: Completed downloading 20200312_150643!002.mp4 from Endpoint{id=vf39, name=Nexus 5X [34d8]} in 01.911s
+06-29 01:57:09.691 21050 23114 W Summariser: No activity detected
+06-29 01:57:09.773 21050 23114 W Summariser: Summarisation completed
+06-29 01:57:09.773 21050 23114 W Summariser:   filename: 20200312_150643!001.mp4
+06-29 01:57:09.773 21050 23114 W Summariser:   active sections: 0
+06-29 01:57:09.773 21050 23114 W Summariser:   time: 02.128s
+06-29 01:57:09.773 21050 23114 W Summariser:   original duration: 16.01
+06-29 01:57:09.773 21050 23114 W Summariser:   summarised duration: -1.0
+06-29 01:57:09.773 21050 23114 W Summariser:   noise tolerance: 45.00
+06-29 01:57:09.773 21050 23114 W Summariser:   quality: 23
+06-29 01:57:09.773 21050 23114 W Summariser:   speed: medium
+06-29 01:57:09.773 21050 23114 W Summariser:   freeze duration: 1.00"""
 
 
 # for line in test.splitlines():
-#     res = re_pref.match(line)
+#     res = re_down.match(line)
 #
 #     if res is not None:
 #         print(res.group(1))
+
+
+def get_video_name(name: str) -> str:
+    sep = '!'
+    if sep in name:
+        return name.split(sep)[0]
+    else:
+        return name
 
 
 def timestamp_to_datetime(line: str) -> datetime:
@@ -100,17 +119,17 @@ def parse_master_log(master_filename: str, log_dir: str) -> Dict[str, Video]:
             down = re_down.match(line)
 
             if dash_down is not None:
-                video_name = dash_down.group(2)
+                video_name = get_video_name(dash_down.group(2))
                 dash_down_time = float(dash_down.group(3))
 
                 video = Video(name=video_name, dash_down_time=dash_down_time)
                 videos[video_name] = video
 
             if down is not None:
-                video_name = down.group(2)
+                video_name = get_video_name(down.group(2))
                 return_time = float(down.group(5))
 
-                videos[video_name].return_time = return_time
+                videos[video_name].return_time += return_time
     return videos
 
 
@@ -128,19 +147,19 @@ def parse_worker_logs(videos: Dict[str, Video], log_dir: str) -> Dict[str, Dict[
                 comp = re_comp.match(line)
 
                 if down is not None:
-                    video_name = down.group(2)
+                    video_name = get_video_name(down.group(2))
                     down_time = float(down.group(5))
 
                     video = videos[video_name]
-                    video.down_time = down_time
+                    video.down_time += down_time
                     devices[device_name][video_name] = video
                 elif comp is not None:
-                    video_name = comp.group(2)
+                    video_name = get_video_name(comp.group(2))
                     work_log.readline()  # skip active sections line
                     time_line = work_log.readline()
                     sum_time = float(re_sum.match(time_line).group(2))
 
-                    videos[video_name].sum_time = sum_time
+                    videos[video_name].sum_time += sum_time
     return devices
 
 
@@ -162,13 +181,13 @@ def make_offline_spreadsheet(log_dir: str = "offline", out_name: str = "out.csv"
                     comp = re_comp.match(line)
 
                     if dash_down is not None:
-                        video_name = dash_down.group(2)
+                        video_name = get_video_name(dash_down.group(2))
                         dash_down_time = float(dash_down.group(3))
 
                         videos[video_name] = Video(name=video_name, dash_down_time=dash_down_time)
 
                     if comp is not None:
-                        video_name = comp.group(2)
+                        video_name = get_video_name(comp.group(2))
                         offline_log.readline()  # skip active sections line
                         time_line = offline_log.readline()
                         sum_time = float(re_sum.match(time_line).group(2))
@@ -188,23 +207,46 @@ def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_filename: str,
 
             if pref is not None:
                 master_log.readline()  # skip auto download line
-                algo_line = master_log.readline()
-                algo = re_algo.match(algo_line).group(2)
+                algo = master_log.readline().split()[-1]
+                fast = master_log.readline().split()[-1] == "true"
+                seg = master_log.readline().split()[-1] == "true"
+                master_log.readline()  # skip auto segmentation line
+                seg_num = int(master_log.readline().split()[-1]) if seg else 1
 
     with open(out, 'w', newline='') as csv_f:
         writer = csv.writer(csv_f)
-        writer.writerow(["{} ({} - {})".format(log_dir, master_filename[-8:-4], algo)])
+        writer.writerow([
+            "Fast scheduling" if fast else "Non-fast scheduling",
+            "Segments: {}".format(seg_num),
+            "Nodes: {}".format(len([log for log in os.listdir(log_dir) if log.endswith(".log")])),
+            "Algorithm: {}".format(algo),
+            "Master: {}".format(master_filename[-8:-4]),
+        ])
 
         for device_name, video_dict in devices.items():
-            writer.writerow([device_name])
-            writer.writerow(["Filename", "Download Time (s)", "Transfer time (s)",
-                             "Return time (s)", "Summarisation time (s)"])
+            writer.writerow([
+                "Device: {}".format(device_name),
+                "Dir: {}".format(log_dir)
+            ])
+            writer.writerow([
+                "Filename",
+                "Download Time (s)",
+                "Transfer time (s)",
+                "Return time (s)",
+                "Summarisation time (s)"
+            ])
 
             for video in video_dict.values():
-                writer.writerow([video.name, video.dash_down_time, video.down_time, video.return_time, video.sum_time])
+                writer.writerow([
+                    video.name,
+                    "{:.3f}".format(video.dash_down_time),
+                    "{:.3f}".format(video.down_time),
+                    "{:.3f}".format(video.return_time) if video.return_time != 0 else "n/a",
+                    "{:.3f}".format(video.sum_time)
+                ])
 
         time = get_total_time(master_path)
-        writer.writerow([time])
+        writer.writerow(["Actual total time", time])
 
 
 def edge_spread(log_dir: str):
@@ -214,4 +256,5 @@ def edge_spread(log_dir: str):
     make_spreadsheet(devices, master_filename, log_dir)
 
 
-edge_spread("./fast/non-segmented/node2/20200629_014054")
+edge_spread("./fast/segmented/node2/20200629_015535")
+# TODO add command-line argument parsing
