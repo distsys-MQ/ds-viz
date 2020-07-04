@@ -3,6 +3,7 @@
 import csv
 import os
 import re
+from argparse import ArgumentParser
 from datetime import datetime
 from typing import Dict
 
@@ -17,7 +18,14 @@ class Video:
         self.return_time = return_time
 
 
-master = "00a6a4630f4e34d8"
+parser = ArgumentParser(description="Generates spreadsheets from logs")
+parser.add_argument("dir", help="directory of logs")
+parser.add_argument("-o", "--output", default="results.csv", help="name of output file")
+parser.add_argument("-m", "--master", default="00a6a4630f4e34d8", help="serial number of master device")
+parser.add_argument("-f", "--offline", action="store_true", help="specify offline logs")
+args = parser.parse_args()
+
+master = args.master
 timestamp = r"^(\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\s+\d+\s+\d+ "
 re_timestamp = re.compile(r"^(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})\.(\d{3})(?=\s+\d+\s+\d+).*(?:\s+)?$")
 re_dash_down = re.compile(
@@ -31,40 +39,6 @@ re_down = re.compile(
 re_comp = re.compile(timestamp + r"W Summariser: {3}filename: (.*)\.mp4(?:\s+)?$")
 re_sum = re.compile(timestamp + r"W Summariser: {3}time: (\d*\.?\d*)s(?:\s+)?$")
 re_pref = re.compile(timestamp + r"W NearbyFragment: Preferences:(?:\s+)?$")
-
-test = """06-29 01:56:05.825 21050 21050 E ViewRootImpl: sendUserActionEvent() returned.
-06-29 01:57:05.124 21050 21050 W NearbyFragment: Completed downloading 20200312_150643!000.mp4 from Endpoint{id=vf39, name=Nexus 5X [34d8]} in 01.863s
-06-29 01:57:07.238 21050 21050 W NearbyFragment: Completed downloading 20200312_150643!001.mp4 from Endpoint{id=vf39, name=Nexus 5X [34d8]} in 02.003s
-06-29 01:57:07.478 21050 23114 W Summariser: No activity detected
-06-29 01:57:07.546 21050 23114 W Summariser: Summarisation completed
-06-29 01:57:07.546 21050 23114 W Summariser:   filename: 20200312_150643!000.mp4
-06-29 01:57:07.546 21050 23114 W Summariser:   active sections: 0
-06-29 01:57:07.546 21050 23114 W Summariser:   time: 02.211s
-06-29 01:57:07.546 21050 23114 W Summariser:   original duration: 16.07
-06-29 01:57:07.546 21050 23114 W Summariser:   summarised duration: -1.0
-06-29 01:57:07.546 21050 23114 W Summariser:   noise tolerance: 45.00
-06-29 01:57:07.546 21050 23114 W Summariser:   quality: 23
-06-29 01:57:07.546 21050 23114 W Summariser:   speed: medium
-06-29 01:57:07.546 21050 23114 W Summariser:   freeze duration: 1.00
-06-29 01:57:09.216 21050 21050 W NearbyFragment: Completed downloading 20200312_150643!002.mp4 from Endpoint{id=vf39, name=Nexus 5X [34d8]} in 01.911s
-06-29 01:57:09.691 21050 23114 W Summariser: No activity detected
-06-29 01:57:09.773 21050 23114 W Summariser: Summarisation completed
-06-29 01:57:09.773 21050 23114 W Summariser:   filename: 20200312_150643!001.mp4
-06-29 01:57:09.773 21050 23114 W Summariser:   active sections: 0
-06-29 01:57:09.773 21050 23114 W Summariser:   time: 02.128s
-06-29 01:57:09.773 21050 23114 W Summariser:   original duration: 16.01
-06-29 01:57:09.773 21050 23114 W Summariser:   summarised duration: -1.0
-06-29 01:57:09.773 21050 23114 W Summariser:   noise tolerance: 45.00
-06-29 01:57:09.773 21050 23114 W Summariser:   quality: 23
-06-29 01:57:09.773 21050 23114 W Summariser:   speed: medium
-06-29 01:57:09.773 21050 23114 W Summariser:   freeze duration: 1.00"""
-
-
-# for line in test.splitlines():
-#     res = re_down.match(line)
-#
-#     if res is not None:
-#         print(res.group(1))
 
 
 def get_video_name(name: str) -> str:
@@ -163,15 +137,17 @@ def parse_worker_logs(videos: Dict[str, Video], log_dir: str) -> Dict[str, Dict[
     return devices
 
 
-def make_offline_spreadsheet(log_dir: str = "offline", out_name: str = "out.csv"):
+def make_offline_spreadsheet(log_dir: str, out_name: str):
     offline_logs = [log for log in os.listdir(log_dir) if log.endswith(".log")]
 
-    with open(out_name, 'w', newline='') as csv_f:
+    with open(out_name, 'a', newline='') as csv_f:
         writer = csv.writer(csv_f)
         writer.writerow(["Offline simulations"])
 
         for filename in offline_logs:
-            with open("{}/{}".format(log_dir, filename), 'r') as offline_log:
+            log_path = "{}/{}".format(log_dir, filename)
+
+            with open(log_path, 'r') as offline_log:
                 writer.writerow([filename[-8:-4]])
                 writer.writerow(["Filename", "Download time (s)", "Summarisation time (s)"])
                 videos = {}  # type: Dict[str, Video]
@@ -196,9 +172,11 @@ def make_offline_spreadsheet(log_dir: str = "offline", out_name: str = "out.csv"
 
                 for video in videos.values():
                     writer.writerow([video.name, video.dash_down_time, video.sum_time])
+            writer.writerow(["Actual total time", get_total_time(log_path)])
+        writer.writerow('')
 
 
-def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_filename: str, log_dir: str, out: str = "out.csv"):
+def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_filename: str, log_dir: str, out: str):
     master_path = "{}/{}".format(log_dir, master_filename)
 
     with open(master_path, 'r') as master_log:
@@ -213,7 +191,7 @@ def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_filename: str,
                 master_log.readline()  # skip auto segmentation line
                 seg_num = int(master_log.readline().split()[-1]) if seg else 1
 
-    with open(out, 'w', newline='') as csv_f:
+    with open(out, 'a', newline='') as csv_f:
         writer = csv.writer(csv_f)
         writer.writerow([
             "Fast scheduling" if fast else "Non-fast scheduling",
@@ -244,17 +222,18 @@ def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_filename: str,
                     "{:.3f}".format(video.return_time) if video.return_time != 0 else "n/a",
                     "{:.3f}".format(video.sum_time)
                 ])
+        writer.writerow(["Actual total time", get_total_time(master_path)])
+        writer.writerow('')
 
-        time = get_total_time(master_path)
-        writer.writerow(["Actual total time", time])
 
-
-def edge_spread(log_dir: str):
+def edge_spread(log_dir: str, out: str):
     master_filename = "{}.log".format(master)
     videos = parse_master_log(master_filename, log_dir)
     devices = parse_worker_logs(videos, log_dir)
-    make_spreadsheet(devices, master_filename, log_dir)
+    make_spreadsheet(devices, master_filename, log_dir, out)
 
 
-edge_spread("./fast/segmented/node2/20200629_015535")
-# TODO add command-line argument parsing
+if args.offline:
+    make_offline_spreadsheet(args.dir, args.output)
+else:
+    edge_spread(args.dir, args.output)
