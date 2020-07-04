@@ -91,7 +91,30 @@ def get_total_time(master_log_file: str):
     return timestamp_to_datetime(end) - timestamp_to_datetime(start)
 
 
-def parse_worker_logs(log_dir: str) -> Dict[str, Dict[str, Video]]:
+def parse_master_log(master_filename: str, log_dir: str) -> Dict[str, Video]:
+    videos = {}  # type: Dict[str, Video]
+
+    with open("{}/{}".format(log_dir, master_filename), 'r') as master_log:
+        for line in master_log:
+            dash_down = re_dash_down.match(line)
+            down = re_down.match(line)
+
+            if dash_down is not None:
+                video_name = dash_down.group(2)
+                dash_down_time = float(dash_down.group(3))
+
+                video = Video(name=video_name, dash_down_time=dash_down_time)
+                videos[video_name] = video
+
+            if down is not None:
+                video_name = down.group(2)
+                return_time = float(down.group(5))
+
+                videos[video_name].return_time = return_time
+    return videos
+
+
+def parse_worker_logs(videos: Dict[str, Video], log_dir: str) -> Dict[str, Dict[str, Video]]:
     worker_logs = [log for log in os.listdir(log_dir) if log.endswith(".log") and master not in log]
     # Initialise device dictionary with empty dictionaries
     devices = {device[-8:-4]: {} for device in worker_logs}
@@ -108,7 +131,8 @@ def parse_worker_logs(log_dir: str) -> Dict[str, Dict[str, Video]]:
                     video_name = down.group(2)
                     down_time = float(down.group(5))
 
-                    video = Video(name=video_name, down_time=down_time)
+                    video = videos[video_name]
+                    video.down_time = down_time
                     devices[device_name][video_name] = video
                 elif comp is not None:
                     video_name = comp.group(2)
@@ -116,31 +140,8 @@ def parse_worker_logs(log_dir: str) -> Dict[str, Dict[str, Video]]:
                     time_line = work_log.readline()
                     sum_time = float(re_sum.match(time_line).group(2))
 
-                    devices[device_name][video_name].sum_time = sum_time
-
+                    videos[video_name].sum_time = sum_time
     return devices
-
-
-def parse_master_log(devices: Dict[str, Dict[str, Video]], master_filename: str, log_dir: str):
-    with open("{}/{}".format(log_dir, master_filename), 'r') as master_log:
-        for line in master_log:
-            dash_down = re_dash_down.match(line)
-            down = re_down.match(line)
-
-            if dash_down is not None:
-                video_name = dash_down.group(2)
-                dash_down_time = float(dash_down.group(3))
-
-                for video_dict in devices.values():
-                    if video_name in video_dict:
-                        video_dict[video_name].dash_down_time = dash_down_time
-
-            if down is not None:
-                video_name = down.group(2)
-                device_sn = down.group(4)
-                return_time = float(down.group(5))
-
-                devices[device_sn][video_name].return_time = return_time
 
 
 def make_offline_spreadsheet(log_dir: str = "offline", out_name: str = "out.csv"):
@@ -207,12 +208,10 @@ def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_filename: str,
 
 
 def edge_spread(log_dir: str):
-    devices = parse_worker_logs(log_dir)
-    # Each simulation log folder should contain only one master log
     master_filename = "{}.log".format(master)
-    parse_master_log(devices, master_filename, log_dir)
+    videos = parse_master_log(master_filename, log_dir)
+    devices = parse_worker_logs(videos, log_dir)
     make_spreadsheet(devices, master_filename, log_dir)
 
 
-# print(get_total_time("./fast/offline/20200629_011650/00a6a4630f4e34d8.log"))
 edge_spread("./fast/non-segmented/node2/20200629_014054")
