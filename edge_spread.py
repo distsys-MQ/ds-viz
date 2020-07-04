@@ -84,13 +84,14 @@ def get_total_time(master_log_file: str):
     return timestamp_to_datetime(end) - timestamp_to_datetime(start)
 
 
-def parse_master_log(master_filename: str, log_dir: str) -> Dict[str, Video]:
+def parse_master_log(devices: Dict[str, Dict[str, Video]], master_filename: str, log_dir: str) -> Dict[str, Video]:
     videos = {}  # type: Dict[str, Video]
 
     with open("{}/{}".format(log_dir, master_filename), 'r') as master_log:
         for line in master_log:
             dash_down = re_dash_down.match(line)
             down = re_down.match(line)
+            comp = re_comp.match(line)
 
             if dash_down is not None:
                 video_name = get_video_name(dash_down.group(2))
@@ -98,19 +99,24 @@ def parse_master_log(master_filename: str, log_dir: str) -> Dict[str, Video]:
 
                 video = Video(name=video_name, dash_down_time=dash_down_time)
                 videos[video_name] = video
-
-            if down is not None:
+                devices[master_filename[-8:-4]][video_name] = video
+            elif down is not None:
                 video_name = get_video_name(down.group(2))
                 return_time = float(down.group(5))
 
                 videos[video_name].return_time += return_time
+            elif comp is not None:
+                video_name = get_video_name(comp.group(2))
+                master_log.readline()  # skip active sections line
+                time_line = master_log.readline()
+                sum_time = float(re_sum.match(time_line).group(2))
+
+                videos[video_name].sum_time += sum_time
     return videos
 
 
-def parse_worker_logs(videos: Dict[str, Video], log_dir: str) -> Dict[str, Dict[str, Video]]:
+def parse_worker_logs(devices: Dict[str, Dict[str, Video]], videos: Dict[str, Video], log_dir: str):
     worker_logs = [log for log in os.listdir(log_dir) if log.endswith(".log") and master not in log]
-    # Initialise device dictionary with empty dictionaries
-    devices = {device[-8:-4]: {} for device in worker_logs}
 
     for filename in worker_logs:
         with open("{}/{}".format(log_dir, filename), 'r') as work_log:
@@ -134,7 +140,6 @@ def parse_worker_logs(videos: Dict[str, Video], log_dir: str) -> Dict[str, Dict[
                     sum_time = float(re_sum.match(time_line).group(2))
 
                     videos[video_name].sum_time += sum_time
-    return devices
 
 
 def make_offline_spreadsheet(log_dir: str, out_name: str):
@@ -142,13 +147,13 @@ def make_offline_spreadsheet(log_dir: str, out_name: str):
 
     with open(out_name, 'a', newline='') as csv_f:
         writer = csv.writer(csv_f)
-        writer.writerow(["Offline simulations"])
+        writer.writerow(["Offline"])
 
         for filename in offline_logs:
             log_path = "{}/{}".format(log_dir, filename)
 
             with open(log_path, 'r') as offline_log:
-                writer.writerow("Device: {}".format(filename[-8:-4]),)
+                writer.writerow(["Device: {}".format(filename[-8:-4])])
                 writer.writerow(["Filename", "Download time (s)", "Summarisation time (s)"])
                 videos = {}  # type: Dict[str, Video]
 
@@ -200,6 +205,10 @@ def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_filename: str,
                 master_log.readline()  # skip auto segmentation line
                 seg_num = int(master_log.readline().split()[-1]) if seg else 1
 
+    if algo != "best_or_local":
+        # Remove master device unless best or local is used
+        devices.pop(master_filename[-8:-4])
+
     with open(out, 'a', newline='') as csv_f:
         writer = csv.writer(csv_f)
         writer.writerow([
@@ -212,9 +221,12 @@ def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_filename: str,
         ])
 
         for device_name, video_dict in devices.items():
-            writer.writerow([
-                "Device: {}".format(device_name)
-            ])
+            writer.writerow(["Device: {}".format(device_name)])
+
+            if not video_dict:
+                writer.writerow(["Did not summarise any videos"])
+                continue
+
             writer.writerow([
                 "Filename",
                 "Download Time (s)",
@@ -227,24 +239,35 @@ def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_filename: str,
                 writer.writerow([
                     video.name,
                     "{:.3f}".format(video.dash_down_time),
-                    "{:.3f}".format(video.down_time),
+                    "{:.3f}".format(video.down_time) if video.down_time != 0 else "n/a",
                     "{:.3f}".format(video.return_time) if video.return_time != 0 else "n/a",
                     "{:.3f}".format(video.sum_time)
                 ])
-            writer.writerow([
-                "Total",
-                "{:.3f}".format(sum(v.dash_down_time for v in video_dict.values())),
-                "{:.3f}".format(sum(v.down_time for v in video_dict.values())),
-                "{:.3f}".format(sum(v.return_time for v in video_dict.values())),
-                "{:.3f}".format(sum(v.sum_time for v in video_dict.values()))
-            ])
-        if len(devices.values()) > 1:
+            total_dash_down_time = sum(v.dash_down_time for v in video_dict.values())
+            total_down_time = sum(v.down_time for v in video_dict.values())
+            total_return_time = sum(v.return_time for v in video_dict.values())
+            total_sum_time = sum(v.sum_time for v in video_dict.values())
+
+            if len(video_dict) > 1:
+                writer.writerow([
+                    "Total",
+                    "{:.3f}".format(total_dash_down_time),
+                    "{:.3f}".format(total_down_time) if total_down_time != 0 else "n/a",
+                    "{:.3f}".format(total_return_time),
+                    "{:.3f}".format(total_sum_time)
+                ])
+        total_dash_down_time = sum(v.dash_down_time for videos in devices.values() for v in videos.values())
+        total_down_time = sum(v.down_time for videos in devices.values() for v in videos.values())
+        total_return_time = sum(v.return_time for videos in devices.values() for v in videos.values())
+        total_sum_time = sum(v.sum_time for videos in devices.values() for v in videos.values())
+
+        if sum(1 for device in devices.values() if device) > 1:
             writer.writerow([
                 "Combined total",
-                "{:.3f}".format(sum(v.dash_down_time for videos in devices.values() for v in videos.values())),
-                "{:.3f}".format(sum(v.down_time for videos in devices.values() for v in videos.values())),
-                "{:.3f}".format(sum(v.return_time for videos in devices.values() for v in videos.values())),
-                "{:.3f}".format(sum(v.sum_time for videos in devices.values() for v in videos.values()))
+                "{:.3f}".format(total_dash_down_time),
+                "{:.3f}".format(total_down_time) if total_down_time != 0 else "n/a",
+                "{:.3f}".format(total_return_time),
+                "{:.3f}".format(total_sum_time)
             ])
         time = get_total_time(master_path)
         writer.writerow(["Actual total time", "{}.{:.3} ({:.11})".format(
@@ -254,8 +277,11 @@ def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_filename: str,
 
 def edge_spread(log_dir: str, out: str):
     master_filename = "{}.log".format(master)
-    videos = parse_master_log(master_filename, log_dir)
-    devices = parse_worker_logs(videos, log_dir)
+    logs = [log for log in os.listdir(log_dir) if log.endswith(".log")]
+    devices = {device[-8:-4]: {} for device in logs}  # Initialise device dictionary with empty dictionaries
+
+    videos = parse_master_log(devices, master_filename, log_dir)
+    parse_worker_logs(devices, videos, log_dir)
     make_spreadsheet(devices, master_filename, log_dir, out)
 
 
