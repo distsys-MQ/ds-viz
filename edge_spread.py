@@ -148,7 +148,7 @@ def make_offline_spreadsheet(log_dir: str, out_name: str):
             log_path = "{}/{}".format(log_dir, filename)
 
             with open(log_path, 'r') as offline_log:
-                writer.writerow([filename[-8:-4]])
+                writer.writerow("Device: {}".format(filename[-8:-4]),)
                 writer.writerow(["Filename", "Download time (s)", "Summarisation time (s)"])
                 videos = {}  # type: Dict[str, Video]
 
@@ -172,7 +172,16 @@ def make_offline_spreadsheet(log_dir: str, out_name: str):
 
                 for video in videos.values():
                     writer.writerow([video.name, video.dash_down_time, video.sum_time])
-            writer.writerow(["Actual total time", get_total_time(log_path)])
+
+            writer.writerow([
+                "Total",
+                "{:.3f}".format(sum(v.dash_down_time for v in videos.values())),
+                "{:.3f}".format(sum(v.sum_time for v in videos.values()))
+            ])
+            time = get_total_time(log_path)
+            writer.writerow(["Actual total time", "{}.{:.3} ({:.11})".format(
+                time.seconds, str(time.microseconds), str(time))])
+
         writer.writerow('')
 
 
@@ -194,17 +203,17 @@ def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_filename: str,
     with open(out, 'a', newline='') as csv_f:
         writer = csv.writer(csv_f)
         writer.writerow([
-            "Fast scheduling" if fast else "Non-fast scheduling",
+            "Master: {}".format(master_filename[-8:-4]),
+            "Scheduling mode: {}".format("fast" if fast else "non-fast"),
             "Segments: {}".format(seg_num),
             "Nodes: {}".format(len([log for log in os.listdir(log_dir) if log.endswith(".log")])),
             "Algorithm: {}".format(algo),
-            "Master: {}".format(master_filename[-8:-4]),
+            "Dir: {}".format(log_dir)
         ])
 
         for device_name, video_dict in devices.items():
             writer.writerow([
-                "Device: {}".format(device_name),
-                "Dir: {}".format(log_dir)
+                "Device: {}".format(device_name)
             ])
             writer.writerow([
                 "Filename",
@@ -222,7 +231,24 @@ def make_spreadsheet(devices: Dict[str, Dict[str, Video]], master_filename: str,
                     "{:.3f}".format(video.return_time) if video.return_time != 0 else "n/a",
                     "{:.3f}".format(video.sum_time)
                 ])
-        writer.writerow(["Actual total time", get_total_time(master_path)])
+            writer.writerow([
+                "Total",
+                "{:.3f}".format(sum(v.dash_down_time for v in video_dict.values())),
+                "{:.3f}".format(sum(v.down_time for v in video_dict.values())),
+                "{:.3f}".format(sum(v.return_time for v in video_dict.values())),
+                "{:.3f}".format(sum(v.sum_time for v in video_dict.values()))
+            ])
+        if len(devices.values()) > 1:
+            writer.writerow([
+                "Combined total",
+                "{:.3f}".format(sum(v.dash_down_time for videos in devices.values() for v in videos.values())),
+                "{:.3f}".format(sum(v.down_time for videos in devices.values() for v in videos.values())),
+                "{:.3f}".format(sum(v.return_time for videos in devices.values() for v in videos.values())),
+                "{:.3f}".format(sum(v.sum_time for videos in devices.values() for v in videos.values()))
+            ])
+        time = get_total_time(master_path)
+        writer.writerow(["Actual total time", "{}.{:.3} ({:.11})".format(
+            time.seconds, str(time.microseconds), str(time))])
         writer.writerow('')
 
 
