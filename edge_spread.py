@@ -39,6 +39,10 @@ class Summarisation:
         return "{} ({:.11})".format(
             self.time.total_seconds(), str(self.time))
 
+    def get_sub_log_dir(self) -> str:
+        i = self.log_dir.index(os.path.sep) + 1
+        return self.log_dir[i:]
+
 
 parser = ArgumentParser(description="Generates spreadsheets from logs")
 parser.add_argument("dir", help="directory of logs")
@@ -252,7 +256,7 @@ def make_spreadsheet(run: Summarisation, out: str):
             "Segments: {}".format(seg_num),
             "Nodes: {}".format(run.nodes),
             "Algorithm: {}".format(algo),
-            "Dir: {}".format(run.log_dir)
+            "Dir: {}".format(run.get_sub_log_dir())
         ])
 
         for device_name, video_dict in devices.items():
@@ -335,8 +339,8 @@ def edge_spread(root: str, out: str):
         writer.writerow(["Summary"])
         writer.writerow(["Dir", "Total time (s)", "Human-readable time"])
 
-        for s in runs:
-            writer.writerow([s.log_dir, s.time.total_seconds(), "{:.11}".format(str(s.time))])
+        for run in runs:
+            writer.writerow([run.get_sub_log_dir(), run.time.total_seconds(), "{:.11}".format(str(run.time))])
 
 
 edge_spread(args.dir, args.output)
