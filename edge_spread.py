@@ -338,7 +338,7 @@ def edge_spread(root: str, out: str):
         writer.writerow(["Dir", "Total time (s)", "Human-readable time"])
 
         for run in runs:
-            writer.writerow([run.get_sub_log_dir(), run.time.total_seconds(), "{:.11}".format(str(run.time))])
+            writer.writerow([run.get_sub_log_dir(), run.time.total_seconds(), "{:.11}\t".format(str(run.time))])
 
 
 edge_spread(args.dir, args.output)
