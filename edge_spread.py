@@ -149,9 +149,9 @@ def parse_worker_logs(devices: Dict[str, Dict[str, Video]], videos: Dict[str, Vi
     master_sn = serial_numbers[log_dir.split('master-')[1].split(os.sep)[0]]
     worker_logs = [log for log in os.listdir(log_dir) if log.endswith(".log") and master_sn not in log]
 
-    for filename in worker_logs:
-        with open(os.path.join(log_dir, filename), 'r') as work_log:
-            device_name = filename[-8:-4]
+    for log in worker_logs:
+        with open(os.path.join(log_dir, log), 'r') as work_log:
+            device_name = log[-8:-4]
 
             for line in work_log:
                 down = re_down.match(line)
@@ -174,53 +174,53 @@ def parse_worker_logs(devices: Dict[str, Dict[str, Video]], videos: Dict[str, Vi
 
 
 def make_offline_spreadsheet(log_dir: str, runs: List[Summarisation], out_name: str):
-    offline_logs = [log for log in os.listdir(log_dir) if log.endswith(".log")]
-
     with open(out_name, 'a', newline='') as csv_f:
         writer = csv.writer(csv_f)
         writer.writerow(["Offline"])
 
-        for filename in offline_logs:
-            log_path = os.path.join(log_dir, filename)
+        for (path, dirs, files) in sorted([(path, dirs, files) for (path, dirs, files) in os.walk(log_dir)
+                                           if "offline" in path and "verbose" in dirs]):
+            for log in files:
+                log_path = os.path.join(path, log)
 
-            with open(log_path, 'r') as offline_log:
-                device_sn = filename[:-4]
-                videos = {}  # type: Dict[str, Video]
-                device = {device_sn[-4:]: videos}
+                with open(log_path, 'r') as offline_log:
+                    device_sn = log[:-4]
+                    videos = {}  # type: Dict[str, Video]
+                    device = {device_sn[-4:]: videos}
 
-                run = Summarisation(log_dir, device_sn, device, videos)
-                runs.append(run)
+                    run = Summarisation(path, device_sn, device, videos)
+                    runs.append(run)
 
-                writer.writerow(["Device: {}".format(run.get_master_short_name())])
-                writer.writerow(["Filename", "Download time (s)", "Summarisation time (s)"])
+                    writer.writerow(["Device: {}".format(run.get_master_short_name())])
+                    writer.writerow(["Filename", "Download time (s)", "Summarisation time (s)"])
 
-                for line in offline_log:
-                    dash_down = re_dash_down.match(line)
-                    comp = re_comp.match(line)
+                    for line in offline_log:
+                        dash_down = re_dash_down.match(line)
+                        comp = re_comp.match(line)
 
-                    if dash_down is not None:
-                        video_name = get_video_name(dash_down.group(2))
-                        dash_down_time = float(dash_down.group(3))
+                        if dash_down is not None:
+                            video_name = get_video_name(dash_down.group(2))
+                            dash_down_time = float(dash_down.group(3))
 
-                        videos[video_name] = Video(name=video_name, dash_down_time=dash_down_time)
+                            videos[video_name] = Video(name=video_name, dash_down_time=dash_down_time)
 
-                    if comp is not None:
-                        video_name = get_video_name(comp.group(2))
-                        offline_log.readline()  # skip active sections line
-                        time_line = offline_log.readline()
-                        sum_time = float(re_sum.match(time_line).group(2))
+                        if comp is not None:
+                            video_name = get_video_name(comp.group(2))
+                            offline_log.readline()  # skip active sections line
+                            time_line = offline_log.readline()
+                            sum_time = float(re_sum.match(time_line).group(2))
 
-                        videos[video_name].sum_time = sum_time
+                            videos[video_name].sum_time = sum_time
 
-                for video in videos.values():
-                    writer.writerow([video.name, video.dash_down_time, video.sum_time])
+                    for video in videos.values():
+                        writer.writerow([video.name, video.dash_down_time, video.sum_time])
 
-            writer.writerow([
-                "Total",
-                "{:.3f}".format(sum(v.dash_down_time for v in videos.values())),
-                "{:.3f}".format(sum(v.sum_time for v in videos.values()))
-            ])
-            writer.writerow(["Actual total time", run.get_time_string()])
+                writer.writerow([
+                    "Total",
+                    "{:.3f}".format(sum(v.dash_down_time for v in videos.values())),
+                    "{:.3f}".format(sum(v.sum_time for v in videos.values()))
+                ])
+                writer.writerow(["Actual total time", run.get_time_string()])
 
         writer.writerow('')
 
@@ -316,12 +316,10 @@ def edge_spread(root: str, out: str):
     root = os.path.normpath(root)
     runs = []  # type: List[Summarisation]
 
-    for (path, dirs, files) in sorted([(path, dirs, files) for (path, dirs, files) in os.walk(root)
-                                       if "offline" in path and "verbose" in dirs]):
-        make_offline_spreadsheet(path, runs, out)
+    make_offline_spreadsheet(root, runs, out)
 
-    for (path, dirs, files) in [(path, dirs, files) for (path, dirs, files) in os.walk(root)
-                                if "master" in path and "verbose" in dirs]:
+    for (path, dirs, files) in sorted([(path, dirs, files) for (path, dirs, files) in os.walk(root)
+                                       if "master" in path and "verbose" in dirs]):
         master_sn = serial_numbers[path.split('master-')[1].split(os.sep)[0]]
         logs = [log for log in os.listdir(path) if log.endswith(".log")]
         devices = {device[-8:-4]: {} for device in logs}  # Initialise device dictionary with empty dictionaries
