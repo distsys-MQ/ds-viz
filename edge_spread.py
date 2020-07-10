@@ -17,6 +17,15 @@ class Video:
         self.sum_time = sum_time
         self.return_time = return_time
 
+    def get_stats(self) -> List[str]:
+        return [
+            self.name,
+            "{:.3f}".format(self.dash_down_time),
+            "{:.3f}".format(self.down_time) if self.down_time != 0 else "n/a",
+            "{:.3f}".format(self.return_time) if self.return_time != 0 else "n/a",
+            "{:.3f}".format(self.sum_time)
+        ]
+
 
 class Summarisation:
     def __init__(self, log_dir: str, master: str, devices: Dict[str, Dict[str, Video]], videos: Dict[str, Video]):
@@ -45,6 +54,24 @@ class Summarisation:
     def get_sub_log_dir(self) -> str:
         i = self.log_dir.index(os.path.sep) + 1
         return self.log_dir[i:]
+
+    def get_total_stats(self) -> List[str]:
+        return [
+            "{:.3f}".format(self.dash_down_time),
+            "{:.3f}".format(self.down_time) if self.down_time != 0 else "n/a",
+            "{:.3f}".format(self.return_time) if self.down_time != 0 else "n/a",
+            "{:.3f}".format(self.sum_time)
+        ]
+
+    def get_average_stats(self) -> List[str]:
+        video_count = len(self.videos)
+
+        return [
+            "{:.3f}".format(self.dash_down_time / video_count),
+            "{:.3f}".format(self.down_time / video_count) if self.down_time != 0 else "n/a",
+            "{:.3f}".format(self.return_time / video_count) if self.down_time != 0 else "n/a",
+            "{:.3f}".format(self.sum_time / video_count)
+        ]
 
 
 parser = ArgumentParser(description="Generates spreadsheets from logs")
@@ -250,11 +277,17 @@ def make_spreadsheet(run: Summarisation, out: str):
                 run.algorithm = algo
                 run.schedule = "fast" if fast else "non-fast"
                 run.seg_num = seg_num
+                break
 
     devices = copy.deepcopy(run.devices)
     if algo != "best_or_local":
         # Remove master device unless best or local is used
         devices.pop(run.get_master_short_name())
+
+    run.dash_down_time = sum(v.dash_down_time for v in run.videos.values())
+    run.down_time = sum(v.down_time for v in run.videos.values())
+    run.return_time = sum(v.return_time for v in run.videos.values())
+    run.sum_time = sum(v.sum_time for v in run.videos.values())
 
     with open(out, 'a', newline='') as csv_f:
         writer = csv.writer(csv_f)
@@ -278,38 +311,12 @@ def make_spreadsheet(run: Summarisation, out: str):
                 "Summarisation time (s)"
             ])
 
-            seen_videos = []
-
             for video in run.videos.values():
-                if video in seen_videos:
-                    continue
-                seen_videos.append(video)
+                writer.writerow(video.get_stats())
 
-                writer.writerow([
-                    video.name,
-                    "{:.3f}".format(video.dash_down_time),
-                    "{:.3f}".format(video.down_time) if video.down_time != 0 else "n/a",
-                    "{:.3f}".format(video.return_time) if video.return_time != 0 else "n/a",
-                    "{:.3f}".format(video.sum_time)
-                ])
+            writer.writerow(["Total"] + run.get_total_stats())
+            writer.writerow(["Average"] + run.get_average_stats())
 
-            total_dash_down_time = sum(v.dash_down_time for v in seen_videos)
-            total_down_time = sum(v.down_time for v in seen_videos)
-            total_return_time = sum(v.return_time for v in seen_videos)
-            total_sum_time = sum(v.sum_time for v in seen_videos)
-
-            run.dash_down_time = total_dash_down_time
-            run.down_time = total_down_time
-            run.return_time = total_return_time
-            run.sum_time = total_sum_time
-
-            writer.writerow([
-                "Total",
-                "{:.3f}".format(total_dash_down_time),
-                "{:.3f}".format(total_down_time) if total_down_time != 0 else "n/a",
-                "{:.3f}".format(total_return_time) if total_down_time != 0 else "n/a",
-                "{:.3f}".format(total_sum_time)
-            ])
         else:
             for device_name, video_dict in devices.items():
                 writer.writerow(["Device: {}".format(device_name)])
@@ -327,44 +334,35 @@ def make_spreadsheet(run: Summarisation, out: str):
                 ])
 
                 for video in video_dict.values():
-                    writer.writerow([
-                        video.name,
-                        "{:.3f}".format(video.dash_down_time),
-                        "{:.3f}".format(video.down_time) if video.down_time != 0 else "n/a",
-                        "{:.3f}".format(video.return_time) if video.return_time != 0 else "n/a",
-                        "{:.3f}".format(video.sum_time)
-                    ])
-                total_dash_down_time = sum(v.dash_down_time for v in video_dict.values())
-                total_down_time = sum(v.down_time for v in video_dict.values())
-                total_return_time = sum(v.return_time for v in video_dict.values())
-                total_sum_time = sum(v.sum_time for v in video_dict.values())
+                    writer.writerow(video.get_stats())
 
-                if len(video_dict) > 1:
+                video_count = len(video_dict)
+                if video_count > 1:
+                    total_dash_down_time = sum(v.dash_down_time for v in video_dict.values())
+                    total_down_time = sum(v.down_time for v in video_dict.values())
+                    total_return_time = sum(v.return_time for v in video_dict.values())
+                    total_sum_time = sum(v.sum_time for v in video_dict.values())
+
                     writer.writerow([
                         "Total",
                         "{:.3f}".format(total_dash_down_time),
                         "{:.3f}".format(total_down_time) if total_down_time != 0 else "n/a",
-                        "{:.3f}".format(total_return_time),
+                        "{:.3f}".format(total_return_time) if total_return_time != 0 else "n/a",
                         "{:.3f}".format(total_sum_time)
                     ])
-            grand_total_dash_down_time = sum(v.dash_down_time for videos in devices.values() for v in videos.values())
-            grand_total_down_time = sum(v.down_time for videos in devices.values() for v in videos.values())
-            grand_total_return_time = sum(v.return_time for videos in devices.values() for v in videos.values())
-            grand_total_sum_time = sum(v.sum_time for videos in devices.values() for v in videos.values())
 
-            run.dash_down_time = grand_total_dash_down_time
-            run.down_time = grand_total_down_time
-            run.return_time = grand_total_return_time
-            run.sum_time = grand_total_sum_time
+                    writer.writerow([
+                        "Average",
+                        "{:.3f}".format(total_dash_down_time / video_count),
+                        "{:.3f}".format(total_down_time / video_count) if total_down_time != 0 else "n/a",
+                        "{:.3f}".format(total_return_time / video_count) if total_return_time != 0 else "n/a",
+                        "{:.3f}".format(total_sum_time / video_count)
+                    ])
 
             if sum(1 for device in devices.values() if device) > 1:
-                writer.writerow([
-                    "Combined total",
-                    "{:.3f}".format(run.dash_down_time),
-                    "{:.3f}".format(run.down_time) if run.down_time != 0 else "n/a",
-                    "{:.3f}".format(run.return_time),
-                    "{:.3f}".format(run.sum_time)
-                ])
+                writer.writerow(["Combined total"] + run.get_total_stats())
+                writer.writerow(["Combined average"] + run.get_average_stats())
+
         writer.writerow(["Actual total time", run.get_time_string()])
         writer.writerow('')
 
