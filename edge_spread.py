@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-import copy
 import csv
 import os
 import re
 from argparse import ArgumentParser
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List
 
 
@@ -34,14 +33,14 @@ class Summarisation:
         self.master_path = "{}.log".format(os.path.join(self.log_dir, self.master))
         self.devices = devices
         self.videos = videos
-        self.schedule = None
-        self.seg_num = None
+        self.schedule = ""
+        self.seg_num = -1
         self.nodes = len([log for log in os.listdir(self.log_dir) if log.endswith(".log")])
-        self.algorithm = None
-        self.dash_down_time = None
-        self.down_time = None
-        self.sum_time = None
-        self.return_time = None
+        self.algorithm = ""
+        self.dash_down_time = -1.0
+        self.down_time = -1.0
+        self.sum_time = -1.0
+        self.return_time = -1.0
         self.total_time = get_total_time(self.master_path)
 
     def get_master_short_name(self) -> str:
@@ -95,7 +94,7 @@ re_dash_down = re.compile(
 re_down = re.compile(
     timestamp +
     r"W NearbyFragment: Completed downloading "
-    r"(.*)\.mp4 from Endpoint{id=\w{4}, name=(.*) \[(\w{4})\]} in (\d*\.?\d*)s(?:\s+)?$")
+    r"(.*)\.mp4 from Endpoint{id=\S{4}, name=(.*) \[(\w{4})\]} in (\d*\.?\d*)s(?:\s+)?$")
 re_comp = re.compile(timestamp + r"W Summariser: {3}filename: (.*)\.mp4(?:\s+)?$")
 re_sum = re.compile(timestamp + r"W Summariser: {3}time: (\d*\.?\d*)s(?:\s+)?$")
 re_pref = re.compile(timestamp + r"W NearbyFragment: Preferences:(?:\s+)?$")
@@ -123,7 +122,7 @@ def timestamp_to_datetime(line: str) -> datetime:
     return datetime(year, month, day, hour, minute, second, microsecond)
 
 
-def get_total_time(master_log_file: str):
+def get_total_time(master_log_file: str) -> timedelta:
     start = None
     end = None
 
@@ -409,8 +408,8 @@ def edge_spread(root: str, out: str):
             writer.writerow([
                 run.get_sub_log_dir(),
                 run.dash_down_time,
-                run.down_time if run.down_time else "n/a",
-                run.return_time if run.down_time else "n/a",
+                run.down_time if run.down_time > 0 else "n/a",
+                run.return_time if run.down_time > 0 else "n/a",
                 run.sum_time,
                 run.total_time.total_seconds(),
                 "{:.11}\t".format(str(run.total_time))
