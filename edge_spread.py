@@ -279,10 +279,10 @@ def make_spreadsheet(run: Summarisation, out: str):
                 run.seg_num = seg_num
                 break
 
-    devices = copy.deepcopy(run.devices)
-    if algo != "best_or_local":
-        # Remove master device unless best or local is used
-        devices.pop(run.get_master_short_name())
+    # Remove master device unless best_or_local is used
+    devices = {d: v for (d, v) in run.devices.items() if d != run.get_master_short_name()} \
+        if algo != "best_or_local" \
+        else run.devices
 
     run.dash_down_time = sum(v.dash_down_time for v in run.videos.values())
     run.down_time = sum(v.down_time for v in run.videos.values())
@@ -321,7 +321,12 @@ def make_spreadsheet(run: Summarisation, out: str):
             for device_name, video_dict in devices.items():
                 writer.writerow(["Device: {}".format(device_name)])
 
-                if not video_dict:
+                # Master videos list should only contain videos that haven't been transferred
+                videos = [v for v in video_dict.values() if v.down_time == 0] \
+                    if device_name == run.get_master_short_name() \
+                    else list(video_dict.values())
+
+                if not videos:
                     writer.writerow(["Did not summarise any videos"])
                     continue
 
@@ -333,15 +338,15 @@ def make_spreadsheet(run: Summarisation, out: str):
                     "Summarisation time (s)"
                 ])
 
-                for video in video_dict.values():
+                for video in videos:
                     writer.writerow(video.get_stats())
 
-                video_count = len(video_dict)
+                video_count = len(videos)
                 if video_count > 1:
-                    total_dash_down_time = sum(v.dash_down_time for v in video_dict.values())
-                    total_down_time = sum(v.down_time for v in video_dict.values())
-                    total_return_time = sum(v.return_time for v in video_dict.values())
-                    total_sum_time = sum(v.sum_time for v in video_dict.values())
+                    total_dash_down_time = sum(v.dash_down_time for v in videos)
+                    total_down_time = sum(v.down_time for v in videos)
+                    total_return_time = sum(v.return_time for v in videos)
+                    total_sum_time = sum(v.sum_time for v in videos)
 
                     writer.writerow([
                         "Total",
