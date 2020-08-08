@@ -1,0 +1,4 @@
+#base_trace: ldns04, config_file: configs/personal/personal-config17.xml, total_servers: 6, total_time: 86400, time_dist_mean: 1.980000, time_dist_stdev: 0.760000, node_dist_mean: 0.270000, node_dist_stdev: 1.780000
+1008 1234 tiny 0
+2668 2959 tiny 0
+4122 4484 tiny 0
