@@ -1,5 +1,0 @@
-#base_trace: teragrid, config_file: configs/personal/personal-config17.xml, total_servers: 6, total_time: 86400, time_dist_mean: 0.688000, time_dist_stdev: 0.531000, node_dist_mean: -1.408000, node_dist_stdev: 1.907000
-282 407 small 1
-1835 2967 small 1
-3560 3821 small 1
-4185 4373 small 1

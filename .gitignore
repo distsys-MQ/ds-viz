@@ -212,4 +212,4 @@ $RECYCLE.BIN/
 *.lnk
 
 ## Personal
-!/logs/*.log
+.idea/

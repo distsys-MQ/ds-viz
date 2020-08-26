@@ -1,7 +1,0 @@
-#base_trace: nd07cpu, config_file: configs/personal/personal-config16.xml, total_servers: 6, total_time: 86400, time_dist_mean: 2.442000, time_dist_stdev: 0.661000, node_dist_mean: 1.433000, node_dist_stdev: 2.022000
-0 652 small 1
-54 360 medium 0
-93 751 tiny 1
-808 1007 medium 0
-1135 2221 small 1
-1239 2234 tiny 1

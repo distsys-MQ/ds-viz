@@ -1,8 +1,0 @@
-#base_trace: websites02, config_file: configs/personal/personal-config17.xml, total_servers: 6, total_time: 86400, time_dist_mean: 2.430000, time_dist_stdev: 0.300000, node_dist_mean: 1.650000, node_dist_stdev: 1.220000
-0 221 tiny 0
-885 1673 tiny 0
-2189 2864 tiny 0
-2495 2794 small 1
-3434 4298 tiny 0
-4448 4921 medium 0
-5512 5903 tiny 0
