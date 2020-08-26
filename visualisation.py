@@ -66,8 +66,10 @@ class Visualisation:
         root.rowconfigure(3, weight=1)  # Timeline fills remaining window height
 
         # Fonts
-        small_font = font.Font(family="Liberation Mono", size=8)
-        large_font = font.Font(family="Liberation Mono", size=11)
+        self.font_family = "Liberation Mono"
+        self.font_family = self.font_family if self.font_family in font.families() else "Courier"
+        small_font = font.Font(family=self.font_family, size=8)
+        large_font = font.Font(family=self.font_family, size=11)
 
         # Status section
         status = tk.Frame(root)
@@ -117,7 +119,7 @@ class Visualisation:
         self.show_job_btn.pack(side=tk.LEFT)
 
         self.filename = tk.Label(title, text="Visualising: {}".format(os.path.basename(log)),
-                                 font=font.Font(family="Liberation Mono", size=11, underline=True))
+                                 font=font.Font(family=self.font_family, size=11, underline=True))
         self.filename.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
         self.scale_label = tk.Label(title, text=SCALE_STRING.format(self.cur_scale, scale_factor), font=large_font)
@@ -346,7 +348,7 @@ class Visualisation:
         last = self.core_height
         axis = self.axis - 1
         scale_factor = 2 ** scale
-        canvas_font = font.Font(family="Liberation Mono", size=8)
+        canvas_font = font.Font(family=self.font_family, size=8)
         tick = canvas_font.measure("0") / 2
         server_height = None
         self.server_ys = []
