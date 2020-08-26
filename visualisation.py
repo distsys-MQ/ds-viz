@@ -46,7 +46,7 @@ class Visualisation:
 
         # Simulation log data
         self.servers = server.get_servers_from_system(log, config, failures)
-        # TODO Replace with calls to traverse_servers
+        # Look into replacing server_list with calls to traverse_servers
         self.server_list = [s for s in server.traverse_servers(self.servers)]  # type: List[Server]
         self.unique_jids = sorted({j.jid for s in self.server_list for j in s.jobs})
         self.jobs = {
@@ -66,8 +66,10 @@ class Visualisation:
         root.rowconfigure(3, weight=1)  # Timeline fills remaining window height
 
         # Fonts
-        courier_8 = font.Font(family="Courier", size=8)
-        courier_11 = font.Font(family="Courier", size=11)
+        self.font_family = "Liberation Mono"
+        self.font_family = self.font_family if self.font_family in font.families() else "Courier"
+        small_font = font.Font(family=self.font_family, size=8)
+        large_font = font.Font(family=self.font_family, size=11)
 
         # Status section
         status = tk.Frame(root)
@@ -91,16 +93,16 @@ class Visualisation:
         right_tabs.add(cur_server_jobs_tab, text="Current Server Jobs")
         right_tabs.grid(row=0, column=1, sticky=tk.NSEW)
 
-        self.cur_server_text = tk.Text(cur_server_tab, height=3, font=courier_11)
+        self.cur_server_text = tk.Text(cur_server_tab, height=3, font=large_font)
         self.cur_server_text.pack(fill=tk.X, expand=True)
-        self.cur_job_text = tk.Text(cur_job_tab, height=3, font=courier_11)
+        self.cur_job_text = tk.Text(cur_job_tab, height=3, font=large_font)
         self.cur_job_text.pack(fill=tk.X, expand=True)
-        self.cur_res_text = tk.Text(cur_res_tab, height=3, font=courier_11)
+        self.cur_res_text = tk.Text(cur_res_tab, height=3, font=large_font)
         self.cur_res_text.pack(fill=tk.X, expand=True)
-        self.cur_server_jobs_text = tk.Text(cur_server_jobs_tab, height=3, font=courier_8)
+        self.cur_server_jobs_text = tk.Text(cur_server_jobs_tab, height=4, font=small_font)
         self.cur_server_jobs_text.pack(fill=tk.X, expand=True)
 
-        final_res_text = scrolledtext.ScrolledText(final_res_tab, height=3, font=courier_8)
+        final_res_text = scrolledtext.ScrolledText(final_res_tab, height=3, font=small_font)
         final_res_text.grid(row=0, column=0, sticky=tk.NSEW)
         final_res_tab.rowconfigure(0, weight=1)
         final_res_tab.columnconfigure(0, weight=1)
@@ -112,21 +114,21 @@ class Visualisation:
         title.grid(row=1, column=0, sticky=tk.NSEW)
 
         self.show_job = False
-        self.show_job_btn = tk.Button(title, text="Show Job", bg=RED, fg="white", font=courier_8,
+        self.show_job_btn = tk.Button(title, text="Show Job", bg=RED, fg="white", font=small_font,
                                       command=self.show_job_callback)
         self.show_job_btn.pack(side=tk.LEFT)
 
         self.filename = tk.Label(title, text="Visualising: {}".format(os.path.basename(log)),
-                                 font=font.Font(family="Courier", size=11, underline=True))
+                                 font=font.Font(family=self.font_family, size=11, underline=True))
         self.filename.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        self.scale_label = tk.Label(title, text=SCALE_STRING.format(self.cur_scale, scale_factor), font=courier_11)
+        self.scale_label = tk.Label(title, text=SCALE_STRING.format(self.cur_scale, scale_factor), font=large_font)
         self.scale_label.pack(side=tk.LEFT)
         btn_width = 4
-        self.scale_down_btn = tk.Button(title, text='-', bg=BLUE, fg="white", font=courier_8, width=btn_width,
+        self.scale_down_btn = tk.Button(title, text='-', bg=BLUE, fg="white", font=small_font, width=btn_width,
                                         command=self.decrease_scale)
         self.scale_down_btn.pack(side=tk.LEFT)
-        self.scale_up_btn = tk.Button(title, text='+', bg=BLUE, fg="white", font=courier_8, width=btn_width,
+        self.scale_up_btn = tk.Button(title, text='+', bg=BLUE, fg="white", font=small_font, width=btn_width,
                                       command=self.increase_scale)
         self.scale_up_btn.pack(side=tk.LEFT)
 
@@ -170,13 +172,14 @@ class Visualisation:
             root.state("zoomed")
 
         # Variables for runtime use
-        margin = 40
+        margin = small_font.measure("0" * 6)
         self.axis = margin * 2
         self.norm_time = self.axis
         self.timeline_cursor = None
         self.timeline_pointer = None
         self.server_pointer = None
-        self.server_pointer_x = self.axis - 8
+        self.server_pointer_x = self.axis - self.axis / 7
+        self.pointer_size = self.server_pointer_x / 15
         self.server_ys = [self.core_height]  # type: List[int]
 
         self.cur_time = 0
@@ -308,7 +311,7 @@ class Visualisation:
     def update_server(self, server_index: int) -> None:
         self.server_index = server_index
         self.cur_server = self.server_list[self.server_index]
-        self.move_to(self.server_pointer, self.server_pointer_x, self.server_ys[self.server_index])
+        self.move_to(self.server_pointer, self.server_pointer_x, self.server_ys[self.server_index] - self.pointer_size)
 
         replace_text(self.cur_server_text, self.cur_server.print_server_at(self.cur_time))
         replace_text(self.cur_server_jobs_text, self.cur_server.print_job_info(self.cur_time))
@@ -344,9 +347,9 @@ class Visualisation:
     def draw(self, scale: int) -> None:
         last = self.core_height
         axis = self.axis - 1
-        tick = 3
         scale_factor = 2 ** scale
-        canvas_font = font.Font(family="Courier", size=8)
+        canvas_font = font.Font(family=self.font_family, size=8)
+        tick = canvas_font.measure("0") / 2
         server_height = None
         self.server_ys = []
 
@@ -355,7 +358,7 @@ class Visualisation:
 
         for type_ in list(self.servers):
             server_type = truncate(type_)
-            server_type_x = 35
+            server_type_x = canvas_font.measure("0" * 5)
             server_type_y = last
 
             self.graph.create_text(server_type_x, server_type_y, text=server_type, font=canvas_font)
@@ -367,7 +370,7 @@ class Visualisation:
 
                 server_y = server_type_y + server_height * i
                 self.graph.create_line(axis - tick * 2.5, server_y, axis, server_y)  # Server ID tick mark
-                self.server_ys.append(server_y - 1)
+                self.server_ys.append(server_y)
 
                 # self.graph.draw_line(axis, server_y, self.width - self.right_margin, server_y)  # Server border
 
@@ -423,9 +426,13 @@ class Visualisation:
 
         self.timeline_pointer = self.graph.create_text(
             self.norm_time, 0, text='▼', font=font.Font(family="Symbol", size=self.core_height + 5))
-        self.server_pointer = self.graph.create_text(
-            self.server_pointer_x, self.server_ys[self.server_index] - 1,
-            text='▶', font=font.Font(family="Symbol", size=self.core_height + 2))
+
+        server_pointer_coords = [
+            self.server_pointer_x, self.server_ys[self.server_index] - self.pointer_size,
+            axis, self.server_ys[self.server_index],
+            self.server_pointer_x, self.server_ys[self.server_index] + self.pointer_size
+        ]
+        self.server_pointer = self.graph.create_polygon(server_pointer_coords, outline="black", fill="black")
 
     def run(self) -> None:
         self.draw(self.cur_scale)
