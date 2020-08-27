@@ -384,7 +384,7 @@ class Visualisation:
 
                     # Only check if previous jobs are overlapping, later jobs should be stacked on previous jobs
                     overlap = list(filter(lambda j: j.is_overlapping(jb), jobs[:jobs.index(jb)]))
-                    used_cores = sum(j.cores for j in overlap)
+                    used_cores = overlap[-1].last_core + 1 if overlap else 0
 
                     # Draw a job bar for every core used by the job, up to the scaling factor
                     for k in range(job_scale):
@@ -393,6 +393,7 @@ class Visualisation:
                         # Also need to adjust y position by half c_height to align job bar edge with server ticks
                         job_core = (used_cores + k) % server_scale
                         job_y = server_y + job_core * self.core_height + self.core_height * 0.5
+                        jb.last_core = job_core
 
                         if not jb.will_fail and jb.fails == 0:
                             colour = "green"

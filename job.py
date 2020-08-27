@@ -1,6 +1,6 @@
 import sys
 from collections import OrderedDict
-from typing import Dict, List, BinaryIO
+from typing import Dict, List
 
 
 class Job:
@@ -17,6 +17,7 @@ class Job:
         self.will_fail = will_fail
         self.fails = fails
         self.server = server
+        self.last_core = None
 
     def __str__(self) -> str:
         return "j{} {}:{}:{} f{}".format(self.jid, self.schd, self.start, self.end, self.fails)
