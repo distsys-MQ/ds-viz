@@ -71,38 +71,42 @@ class Visualisation:
         small_font = font.Font(family=self.font_family, size=8)
         large_font = font.Font(family=self.font_family, size=11)
 
+        background_colour = "white"
+        text_colour = {"fg": "black", "bg": background_colour}
+        root.configure(bg=background_colour)
+
         # Status section
-        status = tk.Frame(root)
+        status = tk.Frame(root, bg=background_colour)
         status.columnconfigure(0, weight=1, uniform="notebook")
         status.columnconfigure(1, weight=1, uniform="notebook")
         status.grid(row=0, column=0, sticky=tk.NSEW)
 
         left_tabs = ttk.Notebook(status)
-        cur_server_tab = tk.Frame(left_tabs)
-        cur_job_tab = tk.Frame(left_tabs)
+        cur_server_tab = tk.Frame(left_tabs, bg=background_colour)
+        cur_job_tab = tk.Frame(left_tabs, bg=background_colour)
         left_tabs.add(cur_server_tab, text="Current Server")
         left_tabs.add(cur_job_tab, text="Current Job")
         left_tabs.grid(row=0, column=0, sticky=tk.NSEW)
 
         right_tabs = ttk.Notebook(status)
-        cur_res_tab = tk.Frame(right_tabs)
-        final_res_tab = tk.Frame(right_tabs)
-        cur_server_jobs_tab = tk.Frame(right_tabs)
+        cur_res_tab = tk.Frame(right_tabs, bg=background_colour)
+        final_res_tab = tk.Frame(right_tabs, bg=background_colour)
+        cur_server_jobs_tab = tk.Frame(right_tabs, bg=background_colour)
         right_tabs.add(cur_res_tab, text="Current Results")
         right_tabs.add(final_res_tab, text="Final Results")
         right_tabs.add(cur_server_jobs_tab, text="Current Server Jobs")
         right_tabs.grid(row=0, column=1, sticky=tk.NSEW)
 
-        self.cur_server_text = tk.Text(cur_server_tab, height=3, font=large_font)
+        self.cur_server_text = tk.Text(cur_server_tab, height=3, font=large_font, **text_colour)
         self.cur_server_text.pack(fill=tk.X, expand=True)
-        self.cur_job_text = tk.Text(cur_job_tab, height=3, font=large_font)
+        self.cur_job_text = tk.Text(cur_job_tab, height=3, font=large_font, **text_colour)
         self.cur_job_text.pack(fill=tk.X, expand=True)
-        self.cur_res_text = tk.Text(cur_res_tab, height=3, font=large_font)
+        self.cur_res_text = tk.Text(cur_res_tab, height=3, font=large_font, **text_colour)
         self.cur_res_text.pack(fill=tk.X, expand=True)
-        self.cur_server_jobs_text = tk.Text(cur_server_jobs_tab, height=4, font=small_font)
+        self.cur_server_jobs_text = tk.Text(cur_server_jobs_tab, height=4, font=small_font, **text_colour)
         self.cur_server_jobs_text.pack(fill=tk.X, expand=True)
 
-        final_res_text = scrolledtext.ScrolledText(final_res_tab, height=3, font=small_font)
+        final_res_text = scrolledtext.ScrolledText(final_res_tab, height=3, font=small_font, **text_colour)
         final_res_text.grid(row=0, column=0, sticky=tk.NSEW)
         final_res_tab.rowconfigure(0, weight=1)
         final_res_tab.columnconfigure(0, weight=1)
@@ -110,7 +114,7 @@ class Visualisation:
         final_res_text.configure(state=tk.DISABLED)
 
         # Title section
-        title = tk.Frame(root)
+        title = tk.Frame(root, bg=background_colour)
         title.grid(row=1, column=0, sticky=tk.NSEW)
 
         self.show_job = False
@@ -119,10 +123,11 @@ class Visualisation:
         self.show_job_btn.pack(side=tk.LEFT)
 
         self.filename = tk.Label(title, text="Visualising: {}".format(os.path.basename(log)),
-                                 font=font.Font(family=self.font_family, size=11, underline=True))
+                                 font=font.Font(family=self.font_family, size=11, underline=True), **text_colour)
         self.filename.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        self.scale_label = tk.Label(title, text=SCALE_STRING.format(self.cur_scale, scale_factor), font=large_font)
+        self.scale_label = tk.Label(title, text=SCALE_STRING.format(self.cur_scale, scale_factor),
+                                    font=large_font, **text_colour)
         self.scale_label.pack(side=tk.LEFT)
         btn_width = 4
         self.scale_down_btn = tk.Button(title, text='-', bg=BLUE, fg="white", font=small_font, width=btn_width,
@@ -133,7 +138,7 @@ class Visualisation:
         self.scale_up_btn.pack(side=tk.LEFT)
 
         # Controls section
-        controls = tk.Frame(root)
+        controls = tk.Frame(root, bg=background_colour)
         controls.grid(row=2, column=0, sticky=tk.NSEW)
         controls.columnconfigure(0, weight=1)
 
@@ -149,7 +154,7 @@ class Visualisation:
         self.time_slider.grid(row=2, column=0, sticky=tk.NSEW)
 
         # Timeline section
-        timeline = tk.Frame(root)
+        timeline = tk.Frame(root, bg=background_colour)
         timeline.grid(row=3, column=0, sticky=tk.NSEW)
         timeline.rowconfigure(0, weight=1)
         timeline.columnconfigure(0, weight=1)
@@ -160,7 +165,8 @@ class Visualisation:
         graph_yscroll.grid(row=0, column=1, sticky=tk.NS)
 
         self.height = self.calc_height(scale_factor)
-        self.graph = tk.Canvas(timeline, bg="white", xscrollcommand=graph_xscroll.set, yscrollcommand=graph_yscroll.set)
+        self.graph = tk.Canvas(timeline, bg=background_colour,
+                               xscrollcommand=graph_xscroll.set, yscrollcommand=graph_yscroll.set)
         self.graph.grid(row=0, column=0, sticky=tk.NSEW)
 
         graph_xscroll.config(command=self.graph.xview)
